@@ -20,7 +20,7 @@ $(LIB): $(OBJS)
 $(BUILD)/test_gemm: tests/test_gemm.cpp $(LIB)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< $(LIB) -o $@
 
-$(BUILD)/bench: bench/bench.cpp $(LIB)
+$(BUILD)/bench: bench/bench.cpp bench/shapes.h $(LIB)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK $< $(LIB) $(ACCEL) -o $@
 
 $(BUILD)/ubench: bench/ubench.cpp | $(BUILD)
@@ -43,17 +43,34 @@ TP := third_party/install
 $(TP)/libxsmm/lib/libxsmm.a $(TP)/kleidiai/lib/libkleidiai.a:
 	./third_party/build.sh
 
-$(BUILD)/bench_ext: bench/bench_ext.cpp $(TP)/libxsmm/lib/libxsmm.a $(TP)/kleidiai/lib/libkleidiai.a | $(BUILD)
+$(BUILD)/bench_ext: bench/bench_ext.cpp bench/shapes.h $(TP)/libxsmm/lib/libxsmm.a $(TP)/kleidiai/lib/libkleidiai.a | $(BUILD)
 	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -I$(TP)/libxsmm/include/libxsmm -I$(TP)/kleidiai/include $< \
 	  $(TP)/libxsmm/lib/libxsmm.a $(TP)/libxsmm/lib/libxsmmgen.a $(TP)/kleidiai/lib/libkleidiai.a $(ACCEL) -o $@
 
 bench_ext: $(BUILD)/bench_ext
+
+# Eigen master with its SME backend; header-only, fetched by third_party/build.sh.
+EIGEN_INC := third_party/src/eigen
+$(EIGEN_INC)/Eigen/Core:
+	./third_party/build.sh
+
+$(BUILD)/bench_eigen: bench/bench_eigen.cpp bench/shapes.h $(EIGEN_INC)/Eigen/Core | $(BUILD)
+	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -I$(EIGEN_INC) $< $(ACCEL) -o $@
+
+bench_eigen: $(BUILD)/bench_eigen
 
 test_ext: $(BUILD)/bench_ext
 	./$(BUILD)/bench_ext all libxsmm check
 	./$(BUILD)/bench_ext irr libxsmm check
 	./$(BUILD)/bench_ext all kleidiai check
 	./$(BUILD)/bench_ext irr kleidiai check
+	./$(BUILD)/bench_ext small libxsmm check
+	./$(BUILD)/bench_ext thin libxsmm check
+	./$(BUILD)/bench_ext small kleidiai check
+	./$(BUILD)/bench_ext thin kleidiai check
+
+test_eigen: bench_eigen
+	for o in row col; do for set in all small thin; do ./$(BUILD)/bench_eigen $$set $$o check || exit 1; done; done
 
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
@@ -61,4 +78,4 @@ test: $(BUILD)/test_gemm
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench bench_ext test_ext
+.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen

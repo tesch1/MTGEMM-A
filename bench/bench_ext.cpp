@@ -1,6 +1,6 @@
 // LIBXSMM and KleidiAI on the same shapes as bench, set up as in the paper (Sec. 5.1.3): LIBXSMM column-major
 // C += A*B (one JIT kernel for the whole problem), KleidiAI row-major C = A*B with both operands packed per call.
-// usage: bench_ext <squares|paper|irr|all|MxNxK> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
+// usage: bench_ext <squares|paper|irr|all|small|thin|MxNxK> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
 #include <Accelerate/Accelerate.h>
 #include <libxsmm.h>
 #include "kai/ukernels/matmul/matmul_clamp_f32_f32p_f32p/kai_matmul_clamp_f32_f32p2vlx1_f32p2vlx1biasf32_sme2_mopa.h"
@@ -20,13 +20,7 @@
 #include <string>
 #include <vector>
 
-struct Shape { int id, m, n, k; };
-static const int W[24][3] = {{64, 2112, 7168},   {64, 24576, 1536},  {64, 32768, 512},   {64, 7168, 16384},
-                             {64, 4096, 7168},   {64, 7168, 2048},   {128, 2112, 7168},  {128, 24576, 1536},
-                             {128, 32768, 512},  {128, 7168, 16384}, {128, 4096, 7168},  {128, 7168, 2048},
-                             {4096, 2112, 7168}, {4096, 24576, 1536}, {4096, 32768, 512}, {4096, 7168, 16384},
-                             {4096, 4096, 7168}, {4096, 7168, 2048}, {4096, 256, 4096},  {11008, 256, 4096},
-                             {4096, 256, 11008}, {5120, 256, 5120},  {13824, 256, 5120}, {5120, 256, 13824}};
+#include "shapes.h"
 static int g_argc;
 static char** g_argv;
 
@@ -66,7 +60,7 @@ static std::function<void()> make_call(bool xsmm, int m, int n, int k, float* A,
 
 static void* body(void*) {
   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
-  if (g_argc < 3) { std::fprintf(stderr, "usage: bench_ext <squares|paper|irr|all|MxNxK> <libxsmm|kleidiai> [opts]\n"); std::exit(2); }
+  if (g_argc < 3) { std::fprintf(stderr, "usage: bench_ext <squares|paper|irr|all|small|thin|MxNxK> <libxsmm|kleidiai> [opts]\n"); std::exit(2); }
   const std::string set = g_argv[1];
   const bool xsmm = !std::strcmp(g_argv[2], "libxsmm");
   if (!xsmm && std::strcmp(g_argv[2], "kleidiai")) { std::fprintf(stderr, "unknown library %s\n", g_argv[2]); std::exit(2); }
@@ -83,16 +77,8 @@ static void* body(void*) {
     else if (!std::strcmp(a, "check")) check_only = true;
     else { std::fprintf(stderr, "bad option %s\n", a); std::exit(2); }
   }
-  std::vector<Shape> shapes;
-  if (set == "squares" || set == "all")
-    for (int s : {512, 1000, 1024, 2048, 3000, 4096}) shapes.push_back({0, s, s, s});
-  if (set == "paper" || set == "all")
-    for (int i = 0; i < 24; ++i)
-      if (i + 1 >= id_lo && i + 1 <= id_hi) shapes.push_back({i + 1, W[i][0], W[i][1], W[i][2]});
-  if (set == "irr")
-    for (int s = 80; s <= 200; s += 30) shapes.push_back({0, s, s, 25600});
+  std::vector<Shape> shapes = make_shapes(set, id_lo, id_hi);
   int m, n, k;
-  if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) shapes.push_back({0, m, n, k});
   const bool row = !xsmm;
   const double beta = xsmm ? 1.0 : 0.0;
   std::printf("# %s %s %s f32 beta=%g\n", set.c_str(), row ? "row" : "col", xsmm ? "libxsmm" : "kleidiai", beta);

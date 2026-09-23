@@ -592,4 +592,5 @@ with full x4 loads, instead of 2 x 2, plus a prefetch of the next C tile.
 
 ## License
 
-No license is chosen yet.
+MIT, see [LICENSE](LICENSE). LIBXSMM, KleidiAI and Eigen, which `third_party/build.sh` fetches for the
+benchmarks, keep their own licenses.

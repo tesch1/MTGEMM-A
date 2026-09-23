@@ -1,11 +1,13 @@
 #!/bin/bash
-# Fetches LIBXSMM and KleidiAI at pinned commits into third_party/src and builds them into third_party/install.
+# Fetches LIBXSMM, KleidiAI and Eigen (header-only) at pinned commits into third_party/src and builds them into third_party/install.
 set -euo pipefail
 cd "$(dirname "$0")"
 LIBXSMM_URL=https://github.com/libxsmm/libxsmm.git
 LIBXSMM_REV=55a8fa6a1e479dec1f5ddbe20684c1cdc0ff7eb1
 KLEIDIAI_URL=https://github.com/ARM-software/kleidiai.git
 KLEIDIAI_REV=64270e8f8926aa47f764ffbfe6f2785e00e93c2a
+EIGEN_URL=https://gitlab.com/libeigen/eigen.git
+EIGEN_REV=ec8593a7dbbf45d370b8e4feda5de106706b01bc
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
@@ -18,6 +20,7 @@ fetch() {  # name url rev
 
 fetch libxsmm "$LIBXSMM_URL" "$LIBXSMM_REV"
 fetch kleidiai "$KLEIDIAI_URL" "$KLEIDIAI_REV"
+fetch eigen "$EIGEN_URL" "$EIGEN_REV"
 
 if [ ! -f install/libxsmm/lib/libxsmm.a ]; then
   make -C src/libxsmm -j"$JOBS" CC=clang CXX=clang++ STATIC=1 BLAS=0 FORTRAN=0 \

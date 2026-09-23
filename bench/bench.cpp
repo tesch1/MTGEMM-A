@@ -1,5 +1,5 @@
 // Accelerate vs MTGEMM-A on squares, the paper's 24 workloads and its irregular shapes.
-// usage: bench <squares|paper|irr|all|MxNxK> <row|col> <accel|mt> [f64] [paper] [beta=x] [online=0 x4=0 heap=0 model=0
+// usage: bench <squares|paper|irr|all|small|thin|MxNxK> <row|col> <accel|mt> [f64] [paper] [beta=x] [online=0 x4=0 heap=0 model=0
 //        shape=1 cdirect=1 threads=2 mc=.. nc=.. kc=..] [ids=a-b] [ms=50] [trials=5]
 // Row-major runs use beta 0 and column-major runs beta 1, as in the paper (Sec. 5.1.3). Min over trials.
 #include "mtgemm.h"
@@ -16,13 +16,7 @@
 #include <string>
 #include <vector>
 
-struct Shape { int id, m, n, k; };
-static const int W[24][3] = {{64, 2112, 7168},   {64, 24576, 1536},  {64, 32768, 512},   {64, 7168, 16384},
-                             {64, 4096, 7168},   {64, 7168, 2048},   {128, 2112, 7168},  {128, 24576, 1536},
-                             {128, 32768, 512},  {128, 7168, 16384}, {128, 4096, 7168},  {128, 7168, 2048},
-                             {4096, 2112, 7168}, {4096, 24576, 1536}, {4096, 32768, 512}, {4096, 7168, 16384},
-                             {4096, 4096, 7168}, {4096, 7168, 2048}, {4096, 256, 4096},  {11008, 256, 4096},
-                             {4096, 256, 11008}, {5120, 256, 5120},  {13824, 256, 5120}, {5120, 256, 13824}};
+#include "shapes.h"
 
 static int g_argc;
 static char** g_argv;
@@ -91,7 +85,7 @@ static void run(const std::vector<Shape>& shapes, bool row, bool use_accel, doub
 static void* body(void*) {
   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
   if (g_argc < 4) {
-    std::fprintf(stderr, "usage: bench <squares|paper|irr|all|MxNxK> <row|col> <accel|mt> [options]\n");
+    std::fprintf(stderr, "usage: bench <squares|paper|irr|all|small|thin|MxNxK> <row|col> <accel|mt> [options]\n");
     std::exit(2);
   }
   const std::string set = g_argv[1];
@@ -132,16 +126,7 @@ static void* body(void*) {
     else if (std::sscanf(a, "kc=%d", &v) == 1) o.kc = v;
     else { std::fprintf(stderr, "bad option %s\n", a); std::exit(2); }
   }
-  std::vector<Shape> shapes;
-  if (set == "squares" || set == "all")
-    for (int s : {512, 1000, 1024, 2048, 3000, 4096}) shapes.push_back({0, s, s, s});
-  if (set == "paper" || set == "all")
-    for (int i = 0; i < 24; ++i)
-      if (i + 1 >= id_lo && i + 1 <= id_hi) shapes.push_back({i + 1, W[i][0], W[i][1], W[i][2]});
-  if (set == "irr")
-    for (int s = 80; s <= 200; s += 30) shapes.push_back({0, s, s, 25600});
-  int m, n, k;
-  if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) shapes.push_back({0, m, n, k});
+  std::vector<Shape> shapes = make_shapes(set, id_lo, id_hi);
   std::printf("# %s %s %s %s beta=%g", set.c_str(), row ? "row" : "col", use_accel ? "accel" : "mt", f64 ? "f64" : "f32", beta);
   if (!use_accel)
     std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d pf=%d threads=%d", o.online, o.x4, o.heap,
