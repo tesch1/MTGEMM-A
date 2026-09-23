@@ -28,5 +28,12 @@ R=results/final
   echo
   echo "### Ablation from the paper design"
   python3 tools/ablation.py $R paper pabl_no_online pabl_no_x4 pabl_stack pabl_fixed_blk pabl_no_blk pabl_k32x32
+  echo
+  X=results/ext
+  echo "### LIBXSMM (column-major) and KleidiAI (row-major), one session"
+  echo
+  python3 tools/table.py col --paper --paper-lib=LIBXSMM "LIBXSMM=$X/libxsmm_col.txt" "Accel=$X/accel_col.txt" "MTGEMM-A*=$X/mt_col.txt"
+  echo
+  python3 tools/table.py row --paper --paper-lib=KleidiAI --paper-lib=OpenBLAS "KleidiAI=$X/kleidiai_row.txt" "Accel=$X/accel_row.txt" "MTGEMM-A*=$X/mt_row.txt"
 } > $R/tables.md
 echo "wrote $R/tables.md"

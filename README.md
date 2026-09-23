@@ -53,6 +53,10 @@ single-thread rows and with its default thread count for the two-thread rows.
   ZA moves in the packing of A. Together they give 1.15x (row-major) and 1.25x (column-major) over the
   paper design.
 - Heap buffers (instead of stack buffers) and first-round online packing give almost no speedup here.
+- Against the open-source SME libraries, built and run here: MTGEMM-A is 2.2x faster than LIBXSMM
+  (column-major), 1.7x faster than KleidiAI and 3.7x faster than OpenBLAS (row-major). LIBXSMM measures within
+  2% of the paper's LIBXSMM numbers, so the paper's baselines hold up. See
+  [LIBXSMM, KleidiAI and OpenBLAS](#libxsmm-kleidiai-and-openblas).
 
 ## Design as built
 
@@ -202,7 +206,13 @@ Build flags (in the `Makefile`): `-std=c++17 -O3 -DNDEBUG -march=armv8.6-a+sme2+
 make            # build/libmtgemm.a, build/test_gemm, build/bench, build/ubench
 make test       # correctness tests
 make gbench     # optional: Google Benchmark cross-check (downloads benchmark v1.9.1 into build/)
+make test_ext   # optional: fetch and build LIBXSMM and KleidiAI, check them against Accelerate
 ```
+
+`make bench_ext` and `make test_ext` run `third_party/build.sh`. The script clones LIBXSMM and KleidiAI at
+pinned commits into `third_party/src/` and builds them into `third_party/install/`; both directories are
+ignored by git. `make test_ext` checks both libraries against Accelerate on every benchmark shape, and it
+checks that each call changes C.
 
 `make test` compares the result with a double-precision reference on fixed shapes, on all combinations of
 the options (2304 checks), and on 900 random cases with tails, padded leading dimensions, several alpha and
@@ -225,8 +235,21 @@ blocking), `shape`, `cdirect`, `pack4`, `pf` (prefetch mask), `threads`, `mc`, `
 `trials`, `ids=a-b`. Row-major runs use beta = 0 and column-major runs use beta = 1, as in the paper. Each
 MTGEMM-A run also checks one result against Accelerate (`err/sqrtK` column).
 
+```sh
+# bench_ext <squares|paper|irr|all|MxNxK> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
+VECLIB_MAXIMUM_THREADS=1 ./build/bench_ext all libxsmm          # column-major, C += A*B
+VECLIB_MAXIMUM_THREADS=1 ./build/bench_ext all kleidiai         # row-major, C = A*B
+```
+
+`bench_ext` sets up the two libraries as the paper does (Sec. 5.1.3). LIBXSMM runs column-major
+`C += A*B`: one JIT kernel from `libxsmm_dispatch_gemm` covers the whole problem. KleidiAI runs row-major
+`C = A*B` with its SME2 FP32 kernel `matmul_clamp_f32_f32p2vlx1_f32p2vlx1biasf32_sme2_mopa`. Each timed call
+packs both operands with KleidiAI's own packers (`lhs_pack_f32p2vlx1_f32_sme`,
+`rhs_pack_kxn_f32p2vlx1biasf32_f32_f32_sme`) and then runs the kernel. The packed buffers are allocated once,
+outside the timing. This is the only FP32 SME kernel that KleidiAI builds for this platform.
+
 `bench/run_all.sh <outdir> <label> <args>` waits until the one-minute load is below 4, runs one benchmark and
-writes the load before and after into the result file. Run one benchmark at a time: two benchmarks at the
+writes the load before and after into the result file. `BIN=./build/bench_ext` selects the second binary. Run one benchmark at a time: two benchmarks at the
 same time share the SME units and the L2 caches.
 
 `./build/ubench` runs the microbenchmarks (FMOPA peak by tile count, SME load bandwidth by footprint and
@@ -242,6 +265,8 @@ load width, strided reads with prefetch, core stores during SME loads).
 | `src/` | library |
 | `tests/test_gemm.cpp` | correctness tests |
 | `bench/bench.cpp`, `bench/gbench.cpp`, `bench/ubench.cpp` | benchmarks |
+| `bench/bench_ext.cpp`, `third_party/build.sh` | LIBXSMM and KleidiAI benchmark, fetch-and-build script |
+| `results/ext/` | LIBXSMM, KleidiAI, Accelerate and MTGEMM-A in one session (2026-09-22, load 2-3) |
 | `bench/baseline/` | Eigen and OpenBLAS baseline programs and their outputs |
 | `results/final/` | final raw results (2026-09-22) and `tables.md` |
 | `results/r1`-`r3` | earlier rounds, kept for the record |
@@ -337,6 +362,41 @@ The fp64 FMOPA peak is 502 GFLOPS for one unit, so MTGEMM-A reaches 82% of peak 
 | 170 | 999 | 987 | 1206 |
 | 200 | 1080 | 1041 | 1277 |
 
+### LIBXSMM, KleidiAI and OpenBLAS
+
+These runs were made in one session at load 2-3, together with a new run of Accelerate and MTGEMM-A
+(`results/ext/`). Geometric mean GFLOPS per group of the paper's workloads, fp32, one thread:
+
+| group | LIBXSMM (col) | Accelerate (col) | MTGEMM-A (col) | KleidiAI (row) | OpenBLAS (row) | Accelerate (row) | MTGEMM-A (row) |
+|---|---|---|---|---|---|---|---|
+| M = 64 (IDs 1-6) | 671 | 935 | 1098 | 605 | 420 | 704 | 1069 |
+| M = 128 (IDs 7-12) | 924 | 1192 | 1376 | 751 | 417 | 1002 | 1347 |
+| M = 4096 (IDs 13-18) | 552 | 1473 | 1680 | 980 | 114 | 1595 | 1695 |
+| N = 256 (IDs 19-24) | 499 | 1245 | 1569 | 1119 | 1044 | 1422 | 1597 |
+| all 24 | 643 | 1196 | 1413 | 840 | 380 | 1124 | 1405 |
+| squares 512-4096 | 1037 | 1633 | 1722 | 1432 | 762 | 1687 | 1749 |
+
+The paper's numbers for the same libraries, geometric mean over the 24 workloads: LIBXSMM 657 (col),
+KleidiAI 564 and OpenBLAS 464 (row).
+
+- LIBXSMM: 643 here against 657 in the paper, a match within 2%. It is fast when its unpacked operand fits in
+  L2 (IDs 2, 3, 8, 9, 15 and squares up to 1024) and falls to 450-600 GFLOPS when it does not, as the paper
+  explains.
+- KleidiAI: 840 here against 564 in the paper, 1.5x faster. The version here is from September 2026 and is
+  newer than the paper's. The timing here also leaves out the allocation of the packed buffers; the paper does
+  not say whether its timing includes it.
+- OpenBLAS: the run from `bench/baseline/` (0.3.34, Homebrew, one thread). OpenBLAS uses SME only in a
+  direct SME1 kernel for row-major `C = A*B` with contiguous operands, and only for sizes that its heuristic
+  accepts. The M = 4096 workloads fall back to NEON here (114 GFLOPS), which the paper's OpenBLAS numbers do
+  not show (422-533).
+- The paper claims 1.95x, 2.34x and 2.85x for MpGEMM over LIBXSMM, KleidiAI and OpenBLAS. MTGEMM-A gets 2.20x,
+  1.67x and 3.70x here. The KleidiAI ratio is lower because KleidiAI is faster than the paper measured.
+- All results match Accelerate bit for bit (`err/sqrtK` = 0) on every shape.
+
+Irregular shapes (K = 25600, M = N = 80-200), GFLOPS: LIBXSMM (col) 535, 502, 369, 349, 475; KleidiAI (row)
+402, 484, 524, 579, 617; MTGEMM-A (row) 1167, 1206, 1255, 1206, 1277; Accelerate (row) 714, 837, 944, 999, 1080.
+The full per-shape tables are in `results/final/tables.md`.
+
 ### Harness cross-check
 
 `results/final/gbench.txt` times six shapes with Google Benchmark. The values agree with `bench` within
@@ -395,12 +455,13 @@ By group (from MTGEMM-A; M = 64 / M = 128 / M = 4096 / N = 256):
 | 7 | two SME units give twice the performance | 1.95x-1.96x (fp32 and fp64, both configurations) | reproduced |
 | 8 | two SME units: 1.24x (row) and 1.22x (column) over Accelerate | MTGEMM-A: 1.15x and 1.12x; paper design: 1.01x and 0.89x. Multi-threaded Accelerate here is faster than in the paper (2370 against 2138 row-major); against the paper's MpGEMM numbers MTGEMM-A is 1.03x and 1.06x | partly: the absolute level reproduces, the ratio to today's Accelerate is smaller |
 | 9 | fp64, two units: 1.18x over Accelerate | MTGEMM-A 811 against 676: 1.20x (one thread: 1.29x; paper design one thread: 1.11x) | reproduced |
-| 10 | irregular shapes: MpGEMM stays ahead of the alternatives | MTGEMM-A 1.18x-1.63x over Accelerate at all five sizes. The paper design is ahead at 80-140 and equal at 170-200 | reproduced by MTGEMM-A (the paper compares with open-source libraries, which were not measured here) |
+| 10 | irregular shapes: MpGEMM stays ahead of the alternatives | MTGEMM-A 1.18x-1.63x over Accelerate at all five sizes, 2.2x-3.6x over LIBXSMM and 2.1x-2.9x over KleidiAI. The paper design is ahead of Accelerate at 80-140 and equal at 170-200 | reproduced by MTGEMM-A |
 | 11 | partitioning and packing: 1.62x (against LIBXSMM) | no cache blocking costs 0.58-0.59 (MTGEMM-A) and 0.66-0.70 (paper design): the blocking is worth 1.4x-1.7x | reproduced in size (different baseline) |
 | 12 | x4 loads: 1.17x | 1.07x-1.09x from MTGEMM-A; 1.00x-1.05x from the paper design | smaller than claimed |
 | 13 | first-round online packing gives a limited benefit | 1.01x-1.02x from MTGEMM-A; from the paper design 0.99x (row-major) and 1.03x (column-major) | reproduced (the benefit is small) |
 | 14 | 16 x 64 main kernel is better than 32 x 32 | 32 x 32 costs 15% / 9% (MTGEMM-A) and 23% / 15% (paper design), row / column | reproduced |
 | 15 | an analytical model for the blocking | fixed blocking (256/1024/256) costs 7-8% (MTGEMM-A) and 13-15% (paper design) | reproduced |
+| 16 | one SME unit: 1.95x, 2.34x and 2.85x over LIBXSMM, KleidiAI and OpenBLAS | MTGEMM-A: 2.20x, 1.67x and 3.70x. LIBXSMM here matches the paper's LIBXSMM within 2%; KleidiAI here is 1.5x faster than in the paper; OpenBLAS 0.3.34 falls back to NEON at M = 4096 | reproduced for LIBXSMM and OpenBLAS; smaller for KleidiAI, which has improved |
 
 ## What each design element is worth
 
@@ -488,8 +549,8 @@ with full x4 loads, instead of 2 x 2, plus a prefetch of the next C tile.
   1024^3 (column-major, paper design). Small problems (512^3) gain nothing from two threads, and there is no
   size threshold that falls back to one thread.
 - Only the no-transpose case of GEMM. The efficiency-cluster SME unit is not used (it is much slower).
-- LIBXSMM, KleidiAI and OpenBLAS were not compared here in the final runs. `bench/baseline/` has one
-  OpenBLAS 0.3.34 run for reference.
+- OpenBLAS was measured once (Homebrew 0.3.34), not rebuilt from source; LIBXSMM and KleidiAI are built by
+  `third_party/build.sh` at the commits it pins. Only one KleidiAI FP32 SME kernel is available on this platform.
 - The TLB size in the model is an assumption (160 entries).
 
 ## Future work
@@ -512,6 +573,8 @@ with full x4 loads, instead of 2 x 2, plus a prefetch of the next C tile.
   [https://tnzr.org/sme/](https://tnzr.org/sme/).
 - T. Zakharko. M4 SME exploration. [github.com/tzakharko/m4-sme-exploration](https://github.com/tzakharko/m4-sme-exploration).
 - Arm. KleidiAI. [github.com/ARM-software/kleidiai](https://github.com/ARM-software/kleidiai).
+- LIBXSMM. [github.com/libxsmm/libxsmm](https://github.com/libxsmm/libxsmm).
+- OpenBLAS. [github.com/OpenMathLib/OpenBLAS](https://github.com/OpenMathLib/OpenBLAS).
 - Arm. Arm C Language Extensions (ACLE), SME intrinsics.
   [arm-software.github.io/acle/main/acle.html](https://arm-software.github.io/acle/main/acle.html).
 - Arm. Arm Architecture Reference Manual Supplement, The Scalable Matrix Extension (SME), for Armv9-A

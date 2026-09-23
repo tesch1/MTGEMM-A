@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Merges benchmark result files into a markdown table.
-# usage: table.py <row|col> [--paper] [--eigen] label=file ...   (label ending in '*' is the ratio reference)
+# usage: table.py <row|col> [--paper] [--paper-lib=NAME] [--eigen] label=file ...   (label ending in '*' is the ratio reference)
 import csv, math, os, sys
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.join(here, '..')
@@ -31,6 +31,9 @@ def main():
         if a == '--paper':
             cols.append(('paper MpGEMM', 'paper', paper('single%smajor' % order, 'MpGEMM')))
             cols.append(('paper Accel', 'paper', paper('single%smajor' % order, 'Accelerate')))
+        elif a.startswith('--paper-lib='):
+            lib = a.split('=', 1)[1]
+            cols.append(('paper %s' % lib, 'paper', paper('single%smajor' % order, lib)))
         elif a == '--paper-multi':
             cols.append(('paper MpGEMM 2x', 'paper', paper('multi%smajor' % order, 'MpGEMM')))
             cols.append(('paper Accel 2x', 'paper', paper('multi%smajor' % order, 'Accelerate')))
