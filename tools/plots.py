@@ -191,7 +191,9 @@ def grid_chart(t, suffix, name, lib, label, orders, folder, what):
     for p, (o, k) in enumerate(panels):
         ax = axs[p // 2][p % 2]
         im = heat(ax, t, load('%s/%s_grid%d_%s' % (folder, lib, k, o)), load('%s/accel_grid%d_%s' % (folder, k, o)),
-                  '%s / Accelerate, K = %d, %s, %s' % (label, k, 'column-major' if o == 'col' else 'row-major', what))
+                  '%s / Accelerate, K = %d, %s' % (label, k, 'column-major' if o == 'col' else 'row-major'))
+    fig.suptitle('%s against Accelerate, %s' % (label, what), color=t['ink'], fontsize=12, fontweight='bold', x=0.08,
+                 ha='left')
     fig.subplots_adjust(hspace=0.32, wspace=0.28)
     cb = fig.colorbar(im, ax=axs.ravel().tolist(), orientation='horizontal', fraction=0.035 / rows, pad=0.09 / rows,
                       aspect=40)
