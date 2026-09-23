@@ -727,8 +727,9 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
     return;
   }
   Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, {}, 0, 0, 0, nullptr, nullptr};
-  // threads = 0: two threads (one per SME unit) from 2^29 flops up, where they repay starting the second thread.
-  const bool two = o.threads >= 2 || (o.threads == 0 && 2.0 * M * N * K >= double(1 << 29));
+  // threads = 0: two threads (one per SME unit) from 2^22 multiply-adds up when the split side has two row blocks.
+  const bool two = o.threads >= 2 || (o.threads == 0 && double(M) * N * K >= double(1 << 22) &&
+                                      std::max(M, N) >= 2 * 4 * Tr<T>::VL);
   if (!two) return run_job(jb, o);
   constexpr int VL = Tr<T>::VL;
   Half<T> h0{jb, o}, h1{jb, o};

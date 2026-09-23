@@ -11,23 +11,29 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-R = os.path.join(root, 'results', 'ext')
+# Eigen builds are labelled with the first four hex digits of the commit third_party/build.sh pins.
+_pins = open(os.path.join(root, 'third_party', 'build.sh')).read()
+EIGEN_BR = r'Eigen$^{%s}$' % __import__('re').search(r'EIGEN_BRANCH_REV=(\w{4})', _pins).group(1)
+EIGEN_MASTER = r'Eigen$^{%s}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
+RES = os.path.join(root, 'results')
 OUT = os.path.join(root, 'docs')
 
 # Validated reference palette (categorical slots 1-4 by entity) and chart ink, light and dark.
 THEMES = {
     '': dict(surface='#fcfcfb', ink='#0b0b0b', ink2='#52514e', muted='#898781', grid='#e1e0d9', axis='#c3c2b7',
              mid='#f0efec', blue='#184f95', red='#b23232',
-             series={'Accelerate': '#2a78d6', 'MTGEMM-A': '#eb6834', 'Eigen': '#1baf7a', 'LIBXSMM': '#eda100', 'KleidiAI': '#eda100'}),
+             series={'Accelerate': '#2a78d6', 'MTGEMM-A': '#eb6834', EIGEN_BR: '#1baf7a', 'LIBXSMM': '#eda100',
+                     'KleidiAI': '#eda100', EIGEN_MASTER: '#e87ba4'}),
     '-dark': dict(surface='#1a1a19', ink='#ffffff', ink2='#c3c2b7', muted='#898781', grid='#2c2c2a', axis='#383835',
                   mid='#383835', blue='#3987e5', red='#e66767',
-                  series={'Accelerate': '#3987e5', 'MTGEMM-A': '#d95926', 'Eigen': '#199e70', 'LIBXSMM': '#c98500', 'KleidiAI': '#c98500'}),
+                  series={'Accelerate': '#3987e5', 'MTGEMM-A': '#d95926', EIGEN_BR: '#199e70', 'LIBXSMM': '#c98500',
+                          'KleidiAI': '#c98500', EIGEN_MASTER: '#d55181'}),
 }
-MARKERS = {'Accelerate': 'o', 'MTGEMM-A': 's', 'Eigen': '^', 'LIBXSMM': 'D', 'KleidiAI': 'D'}
+MARKERS = {'Accelerate': 'o', 'MTGEMM-A': 's', EIGEN_BR: '^', 'LIBXSMM': 'D', 'KleidiAI': 'D', EIGEN_MASTER: 'v'}
 
 def load(name):
     d = {}
-    for line in open(os.path.join(R, name + '.txt')):
+    for line in open(os.path.join(RES, name + '.txt')):
         if line.startswith('#') or not line.strip():
             continue
         f = line.split()
@@ -109,28 +115,26 @@ def ratios(ax, t, series, xlabel, ticks):
 def sq(d):
     return {m: v for (m, n, k), v in d.items() if m == n == k}
 
-def squares_chart(t, suffix):
+def squares_chart(t, suffix, fname, spec, what):
+    """spec: {order: [(label, [result files])]}; the first entry is Accelerate."""
     fig, axs = plt.subplots(2, 2, figsize=(11, 7.6), sharey='row')
-    for col, order, other, lib in ((0, 'col', 'LIBXSMM', 'libxsmm'), (1, 'row', 'KleidiAI', 'kleidiai')):
+    for col, order in ((0, 'col'), (1, 'row')):
+        s = [(label, sq(merged(*files))) for label, files in spec[order]]
         ax = axs[0][col]
-        s = [('Accelerate', sq(merged('accel_' + order, 'accel_small_' + order))),
-             ('MTGEMM-A', sq(merged('mt_' + order, 'mt_small_' + order))),
-             ('Eigen', sq(merged('eigen_' + order, 'eigen_small_' + order))),
-             (other, sq(merged('%s_%s' % (lib, order), '%s_small_%s' % (lib, order))))]
         ticks = [4, 16, 64, 256, 1024, 4096]
-        lines(ax, t, s, 'M = N = K', ticks, 2000)
-        ax.set_title('Square sizes, %s' % ('column-major C += AB' if order == 'col' else 'row-major C = AB'))
+        lines(ax, t, s, 'M = N = K', ticks, max(2000, 500 * math.ceil(max(max(v.values()) for _, v in s) / 500)))
+        ax.set_title('Square sizes, %s, %s' % (what, 'column-major C += AB' if order == 'col' else 'row-major C = AB'))
         ax.legend(loc='upper left', frameon=False, fontsize=9, labelcolor=t['ink2'])
         ratios(axs[1][col], t, s, 'M = N = K', ticks)
         axs[1][col].set_title('Speedup over Accelerate (log scale)')
     fig.tight_layout(w_pad=6, h_pad=2)
-    fig.savefig(os.path.join(OUT, 'squares%s.svg' % suffix))
+    fig.savefig(os.path.join(OUT, '%s%s.svg' % (fname, suffix)))
     plt.close(fig)
 
-def thin_chart(t, suffix):
+def thin_chart(t, suffix, fname, data, what):
+    """data: [(label, result file)] for column-major thin shapes; the first entry is Accelerate."""
     fig, axs = plt.subplots(2, 2, figsize=(11, 7.6), sharey='row')
-    data = [('Accelerate', load('accel_thin_col')), ('MTGEMM-A', load('mt_thin_col')), ('Eigen', load('eigen_thin_col')),
-            ('LIBXSMM', load('libxsmm_thin_col'))]
+    data = [(label, load(f)) for label, f in data]
     for col, which in ((0, 'M'), (1, 'N')):
         ax = axs[0][col]
         s = []
@@ -139,14 +143,15 @@ def thin_chart(t, suffix):
                 s.append((label, {m: v for (m, n, k), v in d.items() if n == 4096 and k == 4096 and m <= 64}))
             else:
                 s.append((label, {n: v for (m, n, k), v in d.items() if m == 4096 and k == 4096 and n <= 64}))
-        lines(ax, t, s, which, [1, 2, 4, 8, 16, 32, 64], 1250)
+        top = max(max(v.values()) for _, v in s)
+        lines(ax, t, s, which, [1, 2, 4, 8, 16, 32, 64], 250 * math.ceil(top * 1.1 / 250))
         other = 'N = K = 4096' if which == 'M' else 'M = K = 4096'
-        ax.set_title('Thin: %s from 1 to 64, %s, column-major' % (which, other))
+        ax.set_title('Thin: %s from 1 to 64, %s, %s' % (which, other, what))
         ax.legend(loc='upper left', frameon=False, fontsize=9, labelcolor=t['ink2'])
         ratios(axs[1][col], t, s, which, [1, 2, 4, 8, 16, 32, 64])
-        axs[1][col].set_title('Speedup over Accelerate (log scale)')
+        axs[1][col].set_title('Speedup over Accelerate (log scale), column-major')
     fig.tight_layout(w_pad=6, h_pad=2)
-    fig.savefig(os.path.join(OUT, 'thin%s.svg' % suffix))
+    fig.savefig(os.path.join(OUT, '%s%s.svg' % (fname, suffix)))
     plt.close(fig)
 
 def heat(ax, t, num, den, title):
@@ -179,14 +184,14 @@ def heat(ax, t, num, den, title):
     ax.tick_params(length=0)
     return im
 
-def grid_chart(t, suffix, name, lib, label, orders):
+def grid_chart(t, suffix, name, lib, label, orders, folder, what):
     panels = [(o, k) for o in orders for k in (512, 4096)]
     rows = (len(panels) + 1) // 2
     fig, axs = plt.subplots(rows, 2, figsize=(10, 4.9 * rows + 0.6), squeeze=False)
     for p, (o, k) in enumerate(panels):
         ax = axs[p // 2][p % 2]
-        im = heat(ax, t, load('%s_grid%d_%s' % (lib, k, o)), load('accel_grid%d_%s' % (k, o)),
-                  '%s / Accelerate, K = %d, %s' % (label, k, 'column-major' if o == 'col' else 'row-major'))
+        im = heat(ax, t, load('%s/%s_grid%d_%s' % (folder, lib, k, o)), load('%s/accel_grid%d_%s' % (folder, k, o)),
+                  '%s / Accelerate, K = %d, %s, %s' % (label, k, 'column-major' if o == 'col' else 'row-major', what))
     fig.subplots_adjust(hspace=0.32, wspace=0.28)
     cb = fig.colorbar(im, ax=axs.ravel().tolist(), orientation='horizontal', fraction=0.035 / rows, pad=0.09 / rows,
                       aspect=40)
@@ -197,13 +202,33 @@ def grid_chart(t, suffix, name, lib, label, orders):
     fig.savefig(os.path.join(OUT, '%s%s.svg' % (name, suffix)), bbox_inches='tight')
     plt.close(fig)
 
+def have(*names):
+    return all(os.path.exists(os.path.join(RES, n + '.txt')) for n in names)
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
+    one = 'one thread'
+    reg = 'default threading'
     for suffix, t in THEMES.items():
         setup(t)
-        squares_chart(t, suffix)
-        thin_chart(t, suffix)
-        if os.path.exists(os.path.join(R, 'eigen_grid4096_col.txt')):
-            grid_chart(t, suffix, 'grid_mtgemm', 'mt', 'MTGEMM-A', ('col', 'row'))
-            grid_chart(t, suffix, 'grid_eigen', 'eigen', 'Eigen', ('col',))
+        E = 'ext/'
+        squares_chart(t, suffix, 'squares', {
+            'col': [('Accelerate', [E + 'accel_col', E + 'accel_small_col']), ('MTGEMM-A', [E + 'mt_col', E + 'mt_small_col']),
+                    (EIGEN_BR, [E + 'eigenbr_all_col', E + 'eigenbr_small_col']), ('LIBXSMM', [E + 'libxsmm_col', E + 'libxsmm_small_col'])],
+            'row': [('Accelerate', [E + 'accel_row', E + 'accel_small_row']), ('MTGEMM-A', [E + 'mt_row', E + 'mt_small_row']),
+                    (EIGEN_BR, [E + 'eigenbr_all_row', E + 'eigenbr_small_row']), ('KleidiAI', [E + 'kleidiai_row', E + 'kleidiai_small_row'])]}, one)
+        thin_chart(t, suffix, 'thin', [('Accelerate', E + 'accel_thin_col'), ('MTGEMM-A', E + 'mt_thin_col'),
+                                       (EIGEN_BR, E + 'eigenbr_thin_col'), ('LIBXSMM', E + 'libxsmm_thin_col')], one)
+        grid_chart(t, suffix, 'grid_mtgemm', 'mt', 'MTGEMM-A', ('col', 'row'), 'ext', one)
+        grid_chart(t, suffix, 'grid_eigen', 'eigenbr', EIGEN_BR, ('col', 'row'), 'ext', one)
+        G = 'regular/'
+        if have(G + 'eigen_grid4096_row'):
+            spec = {o: [('Accelerate', [G + 'accel_all_' + o, G + 'accel_small_' + o]), ('MTGEMM-A', [G + 'mt_all_' + o, G + 'mt_small_' + o]),
+                        (EIGEN_BR, [G + 'eigenbr_all_' + o, G + 'eigenbr_small_' + o]), (EIGEN_MASTER, [G + 'eigen_all_' + o, G + 'eigen_small_' + o])]
+                    for o in ('col', 'row')}
+            squares_chart(t, suffix, 'squares_regular', spec, reg)
+            thin_chart(t, suffix, 'thin_regular', [('Accelerate', G + 'accel_thin_col'), ('MTGEMM-A', G + 'mt_thin_col'),
+                                                   (EIGEN_BR, G + 'eigenbr_thin_col'), (EIGEN_MASTER, G + 'eigen_thin_col')], reg)
+            grid_chart(t, suffix, 'grid_mtgemm_regular', 'mt', 'MTGEMM-A', ('col', 'row'), 'regular', reg)
+            grid_chart(t, suffix, 'grid_eigen_regular', 'eigenbr', EIGEN_BR, ('col', 'row'), 'regular', reg)
     print('wrote', sorted(os.listdir(OUT)))

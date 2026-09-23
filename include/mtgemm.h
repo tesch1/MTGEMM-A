@@ -15,7 +15,7 @@ struct mt_options {
   int cdirect = 2;  // C tiles: 0 = x4 ld/st + one MOVA per slice (paper), 1 = ld1w/st1w ZA slices, 2 = 4-row MOVA vg4
   int pack4 = 1;    // A transposition in 4-row groups with MOVA vg4 (0: paper, one row and four MOVAs)
   int prefetch = 7;  // core prfm into L2, bit mask: 1 = A rows being transposed, 2 = B strips, 4 = next C tile
-  int threads = 1;  // 1, 2 (one thread per performance-cluster SME unit), or 0: 2 from 2^29 flops up, else 1
+  int threads = 1;  // 1, 2 (one thread per performance-cluster SME unit), or 0: 2 from 2^22 multiply-adds, else 1
   int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
   int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels, 4 skips B packing
 };

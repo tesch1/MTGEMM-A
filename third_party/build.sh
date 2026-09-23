@@ -10,7 +10,7 @@ EIGEN_URL=https://gitlab.com/libeigen/eigen.git
 EIGEN_REV=ec8593a7dbbf45d370b8e4feda5de106706b01bc
 # Eigen with the SME backend work of merge requests !3164 and follow-ups (branch sme-phase4 on the fork).
 EIGEN_BRANCH_URL=https://gitlab.com/tesch1/eigen.git
-EIGEN_BRANCH_REV=1f0940ae63bbfa125efaf0ef7333fce311a8965d
+EIGEN_BRANCH_REV=420535b7cd3e7a8314ce539a9a2424767a9052a5
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 

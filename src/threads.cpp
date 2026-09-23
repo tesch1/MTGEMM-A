@@ -1,19 +1,25 @@
 // One persistent worker thread; both threads run at QoS user-interactive so they land on P-clusters.
+// The worker spins on an atomic for a short while before it sleeps, so back-to-back calls do not pay a wake-up.
 #include "internal.h"
 #include <pthread.h>
 #include <pthread/qos.h>
+#include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <mutex>
 
 namespace mt {
 namespace {
 
+constexpr auto kSpin = std::chrono::microseconds(200);
+
 struct Worker {
   std::mutex mu;
   std::condition_variable cv;
   void (*fn)(void*) = nullptr;
   void* arg = nullptr;
-  long posted = 0, done = 0;
+  std::atomic<long> posted{0}, done{0};
+  std::atomic<bool> sleeping{false};
   pthread_t th;
 
   Worker() {
@@ -31,21 +37,18 @@ struct Worker {
   void loop() {
     long seen = 0;
     for (;;) {
-      void (*f)(void*);
-      void* a;
-      {
+      const auto t0 = std::chrono::steady_clock::now();
+      while (posted.load(std::memory_order_acquire) == seen && std::chrono::steady_clock::now() - t0 < kSpin) {
+      }
+      if (posted.load(std::memory_order_acquire) == seen) {
         std::unique_lock<std::mutex> g(mu);
-        cv.wait(g, [&] { return posted != seen; });
-        seen = posted;
-        f = fn;
-        a = arg;
+        sleeping.store(true);
+        cv.wait(g, [&] { return posted.load() != seen; });
+        sleeping.store(false);
       }
-      f(a);
-      {
-        std::lock_guard<std::mutex> g(mu);
-        done = seen;
-      }
-      cv.notify_all();
+      seen = posted.load(std::memory_order_acquire);
+      fn(arg);
+      done.store(seen, std::memory_order_release);
     }
   }
 };
@@ -57,17 +60,17 @@ void run_pair(void (*fn)(void*), void* a0, void* a1) {
   static std::mutex call_mu;
   std::lock_guard<std::mutex> cg(call_mu);
   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+  w->fn = fn;
+  w->arg = a1;
   long ticket;
   {
-    std::lock_guard<std::mutex> g(w->mu);
-    w->fn = fn;
-    w->arg = a1;
-    ticket = ++w->posted;
+    std::lock_guard<std::mutex> g(w->mu);  // orders the post against a worker that is about to sleep
+    ticket = w->posted.fetch_add(1, std::memory_order_acq_rel) + 1;
   }
-  w->cv.notify_all();
+  if (w->sleeping.load()) w->cv.notify_one();
   fn(a0);
-  std::unique_lock<std::mutex> g(w->mu);
-  w->cv.wait(g, [&] { return w->done == ticket; });
+  while (w->done.load(std::memory_order_acquire) != ticket) {
+  }
 }
 
 }  // namespace mt
