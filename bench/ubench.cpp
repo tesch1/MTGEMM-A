@@ -80,6 +80,21 @@ __arm_locally_streaming __arm_new("za") void read_rows(const float* p, long rows
       }
 }
 
+// B-panel pattern: 64-column strips walked down all rows; COPY also writes the strip contiguously.
+template <bool COPY, int PF = 0, int CORE = 0>
+__arm_locally_streaming __arm_new("za") void read_strips(const float* p, long rows, long cols, long ld, float* dst) {
+  svbool_t pt = svptrue_b32();
+  svcount_t pn = svptrue_c32();
+  for (long c = 0; c < cols; c += 64)
+    for (long r = 0; r < rows; ++r) {
+      if (PF > 0 && !CORE) { svprfb(pt, p + (r + PF) * ld + c, SV_PLDL2KEEP); svprfb(pt, p + (r + PF) * ld + c + 32, SV_PLDL2KEEP); }
+      if (PF > 0 && CORE) { __builtin_prefetch(p + (r + PF) * ld + c, 0, 2); __builtin_prefetch(p + (r + PF) * ld + c + 32, 0, 2); }
+      svfloat32x4_t v = svld1_x4(pn, p + r * ld + c);
+      if (COPY) svst1(pn, dst + (r & 4095) * 64, v);
+      else svmopa_za32_f32_m(0, pt, pt, svget4(v, 0), svget4(v, 1));
+    }
+}
+
 // Same pattern but the core (non-streaming) touches the next block first: a helper-free prefetch variant.
 static void core_read_rows(const float* p, long rows, long cols, long ld, float* sink) {
   float s = 0;
@@ -125,6 +140,25 @@ static void* body(void*) {
     const double tc = timeit([&] { core_read_rows(buf, rows, cols, ld, &sink); });
     std::printf("16-row blocks, ld=%5ld (%4.0f MB): SME %4.0f GB/s, +prfm 1KB %4.0f, +prfm 4KB %4.0f, core %4.0f GB/s\n", ld,
                 bytes / 1e6, bytes / t0 / 1e9, bytes / t1 / 1e9, bytes / t2 / 1e9, bytes / tc / 1e9);
+  }
+  {
+    float* dst;
+    if (posix_memalign(reinterpret_cast<void**>(&dst), 16384, 4096 * 64 * 4)) return nullptr;
+    for (long ld : {4096L, 4160L, 7168L}) {
+      const long rows = 2048, cols = 4096;
+      const double bytes = double(rows) * cols * 4;
+      const double tr = timeit([&] { read_strips<false>(buf, rows, cols, ld, dst); });
+      const double tc = timeit([&] { read_strips<true>(buf, rows, cols, ld, dst); });
+      std::printf("64-col strips, ld=%5ld (%4.0f MB): read %4.0f GB/s, read+store %4.0f GB/s", ld, bytes / 1e6,
+                  bytes / tr / 1e9, bytes / tc / 1e9);
+      const double p8 = timeit([&] { read_strips<true, 8>(buf, rows, cols, ld, dst); });
+      const double p32 = timeit([&] { read_strips<true, 32>(buf, rows, cols, ld, dst); });
+      const double c8 = timeit([&] { read_strips<true, 8, 1>(buf, rows, cols, ld, dst); });
+      const double c32 = timeit([&] { read_strips<true, 32, 1>(buf, rows, cols, ld, dst); });
+      std::printf(", +svprfb 8 rows %4.0f, 32 rows %4.0f, +core prfm 8 rows %4.0f, 32 rows %4.0f\n", bytes / p8 / 1e9,
+                  bytes / p32 / 1e9, bytes / c8 / 1e9, bytes / c32 / 1e9);
+    }
+    std::free(dst);
   }
   std::free(buf);
   return nullptr;
