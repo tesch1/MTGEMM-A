@@ -34,6 +34,12 @@ def main():
         elif a == '--paper-multi':
             cols.append(('paper MpGEMM 2x', 'paper', paper('multi%smajor' % order, 'MpGEMM')))
             cols.append(('paper Accel 2x', 'paper', paper('multi%smajor' % order, 'Accelerate')))
+        elif a == '--paper-fp64':
+            cols.append(('paper MpGEMM', 'paper', paper('singlerowmajor-fp64', 'MpGEMM-Serial')))
+            cols.append(('paper Accel', 'paper', paper('singlerowmajor-fp64', 'Accelerate-Serial')))
+        elif a == '--paper-fp64-par':
+            cols.append(('paper MpGEMM 2x', 'paper', paper('singlerowmajor-fp64', 'MpGEMM-Parallel')))
+            cols.append(('paper Accel par', 'paper', paper('singlerowmajor-fp64', 'Accelerate-Parallel')))
         elif a == '--eigen':
             e = {}
             for line in open(os.path.join(root, 'bench', 'baseline', 'eigen_accel_paper_shapes_2026-09-22.txt')):
@@ -59,6 +65,7 @@ def main():
     print('| ' + ' | '.join(hdr) + ' |')
     print('|' + '---|' * len(hdr))
     geo = {c[0]: [] for c in cols}
+    sq = {c[0]: [] for c in cols}
     for k, i in keys:
         vals = []
         for label, kind, d in cols:
@@ -74,12 +81,17 @@ def main():
             rv = vals[[c[0] for c in cols].index(ref)]
             row += ['%.2f' % (rv / v) if (v and rv) else '-' for (c, v) in zip(cols, vals) if c[0] != ref]
         print('| ' + ' | '.join(row) + ' |')
-        if i:
-            for c, v in zip(cols, vals):
-                if v:
-                    geo[c[0]].append(v)
+        for c, v in zip(cols, vals):
+            if v:
+                (geo if i else sq)[c[0]].append(v)
+    square = all(len(set(k.split('x'))) == 1 for k, i in keys if not i)
+    for name, gd in (('geomean IDs 1-24', geo), ('geomean squares' if square else 'geomean', sq)):
+        if any(gd.values()):
+            georow(name, gd, cols, ref)
+
+def georow(name, geo, cols, ref):
     g = [math.exp(sum(map(math.log, geo[c[0]])) / len(geo[c[0]])) if geo[c[0]] else None for c in cols]
-    row = ['', 'geomean IDs 1-24'] + ['%.0f' % v if v else '-' for v in g]
+    row = ['', name] + ['%.0f' % v if v else '-' for v in g]
     if ref:
         rv = g[[c[0] for c in cols].index(ref)]
         row += ['%.2f' % (rv / v) if (v and rv) else '-' for (c, v) in zip(cols, g) if c[0] != ref]
