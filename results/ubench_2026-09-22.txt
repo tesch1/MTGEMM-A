@@ -1,0 +1,22 @@
+fmopa fp32 1 tiles: 501 GFLOPS
+fmopa fp32 2 tiles: 1003 GFLOPS
+fmopa fp32 3 tiles: 1506 GFLOPS
+fmopa fp32 4 tiles: 2008 GFLOPS
+fmopa fp64 8 tiles: 502 GFLOPS
+seq read      64 KB: +fmopa x4   257 GB/s  x1   257 GB/s | loads only x4   874 GB/s  x1   391 GB/s
+seq read     256 KB: +fmopa x4   252 GB/s  x1   252 GB/s | loads only x4   976 GB/s  x1   445 GB/s
+seq read    1024 KB: +fmopa x4   251 GB/s  x1   249 GB/s | loads only x4   992 GB/s  x1   465 GB/s
+seq read    4096 KB: +fmopa x4   250 GB/s  x1   249 GB/s | loads only x4   978 GB/s  x1   440 GB/s
+seq read    8192 KB: +fmopa x4   240 GB/s  x1   244 GB/s | loads only x4   831 GB/s  x1   432 GB/s
+seq read   12288 KB: +fmopa x4   207 GB/s  x1   183 GB/s | loads only x4   481 GB/s  x1   348 GB/s
+seq read   16384 KB: +fmopa x4   185 GB/s  x1   140 GB/s | loads only x4   263 GB/s  x1   231 GB/s
+seq read   32768 KB: +fmopa x4   158 GB/s  x1   116 GB/s | loads only x4   161 GB/s  x1   159 GB/s
+seq read  262144 KB: +fmopa x4   130 GB/s  x1   112 GB/s | loads only x4   157 GB/s  x1   157 GB/s
+16-row blocks, ld= 7168 (  59 MB): SME  105 GB/s, +prfm 1KB  146, +prfm 4KB  144, core  121 GB/s
+16-row blocks, ld= 7184 (  59 MB): SME  113 GB/s, +prfm 1KB  155, +prfm 4KB  140, core  132 GB/s
+16-row blocks, ld= 4096 (  34 MB): SME  136 GB/s, +prfm 1KB  194, +prfm 4KB  163, core  160 GB/s
+16-row blocks, ld= 2048 (  17 MB): SME  227 GB/s, +prfm 1KB  230, +prfm 4KB  206, core  235 GB/s
+SME loop, no core store  2004 | core store: far heap  1328, untouched page  1321, same page other line  1317, same line   518, stack local  1325 GFLOPS
+64-col strips, ld= 4096 (  34 MB): read   69 GB/s, read+store   67 GB/s, +svprfb 8 rows   64, 32 rows   61, +core prfm 8 rows   64, 32 rows   61
+64-col strips, ld= 4160 (  34 MB): read  147 GB/s, read+store  114 GB/s, +svprfb 8 rows  114, 32 rows  114, +core prfm 8 rows  114, 32 rows  115
+64-col strips, ld= 7168 (  34 MB): read   69 GB/s, read+store   65 GB/s, +svprfb 8 rows   65, 32 rows   65, +core prfm 8 rows   66, 32 rows   66
