@@ -38,10 +38,27 @@ $(BUILD)/gbench: bench/gbench.cpp $(LIB) $(GB)/build/src/libbenchmark.a
 
 gbench: $(BUILD)/gbench
 
+# LIBXSMM and KleidiAI comparison (third_party/build.sh fetches and builds them; not part of 'all').
+TP := third_party/install
+$(TP)/libxsmm/lib/libxsmm.a $(TP)/kleidiai/lib/libkleidiai.a:
+	./third_party/build.sh
+
+$(BUILD)/bench_ext: bench/bench_ext.cpp $(TP)/libxsmm/lib/libxsmm.a $(TP)/kleidiai/lib/libkleidiai.a | $(BUILD)
+	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -I$(TP)/libxsmm/include/libxsmm -I$(TP)/kleidiai/include $< \
+	  $(TP)/libxsmm/lib/libxsmm.a $(TP)/libxsmm/lib/libxsmmgen.a $(TP)/kleidiai/lib/libkleidiai.a $(ACCEL) -o $@
+
+bench_ext: $(BUILD)/bench_ext
+
+test_ext: $(BUILD)/bench_ext
+	./$(BUILD)/bench_ext all libxsmm check
+	./$(BUILD)/bench_ext irr libxsmm check
+	./$(BUILD)/bench_ext all kleidiai check
+	./$(BUILD)/bench_ext irr kleidiai check
+
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
 
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench
+.PHONY: all test clean gbench bench_ext test_ext
