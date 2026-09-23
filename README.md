@@ -137,8 +137,12 @@ single-register instructions.
 - Main micro-kernel: 16 x 64 for fp32 (1 x 4 tiles of 16 x 16) and 8 x 64 for fp64 (1 x 8 tiles of 8 x 8).
   One A vector and one row of four B vectors give four `FMOPA`s to four different tiles. The loop is
   unrolled by four along K: one x4 load of A gives four K steps (paper Alg. 1).
-- Edge micro-kernel for the N tail: 64 x 16 for fp32 (4 x 1 tiles), 64 x 8 for fp64 (8 x 1 tiles). All tiles
-  stay in use.
+- N tail of at least half a panel (MTGEMM-A only): one half-width kernel with two tile rows, 32 x 32 for fp32
+  (2 x 2 tiles) and 16 x 32 for fp64 (2 x 4 tiles). The edge kernel below loads and stores C one vector per
+  row, and at short depths that cost is not repaid: 96^3 row-major went from 929 to 1340 GFLOPS with this
+  kernel (Accelerate: 1366). None of the paper's 24 workloads has an N tail, so their results do not change.
+- Edge micro-kernel for the rest of the N tail: 64 x 16 for fp32 (4 x 1 tiles), 64 x 8 for fp64 (8 x 1
+  tiles). All tiles stay in use.
 - M tails use fewer tile rows. Rows outside the matrix are zero in the packed panel and are not stored.
 - Option `shape=1` selects a 32 x 32 kernel (2 x 2 tiles), which is the layout of OpenBLAS and KleidiAI,
   for the ablation.
@@ -316,9 +320,9 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-3.3). 
   <img alt="GFLOPS and speedup over Accelerate for square sizes 4 to 4096" src="docs/squares.svg">
 </picture>
 
-- MTGEMM-A is slower than Accelerate for squares below 64^3 (0.16x-0.8x) and at 96^3 (0.7x). From 128^3 up it
-  is level (0.98x) or up to 1.1x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup,
-  packing) dominates.
+- MTGEMM-A is slower than Accelerate for squares below 64^3 (0.16x-0.9x). From 64^3 up it is level or up to
+  1.1x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup, packing)
+  dominates.
 - LIBXSMM is the fastest library from 16^3 to 48^3 (up to 2x Accelerate) and falls to 0.3x-0.6x from 2048^3 up.
 - Eigen master is faster than Accelerate at 12^3-16^3 (1.1x-1.6x), at 0.3x-0.9x from 24^3 to 192^3 (lowest
   in row-major order), and at 0.85x-1.1x from 256^3 up.
@@ -336,13 +340,12 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-3.3). 
   <img alt="Heatmaps of MTGEMM-A speedup over Accelerate over M and N from 4 to 4096 at K 512 and 4096" src="docs/grid_mtgemm.svg">
 </picture>
 
-- K = 4096: MTGEMM-A is faster almost everywhere, up to 2.9x where one side is small. The exceptions are a few
-  cells at 0.7x-0.9x: M = 32 with N <= 16, M = 512 with N <= 32 (column-major), and small M with N = 32 or
-  N = 512 (row-major).
+- K = 4096: MTGEMM-A is faster almost everywhere, up to 3.0x where one side is small. The exceptions are a few
+  cells at 0.8x-0.9x: M = 512 with N <= 32 (column-major) and M <= 32 with N = 512 (row-major).
 - K = 512: MTGEMM-A is at 0.6x-0.9x where one side is small (up to 32) and the other is large (512 and up):
-  column-major with small N, row-major with small M. The row M = 32 (column-major) and the column N = 32
-  (row-major) are also at 0.6x-1.0x. That is the same shape in both orders, because
+  column-major with small N, row-major with small M.
   column-major is solved as the transposed row-major problem. The large-by-large region is at 1.0x-1.5x.
+- The 4 x 4 corner is at 0.5x in both orders: a 4 x 4 result does not repay entering streaming mode.
 
 ### fp32, one thread, row-major (beta = 0)
 
