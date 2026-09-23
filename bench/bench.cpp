@@ -1,5 +1,5 @@
 // Accelerate vs MTGEMM-A on squares, the paper's 24 workloads and its irregular shapes.
-// usage: bench <squares|paper|irr|all|MxNxK> <row|col> <accel|mt> [f64] [beta=x] [online=0 x4=0 heap=0 model=0
+// usage: bench <squares|paper|irr|all|MxNxK> <row|col> <accel|mt> [f64] [paper] [beta=x] [online=0 x4=0 heap=0 model=0
 //        shape=1 cdirect=1 threads=2 mc=.. nc=.. kc=..] [ids=a-b] [ms=50] [trials=5]
 // Row-major runs use beta 0 and column-major runs beta 1, as in the paper (Sec. 5.1.3). Min over trials.
 #include "mtgemm.h"
@@ -112,6 +112,7 @@ static void* body(void*) {
     int v;
     double x;
     if (!std::strcmp(a, "f64")) f64 = true;
+    else if (!std::strcmp(a, "paper")) { o.cdirect = 0; o.pack4 = 0; o.prefetch = 0; }
     else if (std::sscanf(a, "beta=%lf", &x) == 1) beta = x;
     else if (std::sscanf(a, "ms=%lf", &x) == 1) ms = x;
     else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
