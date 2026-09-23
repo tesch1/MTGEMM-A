@@ -1,18 +1,18 @@
-# 2026-09-23 00:01:24 load before: { 2.50 2.13 1.85 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-23 00:27:38 load before: { 1.35 1.48 1.57 } VECLIB_MAXIMUM_THREADS=1
 # thin row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
  0     1  4096  4096     29  err/sqrtK=0.0e+00
- 0     4  4096  4096    117  err/sqrtK=0.0e+00
- 0     8  4096  4096    230  err/sqrtK=0.0e+00
- 0    16  4096  4096    458  err/sqrtK=0.0e+00
- 0    32  4096  4096    740  err/sqrtK=0.0e+00
- 0    64  4096  4096   1057  err/sqrtK=0.0e+00
+ 0     4  4096  4096    114  err/sqrtK=0.0e+00
+ 0     8  4096  4096    227  err/sqrtK=0.0e+00
+ 0    16  4096  4096    452  err/sqrtK=0.0e+00
+ 0    32  4096  4096    723  err/sqrtK=0.0e+00
+ 0    64  4096  4096   1039  err/sqrtK=0.0e+00
  0  4096     1  4096     31  err/sqrtK=2.4e-06
- 0  4096     4  4096    128  err/sqrtK=0.0e+00
- 0  4096     8  4096    256  err/sqrtK=0.0e+00
- 0  4096    16  4096    513  err/sqrtK=0.0e+00
- 0  4096    32  4096    778  err/sqrtK=0.0e+00
- 0  4096    64  4096   1042  err/sqrtK=0.0e+00
- 0     8     8  4096     96  err/sqrtK=0.0e+00
+ 0  4096     4  4096    127  err/sqrtK=0.0e+00
+ 0  4096     8  4096    255  err/sqrtK=0.0e+00
+ 0  4096    16  4096    511  err/sqrtK=0.0e+00
+ 0  4096    32  4096    808  err/sqrtK=0.0e+00
+ 0  4096    64  4096   1050  err/sqrtK=0.0e+00
+ 0     8     8  4096     95  err/sqrtK=0.0e+00
  0    16    16  4096    355  err/sqrtK=0.0e+00
- 0    32    32  4096    705  err/sqrtK=0.0e+00
-# load after: { 2.54 2.14 1.85 }
+ 0    32    32  4096   1131  err/sqrtK=0.0e+00
+# load after: { 1.40 1.49 1.58 }
