@@ -16,7 +16,7 @@ struct mt_options {
   int prefetch = 0;  // core prfm into L2, bit mask: 1 = A rows being transposed, 2 = B strips, 4 = next C tile
   int threads = 1;  // 1, or 2 (one thread per performance-cluster SME unit)
   int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
-  int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels
+  int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels, 4 skips B packing
 };
 
 void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,

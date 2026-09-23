@@ -114,6 +114,29 @@ int main(int argc, char** argv) {
       f += !check<float>(o ? MtColMajor : MtRowMajor, s[0], s[1], s[2], 1.f, 0.f, 0, op);
       f += !check<double>(o ? MtColMajor : MtRowMajor, s[0], s[1], s[2], 1.0, 1.0, 3, op);
     }
+  // Every option combination on shapes with full tiles, tails and several k blocks.
+  const int combos[][3] = {{64, 64, 300}, {96, 160, 257}, {37, 83, 129}};
+  int nc = 0;
+  for (auto& s : combos)
+    for (int bits = 0; bits < 256; ++bits) {
+      mt_options op;
+      op.online = bits & 1;
+      op.x4 = (bits >> 1) & 1;
+      op.shape = (bits >> 2) & 1;
+      op.cdirect = (bits >> 3) & 3;
+      if (op.cdirect == 3) continue;
+      op.pack4 = (bits >> 5) & 1;
+      op.prefetch = (bits >> 6) & 1 ? 7 : 0;
+      op.kc = (bits >> 7) & 1 ? 100 : 0;
+      op.mc = op.kc ? 64 : 0;
+      op.nc = op.kc ? 128 : 0;
+      for (int o = 0; o < 2; ++o) {
+        f += !check<float>(o ? MtColMajor : MtRowMajor, s[0], s[1], s[2], 1.f, 1.f, 1, op);
+        f += !check<double>(o ? MtColMajor : MtRowMajor, s[0], s[1], s[2], -0.5, 0.f, 0, op);
+        nc += 2;
+      }
+    }
+  std::printf("option combinations: %d checks\n", nc);
   f += run<float>(trials);
   f += run<double>(trials / 2);
   std::printf(f ? "FAILED (%d)\n" : "ALL PASSED\n", f);

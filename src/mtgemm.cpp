@@ -206,6 +206,34 @@ MT_INL void rows_out4(T* dst, long ld, uint32_t r) MT_S MT_ZA {
   }
 }
 
+// 32x32 fp32 tiles (P = tile row): four C rows of 32 columns via strided x2 loads, one MOVA vg4 per tile.
+template <int P>
+MT_INL void rows_in4_x2(const float* src, long ld, uint32_t r) MT_S MT_ZA {
+  const float *p1 = src + ld, *p2 = src + 2 * ld, *p3 = src + 3 * ld;
+#define MT_LD2 "ptrue pn8.s\n ld1w {z16.s, z24.s}, pn8/z, [%[a0]]\n ld1w {z17.s, z25.s}, pn8/z, [%[a1]]\n" \
+               "ld1w {z18.s, z26.s}, pn8/z, [%[a2]]\n ld1w {z19.s, z27.s}, pn8/z, [%[a3]]\n"
+#define MT_ARGS : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r) \
+                : "p8", "z16", "z17", "z18", "z19", "z24", "z25", "z26", "z27", "memory"
+  if constexpr (P == 0)
+    asm volatile(MT_LD2 "mova za0h.s[%w[r], 0:3], {z16.s - z19.s}\n mova za1h.s[%w[r], 0:3], {z24.s - z27.s}\n" : MT_ARGS);
+  else
+    asm volatile(MT_LD2 "mova za2h.s[%w[r], 0:3], {z16.s - z19.s}\n mova za3h.s[%w[r], 0:3], {z24.s - z27.s}\n" : MT_ARGS);
+#undef MT_LD2
+}
+template <int P>
+MT_INL void rows_out4_x2(float* dst, long ld, uint32_t r) MT_S MT_ZA {
+  float *p1 = dst + ld, *p2 = dst + 2 * ld, *p3 = dst + 3 * ld;
+#define MT_ST2 "st1w {z16.s, z24.s}, pn8, [%[a0]]\n st1w {z17.s, z25.s}, pn8, [%[a1]]\n" \
+               "st1w {z18.s, z26.s}, pn8, [%[a2]]\n st1w {z19.s, z27.s}, pn8, [%[a3]]\n"
+  const float* src = dst;
+  if constexpr (P == 0)
+    asm volatile("ptrue pn8.s\n mova {z16.s - z19.s}, za0h.s[%w[r], 0:3]\n mova {z24.s - z27.s}, za1h.s[%w[r], 0:3]\n" MT_ST2 : MT_ARGS);
+  else
+    asm volatile("ptrue pn8.s\n mova {z16.s - z19.s}, za2h.s[%w[r], 0:3]\n mova {z24.s - z27.s}, za3h.s[%w[r], 0:3]\n" MT_ST2 : MT_ARGS);
+#undef MT_ST2
+#undef MT_ARGS
+}
+
 // C tile block <-> ZA. Rows r < mrows, columns c < ncols; tile (p,q) holds rows p*VL.., columns q*VL..
 template <class T, int TM, int TN, bool X4, int CIO>
 MT_INL void c_load(T* C, long ldc, int mrows, int ncols, int cmode, T beta) MT_S MT_ZA {
@@ -220,32 +248,43 @@ MT_INL void c_load(T* C, long ldc, int mrows, int ncols, int cmode, T beta) MT_S
   if constexpr (CIO == 2 && TM == 1 && TN == R::NT && X4)
     if (cmode == kLoad && ncols == TN * VL)
       for (; s0 + 4 <= mrows; s0 += 4) rows_in4<T>(C + long(s0) * ldc, ldc, s0);
-  static_for<TM>([&](auto P) MT_LAMBDA {
-    for (int s = P == 0 ? s0 : 0; s < VL && P * VL + s < mrows; ++s) {
-      T* row = C + long(P * VL + s) * ldc;
-      if constexpr (TN % 4 == 0 && !CD) {
-        static_for<TN / 4>([&](auto G) MT_LAMBDA {
-          auto v = load4n<T, X4>(row + G * 4 * VL, clip(ncols - G * 4 * VL, 4 * VL));
-          static_for<4>([&](auto Q) MT_LAMBDA {
-            auto x = svget4(v, Q);
-            if (cmode == kScale) x = R::mul(x, beta);
-            R::template wrh<P * TN + G * 4 + Q>(s, x);
-          });
-        });
-      } else {
-        static_for<TN>([&](auto Q) MT_LAMBDA {
-          const svbool_t pg = R::pw(Q * VL, ncols);
-          if (CD && cmode == kLoad) {
-            R::template ldh<P * TN + Q>(s, pg, row + Q * VL);
-          } else {
-            auto x = svld1(pg, row + Q * VL);
-            if (cmode == kScale) x = R::mul(x, beta);
-            R::template wrh<P * TN + Q>(s, x);
-          }
-        });
-      }
+  if constexpr (CIO == 2 && TM == 2 && TN == 2 && X4 && sizeof(T) == 4)
+    if (cmode == kLoad && ncols == TN * VL && mrows == TM * VL) {
+      for (uint32_t r = 0; r < 16; r += 4) rows_in4_x2<0>(C + long(r) * ldc, ldc, r);
+      for (uint32_t r = 0; r < 16; r += 4) rows_in4_x2<1>(C + long(16 + r) * ldc, ldc, r);
+      return;
     }
-  });
+  auto rows = [&](auto SC) MT_LAMBDA {  // SC: scale by beta; a separate path keeps fmul out of the plain load
+    static_for<TM>([&](auto P) MT_LAMBDA {
+      for (int s = P == 0 ? s0 : 0; s < VL && P * VL + s < mrows; ++s) {
+        T* row = C + long(P * VL + s) * ldc;
+        if constexpr (TN % 4 == 0 && !CD) {
+          static_for<TN / 4>([&](auto G) MT_LAMBDA {
+            auto v = ncols >= (G + 1) * 4 * VL ? load4<T, X4>(row + G * 4 * VL)
+                                               : load4n<T, X4>(row + G * 4 * VL, clip(ncols - G * 4 * VL, 4 * VL));
+            static_for<4>([&](auto Q) MT_LAMBDA {
+              auto x = svget4(v, Q);
+              if constexpr (SC) x = R::mul(x, beta);
+              R::template wrh<P * TN + G * 4 + Q>(s, x);
+            });
+          });
+        } else {
+          static_for<TN>([&](auto Q) MT_LAMBDA {
+            const svbool_t pg = R::pw(Q * VL, ncols);
+            if constexpr (CD && !SC) {
+              R::template ldh<P * TN + Q>(s, pg, row + Q * VL);
+            } else {
+              auto x = svld1(pg, row + Q * VL);
+              if constexpr (SC) x = R::mul(x, beta);
+              R::template wrh<P * TN + Q>(s, x);
+            }
+          });
+        }
+      }
+    });
+  };
+  if (cmode == kScale) rows(std::true_type{});
+  else rows(std::false_type{});
 }
 
 template <class T, int TM, int TN, bool X4, int CIO>
@@ -257,6 +296,12 @@ MT_INL void c_store(T* C, long ldc, int mrows, int ncols) MT_S MT_ZA {
   if constexpr (CIO == 2 && TM == 1 && TN == R::NT && X4)
     if (ncols == TN * VL)
       for (; s0 + 4 <= mrows; s0 += 4) rows_out4<T>(C + long(s0) * ldc, ldc, s0);
+  if constexpr (CIO == 2 && TM == 2 && TN == 2 && X4 && sizeof(T) == 4)
+    if (ncols == TN * VL && mrows == TM * VL) {
+      for (uint32_t r = 0; r < 16; r += 4) rows_out4_x2<0>(C + long(r) * ldc, ldc, r);
+      for (uint32_t r = 0; r < 16; r += 4) rows_out4_x2<1>(C + long(16 + r) * ldc, ldc, r);
+      return;
+    }
   static_for<TM>([&](auto P) MT_LAMBDA {
     for (int s = P == 0 ? s0 : 0; s < VL && P * VL + s < mrows; ++s) {
       T* row = C + long(P * VL + s) * ldc;
@@ -366,11 +411,19 @@ MT_NOINL void kernel(int kb, const T* Ar, long astr, T* Br, const T* Bs, long ld
         bb0 = load4<T, X4>(dst);
         bb1 = TN == 2 ? load4<T, X4>(dst + 4 * VL) : bb0;
       }
-      static_for<TM>([&](auto P) MT_LAMBDA {
-        const V4 a = load4<T, X4>(Ar + P * astr + long(k) * VL);
+      // Up to four A panels at a time, FMOPAs ordered so that consecutive ones hit different tiles.
+      static_for<(TM + 3) / 4>([&](auto H) MT_LAMBDA {
+        constexpr int P0 = H * 4, NP = TM - P0 < 4 ? TM - P0 : 4;
+        const V4 a0 = load4<T, X4>(Ar + P0 * astr + long(k) * VL);
+        const V4 a1 = NP > 1 ? load4<T, X4>(Ar + (P0 + 1) * astr + long(k) * VL) : a0;
+        const V4 a2 = NP > 2 ? load4<T, X4>(Ar + (P0 + 2) * astr + long(k) * VL) : a0;
+        const V4 a3 = NP > 3 ? load4<T, X4>(Ar + (P0 + 3) * astr + long(k) * VL) : a0;
         static_for<4>([&](auto U) MT_LAMBDA {
-          static_for<TN>([&](auto Q) MT_LAMBDA {
-            R::template mopa<P * TN + Q>(pt, svget4(a, U), pick<U * TN + Q>(bb0, bb1));
+          static_for<NP>([&](auto PP) MT_LAMBDA {
+            const V4 a = PP == 0 ? a0 : PP == 1 ? a1 : PP == 2 ? a2 : a3;
+            static_for<TN>([&](auto Q) MT_LAMBDA {
+              R::template mopa<(P0 + PP) * TN + Q>(pt, svget4(a, U), pick<U * TN + Q>(bb0, bb1));
+            });
           });
         });
       });
@@ -515,7 +568,7 @@ __arm_locally_streaming __arm_new("za") void drive(const Job<T>& jb) {
         const int nb = std::min(nc, N - j), nmain = nb / NR * NR;
         const T* Bs = jb.B + long(k) * jb.ldb + j;
         T* Cb = jb.C + long(i) * jb.ldc + j;
-        if (!ON) {
+        if (!ON && !(jb.prof & 4)) {
           for (int jj = 0; jj < nmain; jj += NR) pack_b<T, TNM, X4>(kb, NR, Bs + jj, jb.ldb, jb.Bc + long(jj) * kb, jb.pf & kPfB);
           for (int jj = nmain; jj < nb; jj += VL) pack_b<T, 1, X4>(kb, std::min(VL, nb - jj), Bs + jj, jb.ldb, jb.Bc + long(jj) * kb, jb.pf & kPfB);
         }
