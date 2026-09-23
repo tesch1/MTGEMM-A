@@ -37,7 +37,7 @@
 
 ### fp32 single thread, col-major
 
-| ID | M x N x K | paper MpGEMM | paper Accel | Eigen SME (base) | Accel | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM | MTGEMM-A / paper Accel | MTGEMM-A / Eigen SME (base) | MTGEMM-A / Accel | MTGEMM-A / paper design |
+| ID | M x N x K | paper MpGEMM | paper Accel | Eigen SME (!3164) | Accel | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM | MTGEMM-A / paper Accel | MTGEMM-A / Eigen SME (!3164) | MTGEMM-A / Accel | MTGEMM-A / paper design |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 |  | 512 x 512 x 512 | - | - | - | 1767 | 1693 | 1784 | - | - | - | 1.01 | 1.05 |
 |  | 1000 x 1000 x 1000 | - | - | - | 1739 | 1610 | 1735 | - | - | - | 1.00 | 1.08 |

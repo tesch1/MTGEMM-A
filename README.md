@@ -280,7 +280,7 @@ IDs 13-18 have M = 4096, IDs 19-24 have N = 256. The tables below give the geome
 
 ### fp32, one thread, column-major (beta = 1)
 
-| group | paper: MpGEMM | paper: Accelerate | Accelerate | Eigen SME (base) | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM |
+| group | paper: MpGEMM | paper: Accelerate | Accelerate | Eigen SME (!3164) | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM |
 |---|---|---|---|---|---|---|---|
 | M = 64 (IDs 1-6) | 1018 | 763 | 937 | 529 | 790 | 1105 | 1.09 |
 | M = 128 (7-12) | 1279 | 1037 | 1189 | 813 | 1070 | 1387 | 1.08 |
@@ -289,7 +289,7 @@ IDs 13-18 have M = 4096, IDs 19-24 have N = 256. The tables below give the geome
 | all 24 | 1280 | 1085 | 1190 | 968 | 1136 | **1415** | 1.10 |
 | squares 512-4096 | - | - | 1616 | - | 1576 | 1730 | - |
 
-"Eigen SME (base)" is explained in [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend).
+"Eigen SME (!3164)" is explained in [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend).
 
 The best single-thread result is 1760 GFLOPS (ID 13, row-major). The FMOPA peak of one SME unit is
 2008 GFLOPS (microbenchmark), so this is 88% of peak.
@@ -424,15 +424,16 @@ The blocking, the kernel shape and the x4 loads carry the paper design. The thre
 
 ## What this means for the Eigen SME backend
 
-The column "Eigen SME (base)" in the column-major table is Eigen's SME2 GEMM backend
+The column "Eigen SME (!3164)" in the column-major table is Eigen's SME2 GEMM backend
 (`Eigen/src/Core/arch/SME/`), built with the follow-up merge request
 [!3164](https://gitlab.com/libeigen/eigen/-/merge_requests/3164) (branch `sme-phase2-3`) applied on top of
 [!3160](https://gitlab.com/libeigen/eigen/-/merge_requests/3160). It is the Eigen baseline before any idea from
 this project. It was measured with `bench/baseline/mpshapes.cpp` (column-major `C.noalias() += A * B`, one
 thread, the same timing method). The file `bench/baseline/eigen_accel_paper_shapes_2026-09-22.txt` has three
-numbers per shape: Accelerate, an earlier Eigen build (not used), and this Eigen build.
+numbers per shape: Accelerate, Eigen master with only !3160 merged, and Eigen with the !3164 branch
+(commit 689098839). The tables use the last.
 
-| group (column-major) | Eigen SME (base) | paper design | MTGEMM-A | MTGEMM-A / Eigen |
+| group (column-major) | Eigen SME (!3164) | paper design | MTGEMM-A | MTGEMM-A / Eigen |
 |---|---|---|---|---|
 | M = 64 | 529 | 790 | 1105 | 2.09 |
 | M = 128 | 813 | 1070 | 1387 | 1.71 |

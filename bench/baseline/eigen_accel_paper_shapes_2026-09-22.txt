@@ -1,3 +1,4 @@
+# shape accelerate eigen_master_with_3160 eigen_3164_branch_689098839   (GFLOPS, column-major, 1 thread, min of 5)
 64x2112x7168 918 513 529
 64x24576x1536 1018 562 589
 64x32768x512 885 526 540
