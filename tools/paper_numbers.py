@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# Reads the paper's bar charts (vector PDFs) and writes results/paper_numbers.csv.
+# Reads the bar charts (vector PDFs) of the paper's arXiv source and writes results/paper_numbers.csv.
+# usage: paper_numbers.py [figs dir]   (default refs/mpgemm-paper/figs: arXiv:2512.21473 source, not in the repo)
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from pdfbars import table
-FIG = os.path.join(os.path.dirname(__file__), '..', 'refs', 'mpgemm-paper', 'figs')
+FIG = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), '..', 'refs', 'mpgemm-paper', 'figs')
 series = {
     'singlerowmajor': ['OpenBLAS', 'KleidiAI', 'Accelerate', 'MpGEMM'],
     'singlecolmajor': ['LIBXSMM', 'Accelerate', 'MpGEMM'],
