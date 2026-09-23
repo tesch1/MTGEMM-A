@@ -104,7 +104,7 @@ MT_INL int64_t clip(int64_t n, int64_t hi) __arm_streaming_compatible { return n
 
 enum CMode { kZero = 0, kLoad = 1, kScale = 2 };
 enum Prefetch { kPfA = 1, kPfB = 2, kPfC = 4 };
-constexpr int kPfRowsB = 16;  // B rows ahead for the core prefetch of B strips
+constexpr int kPfRowsB = 8;  // B rows ahead for the core prefetch of B strips
 
 // Core-side prefetch into L2 (prfm pldl2keep) of `bytes` starting at p; the SME unit reads through L2.
 MT_INL void pf_l2(const void* p, int bytes) __arm_streaming_compatible {
