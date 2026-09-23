@@ -101,8 +101,14 @@ static void* body(void*) {
   double beta = row ? 0.0 : 1.0, ms = 50;
   int trials = 5, id_lo = 1, id_hi = 1000;
   mt_options o;
+  std::vector<std::string> opts;  // options may also arrive space-separated in one argument
   for (int i = 4; i < g_argc; ++i) {
-    const char* a = g_argv[i];
+    std::string w, all = g_argv[i];
+    for (char ch : all + " ")
+      if (ch == ' ') { if (!w.empty()) opts.push_back(w); w.clear(); } else w += ch;
+  }
+  for (const std::string& os : opts) {
+    const char* a = os.c_str();
     int v;
     double x;
     if (!std::strcmp(a, "f64")) f64 = true;
@@ -119,6 +125,7 @@ static void* body(void*) {
     else if (std::sscanf(a, "threads=%d", &v) == 1) o.threads = v;
     else if (std::sscanf(a, "prof=%d", &v) == 1) o.prof = v;
     else if (std::sscanf(a, "pack4=%d", &v) == 1) o.pack4 = v;
+    else if (std::sscanf(a, "pf=%d", &v) == 1) o.prefetch = v;
     else if (std::sscanf(a, "mc=%d", &v) == 1) o.mc = v;
     else if (std::sscanf(a, "nc=%d", &v) == 1) o.nc = v;
     else if (std::sscanf(a, "kc=%d", &v) == 1) o.kc = v;
@@ -136,8 +143,8 @@ static void* body(void*) {
   if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) shapes.push_back({0, m, n, k});
   std::printf("# %s %s %s %s beta=%g", set.c_str(), row ? "row" : "col", use_accel ? "accel" : "mt", f64 ? "f64" : "f32", beta);
   if (!use_accel)
-    std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d threads=%d", o.online, o.x4, o.heap, o.model,
-                o.shape, o.cdirect, o.pack4, o.threads);
+    std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d pf=%d threads=%d", o.online, o.x4, o.heap,
+                o.model, o.shape, o.cdirect, o.pack4, o.prefetch, o.threads);
   std::printf("\n");
   if (f64) run<double>(shapes, row, use_accel, beta, o, ms, trials);
   else run<float>(shapes, row, use_accel, beta, o, ms, trials);

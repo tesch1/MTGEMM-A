@@ -64,6 +64,34 @@ __arm_locally_streaming __arm_new("za") void read_seq(const float* p, long bytes
   }
 }
 
+// Loads only (inline asm so that the unused loads stay): 1 KB per iteration as 4 x4 or 16 x1 loads.
+__arm_locally_streaming void load_only_x4(const float* p, long bytes) {
+  for (long off = 0; off < bytes; off += 1024) {
+    const float* q = p + off / 4;
+    asm volatile(
+        "ptrue pn8.s\n"
+        "ld1w {z0.s-z3.s}, pn8/z, [%0]\n"
+        "ld1w {z4.s-z7.s}, pn8/z, [%0, #4, mul vl]\n"
+        "ld1w {z8.s-z11.s}, pn8/z, [%0, #8, mul vl]\n"
+        "ld1w {z12.s-z15.s}, pn8/z, [%0, #12, mul vl]\n" ::"r"(q)
+        : "p8", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15", "memory");
+  }
+}
+__arm_locally_streaming void load_only_x1(const float* p, long bytes) {
+  for (long off = 0; off < bytes; off += 1024) {
+    const float* q = p + off / 4;
+    asm volatile(
+        "ptrue p0.s\n"
+        "ld1w z0.s, p0/z, [%0]\n ld1w z1.s, p0/z, [%0, #1, mul vl]\n ld1w z2.s, p0/z, [%0, #2, mul vl]\n"
+        "ld1w z3.s, p0/z, [%0, #3, mul vl]\n ld1w z4.s, p0/z, [%0, #4, mul vl]\n ld1w z5.s, p0/z, [%0, #5, mul vl]\n"
+        "ld1w z6.s, p0/z, [%0, #6, mul vl]\n ld1w z7.s, p0/z, [%0, #7, mul vl]\n add x16, %0, #512\n"
+        "ld1w z8.s, p0/z, [x16]\n ld1w z9.s, p0/z, [x16, #1, mul vl]\n ld1w z10.s, p0/z, [x16, #2, mul vl]\n"
+        "ld1w z11.s, p0/z, [x16, #3, mul vl]\n ld1w z12.s, p0/z, [x16, #4, mul vl]\n ld1w z13.s, p0/z, [x16, #5, mul vl]\n"
+        "ld1w z14.s, p0/z, [x16, #6, mul vl]\n ld1w z15.s, p0/z, [x16, #7, mul vl]\n" ::"r"(q)
+        : "p0", "x16", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15", "memory");
+  }
+}
+
 // The A-packing access pattern: 16 rows (stride ld floats) x 64 columns per block, blocks along the row.
 template <int PF>
 __arm_locally_streaming __arm_new("za") void read_rows(const float* p, long rows, long cols, long ld) {
@@ -128,7 +156,10 @@ static void* body(void*) {
     const long bytes = kb << 10;
     const double t4 = timeit([&] { read_seq<true>(buf, bytes); });
     const double t1 = timeit([&] { read_seq<false>(buf, bytes); });
-    std::printf("seq read %7ld KB: x4 %5.0f GB/s  x1 %5.0f GB/s\n", kb, bytes / t4 / 1e9, bytes / t1 / 1e9);
+    const double l4 = timeit([&] { load_only_x4(buf, bytes); });
+    const double l1 = timeit([&] { load_only_x1(buf, bytes); });
+    std::printf("seq read %7ld KB: +fmopa x4 %5.0f GB/s  x1 %5.0f GB/s | loads only x4 %5.0f GB/s  x1 %5.0f GB/s\n", kb,
+                bytes / t4 / 1e9, bytes / t1 / 1e9, bytes / l4 / 1e9, bytes / l1 / 1e9);
   }
   for (long ld : {7168L, 7168L + 16, 4096L, 2048L}) {
     const long rows = 2048, cols = std::min(ld, 7168L);

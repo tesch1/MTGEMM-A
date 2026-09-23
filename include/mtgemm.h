@@ -11,8 +11,9 @@ struct mt_options {
   int heap = 1;     // packed buffers on the heap (0: on the stack of the calling thread)
   int model = 1;    // mc/nc/kc from the analytical model (0: fixed kc=mc=256, nc=1024)
   int shape = 0;    // main micro-kernel: 0 = 16x64 (fp64: 8x64), 1 = 32x32 (fp64: 16x32)
-  int cdirect = 0;  // load/store C with ld1w/st1w ZA-slice instructions instead of Z registers + MOVA
+  int cdirect = 0;  // C tiles: 0 = x4 ld/st + one MOVA per slice (paper), 1 = ld1w/st1w ZA slices, 2 = 4-row MOVA vg4
   int pack4 = 0;    // A transposition in 4-row groups with MOVA vg4 (0: paper, one row and four MOVAs)
+  int prefetch = 0;  // core prfm into L2, bit mask: 1 = A rows being transposed, 2 = B strips, 4 = next C tile
   int threads = 1;  // 1, or 2 (one thread per performance-cluster SME unit)
   int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
   int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels

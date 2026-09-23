@@ -84,7 +84,10 @@ static int run(int trials) {
     if (v == 4) op.model = 0;
     if (v == 5) op.shape = 1;
     if (v == 6) op.cdirect = 1;
+    if (v == 0 && t % 4 == 0) op.cdirect = 2;
+    if (v == 5 && t % 2 == 0) op.cdirect = 2;
     if (t % 3 == 0) op.pack4 = 1;
+    if (t % 5 == 0) op.prefetch = 7;
     if (v == 7) op.threads = 2;
     if (v == 8) { op.mc = 16 * rnd(1, 6); op.nc = 64 * rnd(1, 4); op.kc = rnd(1, 150); }
     const bool big = t % 17 == 0;
