@@ -1,7 +1,12 @@
-// Eigen (master, from third_party/) on the same shapes: column-major C += A*B, row-major C = A*B, one thread.
+// Eigen (master or the SME branch, from third_party/) on the same shapes: column-major C += A*B, row-major C = A*B;
+// one thread, or a thread pool of one thread per core when built with EIGEN_GEMM_THREADPOOL.
 // usage: bench_eigen <squares|paper|irr|all|small|thin|MxNxK> <row|col> [ids=a-b] [ms=50] [trials=5] [check]
 #include <Accelerate/Accelerate.h>
 #include <Eigen/Core>
+#ifdef EIGEN_GEMM_THREADPOOL
+#include <Eigen/ThreadPool>
+#include <thread>
+#endif
 #include <pthread.h>
 #include <pthread/qos.h>
 #include <algorithm>
@@ -18,7 +23,10 @@
 #ifndef EIGEN_VECTORIZE_SME
 #error "bench_eigen measures Eigen's SME backend; build with -march=...+sme2"
 #endif
-static const char* kBackend = "eigen";
+#ifndef BENCH_EIGEN_NAME
+#define BENCH_EIGEN_NAME "eigen"
+#endif
+static const char* kBackend = BENCH_EIGEN_NAME;
 static int g_argc;
 static char** g_argv;
 
@@ -51,7 +59,21 @@ static void* body(void*) {
   }
   const std::vector<Shape> shapes = make_shapes(set, id_lo, id_hi);
   const double beta = row ? 0.0 : 1.0;
-  std::printf("# %s %s %s f32 beta=%g threads=%d\n", set.c_str(), row ? "row" : "col", kBackend, beta, Eigen::nbThreads());
+#ifdef EIGEN_GEMM_THREADPOOL
+  // A pool of one thread per core, as an application would create; the SME branch caps products at its unit count.
+  static Eigen::ThreadPool pool(static_cast<int>(std::thread::hardware_concurrency()));
+  Eigen::setGemmThreadPool(&pool);
+  const int threads = static_cast<int>(std::thread::hardware_concurrency());
+#else
+  const int threads = 1;
+#endif
+#ifdef BENCH_EIGEN_HAS_SME_UNITS
+  const int units = Eigen::nbSmeUnits();
+#else
+  const int units = -1;
+#endif
+  std::printf("# %s %s %s f32 beta=%g threads=%d sme_units=%d\n", set.c_str(), row ? "row" : "col", kBackend, beta, threads,
+              units);
   std::mt19937 rng(1);
   std::uniform_real_distribution<float> d(-1, 1);
   int failures = 0;
