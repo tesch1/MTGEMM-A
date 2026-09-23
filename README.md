@@ -455,7 +455,7 @@ By group (from MTGEMM-A; M = 64 / M = 128 / M = 4096 / N = 256):
 | 7 | two SME units give twice the performance | 1.95x-1.96x (fp32 and fp64, both configurations) | reproduced |
 | 8 | two SME units: 1.24x (row) and 1.22x (column) over Accelerate | MTGEMM-A: 1.15x and 1.12x; paper design: 1.01x and 0.89x. Multi-threaded Accelerate here is faster than in the paper (2370 against 2138 row-major); against the paper's MpGEMM numbers MTGEMM-A is 1.03x and 1.06x | partly: the absolute level reproduces, the ratio to today's Accelerate is smaller |
 | 9 | fp64, two units: 1.18x over Accelerate | MTGEMM-A 811 against 676: 1.20x (one thread: 1.29x; paper design one thread: 1.11x) | reproduced |
-| 10 | irregular shapes: MpGEMM stays ahead of the alternatives | MTGEMM-A 1.18x-1.63x over Accelerate at all five sizes, 2.2x-3.6x over LIBXSMM and 2.1x-2.9x over KleidiAI. The paper design is ahead of Accelerate at 80-140 and equal at 170-200 | reproduced by MTGEMM-A |
+| 10 | irregular shapes: MpGEMM stays ahead of the alternatives | MTGEMM-A 1.18x-1.63x over Accelerate at all five sizes, 2.2x-3.5x over LIBXSMM (which runs column-major) and 2.1x-2.9x over KleidiAI. The paper design is ahead of Accelerate at 80-140 and equal at 170-200 | reproduced by MTGEMM-A |
 | 11 | partitioning and packing: 1.62x (against LIBXSMM) | no cache blocking costs 0.58-0.59 (MTGEMM-A) and 0.66-0.70 (paper design): the blocking is worth 1.4x-1.7x | reproduced in size (different baseline) |
 | 12 | x4 loads: 1.17x | 1.07x-1.09x from MTGEMM-A; 1.00x-1.05x from the paper design | smaller than claimed |
 | 13 | first-round online packing gives a limited benefit | 1.01x-1.02x from MTGEMM-A; from the paper design 0.99x (row-major) and 1.03x (column-major) | reproduced (the benefit is small) |
