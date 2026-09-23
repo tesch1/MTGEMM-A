@@ -12,7 +12,8 @@ static const int W[24][3] = {{64, 2112, 7168},   {64, 24576, 1536},  {64, 32768,
                              {4096, 4096, 7168}, {4096, 7168, 2048}, {4096, 256, 4096},  {11008, 256, 4096},
                              {4096, 256, 11008}, {5120, 256, 5120},  {13824, 256, 5120}, {5120, 256, 13824}};
 
-// squares | paper | all (squares + paper) | irr | small (squares 4-384) | thin (M or N from 1 to 64, rest 4096) | MxNxK
+// squares | paper | all (squares + paper) | irr | small (squares 4-384) | thin (M or N from 1 to 64, rest 4096)
+// | gridK (M, N = 4..4096 in powers of two, depth K) | MxNxK
 inline std::vector<Shape> make_shapes(const std::string& set, int id_lo = 1, int id_hi = 1000) {
   std::vector<Shape> v;
   if (set == "squares" || set == "all")
@@ -29,6 +30,10 @@ inline std::vector<Shape> make_shapes(const std::string& set, int id_lo = 1, int
     for (int t : {1, 4, 8, 16, 32, 64}) v.push_back({0, 4096, t, 4096});
     for (int t : {8, 16, 32}) v.push_back({0, t, t, 4096});
   }
+  int kg;
+  if (std::sscanf(set.c_str(), "grid%d", &kg) == 1)  // M, N over powers of two 4-4096 at depth kg
+    for (int m = 4; m <= 4096; m *= 2)
+      for (int n = 4; n <= 4096; n *= 2) v.push_back({0, m, n, kg});
   int m, n, k;
   if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) v.push_back({0, m, n, k});
   return v;

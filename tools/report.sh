@@ -32,8 +32,15 @@ R=results/final
   X=results/ext
   echo "### LIBXSMM (column-major) and KleidiAI (row-major), one session"
   echo
-  python3 tools/table.py col --paper --paper-lib=LIBXSMM "LIBXSMM=$X/libxsmm_col.txt" "Accel=$X/accel_col.txt" "MTGEMM-A*=$X/mt_col.txt"
+  python3 tools/table.py col --paper --paper-lib=LIBXSMM "LIBXSMM=$X/libxsmm_col.txt" "Eigen=$X/eigen_col.txt" "Accel=$X/accel_col.txt" "MTGEMM-A*=$X/mt_col.txt"
   echo
-  python3 tools/table.py row --paper --paper-lib=KleidiAI --paper-lib=OpenBLAS "KleidiAI=$X/kleidiai_row.txt" "Accel=$X/accel_row.txt" "MTGEMM-A*=$X/mt_row.txt"
+  python3 tools/table.py row --paper --paper-lib=KleidiAI --paper-lib=OpenBLAS "KleidiAI=$X/kleidiai_row.txt" "Eigen=$X/eigen_row.txt" "Accel=$X/accel_row.txt" "MTGEMM-A*=$X/mt_row.txt"
+  for o in col row; do
+    if [ $o = col ]; then L="LIBXSMM=$X/libxsmm"; else L="KleidiAI=$X/kleidiai"; fi
+    for set in small thin; do
+      echo; echo "### $set shapes, $o-major, one thread"; echo
+      python3 tools/table.py $o "Accel=$X/accel_${set}_$o.txt" "Eigen=$X/eigen_${set}_$o.txt" "${L}_${set}_$o.txt" "MTGEMM-A*=$X/mt_${set}_$o.txt"
+    done
+  done
 } > $R/tables.md
 echo "wrote $R/tables.md"

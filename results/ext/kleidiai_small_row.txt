@@ -1,0 +1,16 @@
+# 2026-09-23 00:01:08 load before: { 2.55 2.12 1.84 } VECLIB_MAXIMUM_THREADS=1
+# small row kleidiai f32 beta=0
+ 0     4     4     4      1  err/sqrtK=0.0e+00
+ 0     8     8     8      4  err/sqrtK=0.0e+00
+ 0    12    12    12     16  err/sqrtK=0.0e+00
+ 0    16    16    16     58  err/sqrtK=0.0e+00
+ 0    24    24    24    167  err/sqrtK=0.0e+00
+ 0    32    32    32    377  err/sqrtK=0.0e+00
+ 0    48    48    48    427  err/sqrtK=0.0e+00
+ 0    64    64    64    760  err/sqrtK=0.0e+00
+ 0    96    96    96    980  err/sqrtK=0.0e+00
+ 0   128   128   128   1137  err/sqrtK=0.0e+00
+ 0   192   192   192   1329  err/sqrtK=0.0e+00
+ 0   256   256   256   1453  err/sqrtK=0.0e+00
+ 0   384   384   384   1606  err/sqrtK=0.0e+00
+# load after: { 2.42 2.10 1.83 }

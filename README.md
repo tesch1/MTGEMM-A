@@ -36,14 +36,17 @@ Geometric mean GFLOPS over the 24 workloads of the paper (DeepSeek and LLaMA sha
 paper's own numbers. The other columns are measured here. Accelerate runs with one thread for the
 single-thread rows and with its default thread count for the two-thread rows.
 
-| case | paper: MpGEMM | paper: Accelerate | Accelerate | paper design | MTGEMM-A | MTGEMM-A / Accelerate |
-|---|---|---|---|---|---|---|
-| fp32 row-major, 1 thread | 1321 | 1089 | 1128 | 1227 | **1405** | 1.25 |
-| fp32 col-major, 1 thread | 1280 | 1085 | 1190 | 1136 | **1415** | 1.19 |
-| fp32 row-major, 2 SME units | 2646 | 2138 | 2370 | 2398 | **2737** | 1.15 |
-| fp32 col-major, 2 SME units | 2604 | 2142 | 2472 | 2211 | **2767** | 1.12 |
-| fp64 row-major, 1 thread | 379 | 327 | 320 | 355 | **413** | 1.29 |
-| fp64 row-major, 2 SME units | 772 | 653 | 676 | - | **811** | 1.20 |
+| case | paper: MpGEMM | paper: Accelerate | Accelerate | Eigen master | paper design | MTGEMM-A | MTGEMM-A / Accelerate |
+|---|---|---|---|---|---|---|---|
+| fp32 row-major, 1 thread | 1321 | 1089 | 1128 | 940 | 1227 | **1405** | 1.25 |
+| fp32 col-major, 1 thread | 1280 | 1085 | 1190 | 933 | 1136 | **1415** | 1.19 |
+| fp32 row-major, 2 SME units | 2646 | 2138 | 2370 | - | 2398 | **2737** | 1.15 |
+| fp32 col-major, 2 SME units | 2604 | 2142 | 2472 | - | 2211 | **2767** | 1.12 |
+| fp64 row-major, 1 thread | 379 | 327 | 320 | - | 355 | **413** | 1.29 |
+| fp64 row-major, 2 SME units | 772 | 653 | 676 | - | - | **811** | 1.20 |
+
+"Eigen master" is Eigen's SME backend at commit ec8593a (one thread, measured in the session of
+`results/ext/`, where Accelerate measured 1124 row-major and 1196 column-major).
 
 - MTGEMM-A is 3-10% faster than the MpGEMM numbers in the paper, and 12-29% faster than Accelerate on this
   machine.
@@ -57,6 +60,9 @@ single-thread rows and with its default thread count for the two-thread rows.
   (column-major), 1.7x faster than KleidiAI and 3.7x faster than OpenBLAS (row-major). LIBXSMM measures within
   2% of the paper's LIBXSMM numbers, so the paper's baselines hold up. See
   [LIBXSMM, KleidiAI and OpenBLAS](#libxsmm-kleidiai-and-openblas).
+- Across sizes and shapes MTGEMM-A is level with or faster than Accelerate from 128^3 up and on almost every
+  shape with K = 4096. It is slower for squares below 64^3, for matrix-vector shapes (M or N = 1), and for one
+  small and one large side at K = 512. See [Across sizes and shapes](#across-sizes-and-shapes).
 
 ## Design as built
 
@@ -207,6 +213,8 @@ make            # build/libmtgemm.a, build/test_gemm, build/bench, build/ubench
 make test       # correctness tests
 make gbench     # optional: Google Benchmark cross-check (downloads benchmark v1.9.1 into build/)
 make test_ext   # optional: fetch and build LIBXSMM and KleidiAI, check them against Accelerate
+make test_eigen # optional: fetch Eigen master, check its SME GEMM against Accelerate
+./tools/plots.py  # charts in docs/ from results/ext (a uv script: needs uv, fetches matplotlib)
 ```
 
 `make bench_ext` and `make test_ext` run `third_party/build.sh`. The script clones LIBXSMM and KleidiAI at
@@ -236,7 +244,9 @@ blocking), `shape`, `cdirect`, `pack4`, `pf` (prefetch mask), `threads`, `mc`, `
 MTGEMM-A run also checks one result against Accelerate (`err/sqrtK` column).
 
 ```sh
-# bench_ext <squares|paper|irr|all|MxNxK> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
+# bench_ext <set> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
+# bench_eigen <set> <row|col> [ids=a-b] [ms=50] [trials=5] [check]
+# set: squares, paper, all, irr, small (squares 4-384), thin (M or N 1-64), grid512, grid4096, MxNxK
 VECLIB_MAXIMUM_THREADS=1 ./build/bench_ext all libxsmm          # column-major, C += A*B
 VECLIB_MAXIMUM_THREADS=1 ./build/bench_ext all kleidiai         # row-major, C = A*B
 ```
@@ -265,8 +275,10 @@ load width, strided reads with prefetch, core stores during SME loads).
 | `src/` | library |
 | `tests/test_gemm.cpp` | correctness tests |
 | `bench/bench.cpp`, `bench/gbench.cpp`, `bench/ubench.cpp` | benchmarks |
-| `bench/bench_ext.cpp`, `third_party/build.sh` | LIBXSMM and KleidiAI benchmark, fetch-and-build script |
-| `results/ext/` | LIBXSMM, KleidiAI, Accelerate and MTGEMM-A in one session (2026-09-22, load 2-3) |
+| `bench/bench_ext.cpp`, `bench/bench_eigen.cpp`, `third_party/build.sh` | LIBXSMM, KleidiAI and Eigen benchmarks, fetch-and-build script |
+| `bench/shapes.h` | shape sets shared by all benchmarks |
+| `docs/` | charts (light and dark SVG), drawn by `tools/plots.py` |
+| `results/ext/` | LIBXSMM, KleidiAI, Eigen, Accelerate and MTGEMM-A, all shape sets (2026-09-22/23, load 1.7-3.3) |
 | `bench/baseline/` | Eigen and OpenBLAS baseline programs and their outputs |
 | `results/final/` | final raw results (2026-09-22) and `tables.md` |
 | `results/r1`-`r3` | earlier rounds, kept for the record |
@@ -291,6 +303,46 @@ Full per-shape tables: [`results/final/tables.md`](results/final/tables.md).
 
 The workloads are the 24 shapes of the paper (Table III): IDs 1-6 have M = 64, IDs 7-12 have M = 128,
 IDs 13-18 have M = 4096, IDs 19-24 have N = 256. The tables below give the geometric mean of each group.
+
+### Across sizes and shapes
+
+The paper's 24 workloads are a selection. These charts give the rough picture against Accelerate over a
+wide range of sizes and shapes: square sizes from 4^3 to 4096^3, thin shapes with M or N from 1 to 64, and a
+grid of every M and N from 4 to 4096 (powers of two) at K = 512 and K = 4096. fp32, one thread, minimum of
+five trials, the same harness for every library (`results/ext/`, load 1.7-3.3). `tools/plots.py` draws them.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/squares-dark.svg">
+  <img alt="GFLOPS and speedup over Accelerate for square sizes 4 to 4096" src="docs/squares.svg">
+</picture>
+
+- MTGEMM-A is slower than Accelerate for squares below 64^3 (0.16x-0.8x) and at 96^3 (0.7x). From 128^3 up it
+  is level (0.98x) or up to 1.1x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup,
+  packing) dominates.
+- LIBXSMM is the fastest library from 16^3 to 48^3 (up to 2x Accelerate) and falls to 0.3x-0.6x from 2048^3 up.
+- Eigen master is faster than Accelerate at 12^3-16^3 (1.1x-1.6x), at 0.3x-0.9x from 24^3 to 192^3 (lowest
+  in row-major order), and at 0.85x-1.1x from 256^3 up.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/thin-dark.svg">
+  <img alt="GFLOPS and speedup over Accelerate for thin shapes with M or N from 1 to 64" src="docs/thin.svg">
+</picture>
+
+- With one side from 4 to 32 and the other two at 4096, MTGEMM-A is 1.2x-2.4x faster than Accelerate. With one
+  side equal to 1 (a matrix-vector product) it is at 0.4x: that case needs a GEMV, not a GEMM kernel.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/grid_mtgemm-dark.svg">
+  <img alt="Heatmaps of MTGEMM-A speedup over Accelerate over M and N from 4 to 4096 at K 512 and 4096" src="docs/grid_mtgemm.svg">
+</picture>
+
+- K = 4096: MTGEMM-A is faster almost everywhere, up to 2.9x where one side is small. The exceptions are a few
+  cells at 0.7x-0.9x: M = 32 with N <= 16, M = 512 with N <= 32 (column-major), and small M with N = 32 or
+  N = 512 (row-major).
+- K = 512: MTGEMM-A is at 0.6x-0.9x where one side is small (up to 32) and the other is large (512 and up):
+  column-major with small N, row-major with small M. The row M = 32 (column-major) and the column N = 32
+  (row-major) are also at 0.6x-1.0x. That is the same shape in both orders, because
+  column-major is solved as the transposed row-major problem. The large-by-large region is at 1.0x-1.5x.
 
 ### fp32, one thread, row-major (beta = 0)
 
@@ -502,6 +554,17 @@ one-thread column-major run from `results/final/`.
 | M = 4096 | 1455 | 1560 | 1604 | 1440 | 1663 | 1.03 | 1.04 | 1.14 |
 | N = 256 | 1238 | 1143 | 1275 | 1365 | 1571 | 1.12 | 1.23 | 1.27 |
 | all 24 | 1190 | 930 | 968 | 1136 | 1415 | 1.04 | 1.46 | 1.19 |
+
+Eigen master (commit ec8593a, the same code as !3160 for the GEMM) on the grid of shapes, against Accelerate:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/grid_eigen-dark.svg">
+  <img alt="Heatmaps of Eigen speedup over Accelerate over M and N from 4 to 4096" src="docs/grid_eigen.svg">
+</picture>
+
+Eigen is below Accelerate on most of the grid. It is furthest behind (0.1x-0.5x) when N is 16 or less: at
+K = 512 for M from 64 up, at K = 4096 for M from 64 to 512. It reaches 0.9x-1.2x only in the large-by-large
+region.
 
 For large M, Eigen is already within 4% of MTGEMM-A and faster than the paper design. The gaps are at small M
 and at N = 256.
