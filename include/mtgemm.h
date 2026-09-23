@@ -1,0 +1,26 @@
+// MTGEMM-A: SME GEMM after Deng et al., "Demystifying ARM SME to Optimize General Matrix Multiplications".
+#pragma once
+#include <cstddef>
+
+enum mt_order { MtRowMajor = 101, MtColMajor = 102 };
+
+// Switches for the ablation study; the defaults are the paper's design.
+struct mt_options {
+  int online = 1;   // first-round online packing of B
+  int x4 = 1;       // four-vector ld1/st1 in packing and micro-kernel (0: one vector per instruction)
+  int heap = 1;     // packed buffers on the heap (0: on the stack of the calling thread)
+  int model = 1;    // mc/nc/kc from the analytical model (0: fixed kc=mc=256, nc=1024)
+  int shape = 0;    // main micro-kernel: 0 = 16x64 (fp64: 8x64), 1 = 32x32 (fp64: 16x32)
+  int cdirect = 0;  // load/store C with ld1w/st1w ZA-slice instructions instead of Z registers + MOVA
+  int threads = 1;  // 1, or 2 (one thread per performance-cluster SME unit)
+  int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
+};
+
+void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
+              float beta, float* C, int ldc, const mt_options* opt = nullptr);
+void mt_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A, int lda, const double* B, int ldb,
+              double beta, double* C, int ldc, const mt_options* opt = nullptr);
+
+struct mt_blocking { int mc, nc, kc; };
+// Blocking chosen by the model for a row-major problem (col-major problems are solved as C^T = B^T A^T).
+mt_blocking mt_model_blocking(int M, int N, int K, int elem_size, int mr, int nr);
