@@ -12,8 +12,10 @@ struct mt_options {
   int model = 1;    // mc/nc/kc from the analytical model (0: fixed kc=mc=256, nc=1024)
   int shape = 0;    // main micro-kernel: 0 = 16x64 (fp64: 8x64), 1 = 32x32 (fp64: 16x32)
   int cdirect = 0;  // load/store C with ld1w/st1w ZA-slice instructions instead of Z registers + MOVA
+  int pack4 = 0;    // A transposition in 4-row groups with MOVA vg4 (0: paper, one row and four MOVAs)
   int threads = 1;  // 1, or 2 (one thread per performance-cluster SME unit)
   int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
+  int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels
 };
 
 void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,

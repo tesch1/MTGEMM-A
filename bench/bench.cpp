@@ -117,6 +117,8 @@ static void* body(void*) {
     else if (std::sscanf(a, "shape=%d", &v) == 1) o.shape = v;
     else if (std::sscanf(a, "cdirect=%d", &v) == 1) o.cdirect = v;
     else if (std::sscanf(a, "threads=%d", &v) == 1) o.threads = v;
+    else if (std::sscanf(a, "prof=%d", &v) == 1) o.prof = v;
+    else if (std::sscanf(a, "pack4=%d", &v) == 1) o.pack4 = v;
     else if (std::sscanf(a, "mc=%d", &v) == 1) o.mc = v;
     else if (std::sscanf(a, "nc=%d", &v) == 1) o.nc = v;
     else if (std::sscanf(a, "kc=%d", &v) == 1) o.kc = v;
@@ -134,8 +136,8 @@ static void* body(void*) {
   if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) shapes.push_back({0, m, n, k});
   std::printf("# %s %s %s %s beta=%g", set.c_str(), row ? "row" : "col", use_accel ? "accel" : "mt", f64 ? "f64" : "f32", beta);
   if (!use_accel)
-    std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d threads=%d", o.online, o.x4, o.heap, o.model,
-                o.shape, o.cdirect, o.threads);
+    std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d threads=%d", o.online, o.x4, o.heap, o.model,
+                o.shape, o.cdirect, o.pack4, o.threads);
   std::printf("\n");
   if (f64) run<double>(shapes, row, use_accel, beta, o, ms, trials);
   else run<float>(shapes, row, use_accel, beta, o, ms, trials);

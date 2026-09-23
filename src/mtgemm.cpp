@@ -10,6 +10,7 @@
 #define MT_S __arm_streaming
 #define MT_ZA __arm_inout("za")
 #define MT_INL __attribute__((always_inline)) inline
+#define MT_NOINL __attribute__((noinline))
 
 namespace mt {
 namespace {
@@ -36,6 +37,7 @@ template <> struct Tr<float> {
   template <int t> static MT_INL V rdh(uint32_t s) MT_S MT_ZA { return svread_hor_za32_f32_m(svundef_f32(), svptrue_b32(), t, s); }
   template <int t> static MT_INL void wrh(uint32_t s, V v) MT_S MT_ZA { svwrite_hor_za32_f32_m(t, s, svptrue_b32(), v); }
   template <int t> static MT_INL V4 rdv4(uint32_t s) MT_S MT_ZA { return svread_ver_za32_f32_vg4(t, s); }
+  template <int t> static MT_INL void wrh4(uint32_t s, V4 v) MT_S MT_ZA { svwrite_hor_za32_f32_vg4(t, s, v); }
   template <int t> static MT_INL void ldh(uint32_t s, svbool_t p, const float* q) MT_S MT_ZA { svld1_hor_za32(t, s, p, q); }
   template <int t> static MT_INL void sth(uint32_t s, svbool_t p, float* q) MT_S MT_ZA { svst1_hor_za32(t, s, p, q); }
   static MT_INL V mul(V v, float a) MT_S { return svmul_n_f32_x(svptrue_b32(), v, a); }
@@ -52,6 +54,7 @@ template <> struct Tr<double> {
   template <int t> static MT_INL V rdh(uint32_t s) MT_S MT_ZA { return svread_hor_za64_f64_m(svundef_f64(), svptrue_b64(), t, s); }
   template <int t> static MT_INL void wrh(uint32_t s, V v) MT_S MT_ZA { svwrite_hor_za64_f64_m(t, s, svptrue_b64(), v); }
   template <int t> static MT_INL V4 rdv4(uint32_t s) MT_S MT_ZA { return svread_ver_za64_f64_vg4(t, s); }
+  template <int t> static MT_INL void wrh4(uint32_t s, V4 v) MT_S MT_ZA { svwrite_hor_za64_f64_vg4(t, s, v); }
   template <int t> static MT_INL void ldh(uint32_t s, svbool_t p, const double* q) MT_S MT_ZA { svld1_hor_za64(t, s, p, q); }
   template <int t> static MT_INL void sth(uint32_t s, svbool_t p, double* q) MT_S MT_ZA { svst1_hor_za64(t, s, p, q); }
   static MT_INL V mul(V v, double a) MT_S { return svmul_n_f64_x(svptrue_b64(), v, a); }
@@ -189,7 +192,7 @@ MT_INL void b_row(const T* src, T* dst, int ncols, typename Tr<T>::V4& b0, typen
 // Micro-kernel (paper Alg. 1): TM x TN tiles, Ar = TM packed VL-row panels (stride astr), Br = kb x (TN*VL) panel.
 // ONLINE: B comes from the source matrix and is written to Br as a side effect (first-round online packing).
 template <class T, int TM, int TN, bool X4, bool ONLINE, bool CD>
-MT_INL void kernel(int kb, const T* Ar, long astr, T* Br, const T* Bs, long ldb, int ncols, T* C, long ldc,
+MT_NOINL void kernel(int kb, const T* Ar, long astr, T* Br, const T* Bs, long ldb, int ncols, T* C, long ldc,
                    int mrows, int cmode, T beta) MT_S MT_ZA {
   using R = Tr<T>;
   using V = typename R::V;
@@ -279,10 +282,58 @@ MT_INL void kernel(int kb, const T* Ar, long astr, T* Br, const T* Bs, long ldb,
   c_store<T, TM, TN, X4, CD>(C, ldc, mrows, ncols);
 }
 
+// Four rows x 64 columns into horizontal slices r..r+3 of every tile: strided-register x4 loads put the four
+// rows of one tile into z(4t)..z(4t+3), so one MOVA vg4 per tile suffices (inline asm to pin the registers).
+template <class T>
+MT_INL void transpose_in4(const T* src, long ld, uint32_t r) MT_S MT_ZA {
+  const T* p1 = src + ld;
+  const T* p2 = src + 2 * ld;
+  const T* p3 = src + 3 * ld;
+  if constexpr (sizeof(T) == 4) {
+    asm volatile(
+        "ptrue pn8.s\n"
+        "ld1w {z16.s, z20.s, z24.s, z28.s}, pn8/z, [%[a0]]\n"
+        "ld1w {z17.s, z21.s, z25.s, z29.s}, pn8/z, [%[a1]]\n"
+        "ld1w {z18.s, z22.s, z26.s, z30.s}, pn8/z, [%[a2]]\n"
+        "ld1w {z19.s, z23.s, z27.s, z31.s}, pn8/z, [%[a3]]\n"
+        "mova za0h.s[%w[r], 0:3], {z16.s - z19.s}\n"
+        "mova za1h.s[%w[r], 0:3], {z20.s - z23.s}\n"
+        "mova za2h.s[%w[r], 0:3], {z24.s - z27.s}\n"
+        "mova za3h.s[%w[r], 0:3], {z28.s - z31.s}\n"
+        :
+        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r)
+        : "p8", "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23", "z24", "z25", "z26", "z27", "z28", "z29",
+          "z30", "z31", "memory");
+  } else {
+    asm volatile(
+        "ptrue pn8.d\n"
+        "ld1d {z16.d, z20.d, z24.d, z28.d}, pn8/z, [%[a0]]\n"
+        "ld1d {z17.d, z21.d, z25.d, z29.d}, pn8/z, [%[a1]]\n"
+        "ld1d {z18.d, z22.d, z26.d, z30.d}, pn8/z, [%[a2]]\n"
+        "ld1d {z19.d, z23.d, z27.d, z31.d}, pn8/z, [%[a3]]\n"
+        "mova za0h.d[%w[r], 0:3], {z16.d - z19.d}\n"
+        "mova za1h.d[%w[r], 0:3], {z20.d - z23.d}\n"
+        "mova za2h.d[%w[r], 0:3], {z24.d - z27.d}\n"
+        "mova za3h.d[%w[r], 0:3], {z28.d - z31.d}\n"
+        "ld1d {z16.d, z20.d, z24.d, z28.d}, pn8/z, [%[a0], #4, mul vl]\n"
+        "ld1d {z17.d, z21.d, z25.d, z29.d}, pn8/z, [%[a1], #4, mul vl]\n"
+        "ld1d {z18.d, z22.d, z26.d, z30.d}, pn8/z, [%[a2], #4, mul vl]\n"
+        "ld1d {z19.d, z23.d, z27.d, z31.d}, pn8/z, [%[a3], #4, mul vl]\n"
+        "mova za4h.d[%w[r], 0:3], {z16.d - z19.d}\n"
+        "mova za5h.d[%w[r], 0:3], {z20.d - z23.d}\n"
+        "mova za6h.d[%w[r], 0:3], {z24.d - z27.d}\n"
+        "mova za7h.d[%w[r], 0:3], {z28.d - z31.d}\n"
+        :
+        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r)
+        : "p8", "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23", "z24", "z25", "z26", "z27", "z28", "z29",
+          "z30", "z31", "memory");
+  }
+}
+
 // On-the-fly transposition of A (paper Fig. 6): VL rows x 64 columns go in through horizontal slices of all
 // tiles and leave through vertical slices, giving panels Ac[k*VL + r] of VL rows each.
-template <class T, bool X4, bool SCALE>
-MT_INL void pack_a(int mb, int kb, const T* A, long lda, T alpha, T* Ac) MT_S MT_ZA {
+template <class T, bool X4, bool SCALE, bool PK4>
+MT_NOINL void pack_a(int mb, int kb, const T* A, long lda, T alpha, T* Ac) MT_S MT_ZA {
   using R = Tr<T>;
   constexpr int VL = R::VL, NT = R::NT, CH = NT * VL;
   for (int p0 = 0; p0 < mb; p0 += VL) {
@@ -291,7 +342,10 @@ MT_INL void pack_a(int mb, int kb, const T* A, long lda, T alpha, T* Ac) MT_S MT
     for (int k0 = 0; k0 < kb; k0 += CH) {
       const int kn = std::min(CH, kb - k0);
       if (rows < VL) svzero_za();
-      for (int r = 0; r < rows; ++r) {
+      int r = 0;
+      if (PK4 && !SCALE && kn >= CH)
+        for (; r + 4 <= rows; r += 4) transpose_in4<T>(A + long(p0 + r) * lda + k0, lda, r);
+      for (; r < rows; ++r) {
         const T* src = A + long(p0 + r) * lda + k0;
         static_for<NT / 4>([&](auto G) MT_S MT_ZA {
           auto v = kn >= CH ? load4<T, X4>(src + G * 4 * VL) : load4n<T, X4>(src + G * 4 * VL, clip(kn - G * 4 * VL, 4 * VL));
@@ -345,6 +399,7 @@ struct Job {
   T* C;
   long ldc;
   mt_blocking blk;
+  int prof, pack4;
   T* Ac;
   T* Bc;
 };
@@ -368,8 +423,14 @@ __arm_locally_streaming __arm_new("za") void drive(const Job<T>& jb) {
     for (int k = 0; k < K; k += kc) {
       const int kb = std::min(kc, K - k);
       const T* Ap = jb.A + long(i) * jb.lda + k;
-      if (jb.alpha == T(1)) pack_a<T, X4, false>(mb, kb, Ap, jb.lda, jb.alpha, jb.Ac);
-      else pack_a<T, X4, true>(mb, kb, Ap, jb.lda, jb.alpha, jb.Ac);
+      if (jb.prof & 1) {
+      } else if (jb.alpha != T(1)) {
+        pack_a<T, X4, true, false>(mb, kb, Ap, jb.lda, jb.alpha, jb.Ac);
+      } else if (jb.pack4 && X4) {
+        pack_a<T, X4, false, true>(mb, kb, Ap, jb.lda, jb.alpha, jb.Ac);
+      } else {
+        pack_a<T, X4, false, false>(mb, kb, Ap, jb.lda, jb.alpha, jb.Ac);
+      }
       const int cmode = k > 0 ? kLoad : (jb.beta == T(0) ? kZero : (jb.beta == T(1) ? kLoad : kScale));
       for (int j = 0; j < N; j += nc) {
         const int nb = std::min(nc, N - j), nmain = nb / NR * NR;
@@ -379,6 +440,7 @@ __arm_locally_streaming __arm_new("za") void drive(const Job<T>& jb) {
           for (int jj = 0; jj < nmain; jj += NR) pack_b<T, TNM, X4>(kb, NR, Bs + jj, jb.ldb, jb.Bc + long(jj) * kb);
           for (int jj = nmain; jj < nb; jj += VL) pack_b<T, 1, X4>(kb, std::min(VL, nb - jj), Bs + jj, jb.ldb, jb.Bc + long(jj) * kb);
         }
+        if (jb.prof & 2) continue;
         for (int ii = 0; ii < mb; ii += MR) {
           const int rows = std::min(MR, mb - ii);
           with_tm<TMM>((rows + VL - 1) / VL, [&](auto TM) MT_S MT_ZA {
@@ -463,6 +525,8 @@ void run_job(Job<T>& jb, const mt_options& o) {
   b.nc = round_up(std::max(b.nc, nr), nr);
   b.kc = std::max(b.kc, 1);
   jb.blk = b;
+  jb.prof = o.prof;
+  jb.pack4 = o.pack4;
   const size_t na = size_t(round_up(b.mc, 4 * VL)) * b.kc, nb = size_t(b.nc) * b.kc;
   const size_t bytes = (na + nb) * sizeof(T) + 256;
   char* base;
@@ -500,7 +564,7 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
       for (int j = 0; j < N; ++j) C[long(i) * ldc + j] = beta == T(0) ? T(0) : beta * C[long(i) * ldc + j];
     return;
   }
-  Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, {}, nullptr, nullptr};
+  Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, {}, 0, 0, nullptr, nullptr};
   if (o.threads < 2) return run_job(jb, o);
   constexpr int VL = Tr<T>::VL;
   Half<T> h0{jb, o}, h1{jb, o};

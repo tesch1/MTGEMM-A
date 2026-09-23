@@ -47,9 +47,9 @@ static bool check(mt_order o, int M, int N, int K, T al, T be, int pad, const mt
       const double tol = 4 * eps * (std::fabs(double(al)) * sa * (1 + std::sqrt(double(K))) + std::fabs(double(be) * c0) + 1e-30);
       const double err = std::fabs(double(C[ci(i, j)]) - ref);
       if (!(err <= tol)) {
-        std::printf("FAIL %s %s M=%d N=%d K=%d alpha=%g beta=%g pad=%d opt(on=%d x4=%d heap=%d model=%d shape=%d cd=%d thr=%d) at (%d,%d): %g vs %g\n",
+        std::printf("FAIL %s %s M=%d N=%d K=%d alpha=%g beta=%g pad=%d opt(on=%d x4=%d heap=%d model=%d shape=%d cd=%d pk4=%d thr=%d) at (%d,%d): %g vs %g\n",
                     sizeof(T) == 4 ? "f32" : "f64", row ? "row" : "col", M, N, K, double(al), double(be), pad, op.online,
-                    op.x4, op.heap, op.model, op.shape, op.cdirect, op.threads, i, j, double(C[ci(i, j)]), ref);
+                    op.x4, op.heap, op.model, op.shape, op.cdirect, op.pack4, op.threads, i, j, double(C[ci(i, j)]), ref);
         return false;
       }
       worst = std::max(worst, err / tol);
@@ -84,6 +84,7 @@ static int run(int trials) {
     if (v == 4) op.model = 0;
     if (v == 5) op.shape = 1;
     if (v == 6) op.cdirect = 1;
+    if (t % 3 == 0) op.pack4 = 1;
     if (v == 7) op.threads = 2;
     if (v == 8) { op.mc = 16 * rnd(1, 6); op.nc = 64 * rnd(1, 4); op.kc = rnd(1, 150); }
     const bool big = t % 17 == 0;
