@@ -123,6 +123,21 @@ __arm_locally_streaming __arm_new("za") void read_strips(const float* p, long ro
     }
 }
 
+// Core/SME memory ordering: a kernel-like SME loop (ld1w x4 + 4 FMOPA per 256 B) over a 64 KB buffer while
+// the core stores to `scratch` every iteration (a spill-like store). scratch may be far away, on the same
+// 16 KB page as the data the SME unit reads, or inside the very lines it reads.
+__arm_locally_streaming __arm_new("za") void sme_with_core_stores(const float* p, long n, volatile long* scratch) {
+  for (long i = 0; i < n; ++i) {
+    const float* q = p + ((i * 64) & 2047) + ((i >> 5) & 3) * 4096;  // first 8 KB of four 16 KB pages
+    asm volatile(
+        "ptrue pn8.s\n ptrue p0.s\n ld1w {z0.s-z3.s}, pn8/z, [%0]\n"
+        "fmopa za0.s, p0/m, p0/m, z0.s, z1.s\n fmopa za1.s, p0/m, p0/m, z1.s, z2.s\n"
+        "fmopa za2.s, p0/m, p0/m, z2.s, z3.s\n fmopa za3.s, p0/m, p0/m, z3.s, z0.s\n" ::"r"(q)
+        : "p0", "p8", "z0", "z1", "z2", "z3", "memory");
+    if (scratch) *scratch = i;
+  }
+}
+
 // Same pattern but the core (non-streaming) touches the next block first: a helper-free prefetch variant.
 static void core_read_rows(const float* p, long rows, long cols, long ld, float* sink) {
   float s = 0;
@@ -171,6 +186,24 @@ static void* body(void*) {
     const double tc = timeit([&] { core_read_rows(buf, rows, cols, ld, &sink); });
     std::printf("16-row blocks, ld=%5ld (%4.0f MB): SME %4.0f GB/s, +prfm 1KB %4.0f, +prfm 4KB %4.0f, core %4.0f GB/s\n", ld,
                 bytes / 1e6, bytes / t0 / 1e9, bytes / t1 / 1e9, bytes / t2 / 1e9, bytes / tc / 1e9);
+  }
+  {
+    float* d;
+    if (posix_memalign(reinterpret_cast<void**>(&d), 16384, 1 << 20)) return nullptr;
+    for (int i = 0; i < (1 << 18); ++i) d[i] = 1e-3f;
+    long far_away = 0;
+    const long n = 1 << 22;
+    auto run = [&](volatile long* sc) { return 4 * 512.0 * n / timeit([&] { sme_with_core_stores(d, n, sc); }) / 1e9; };
+    const double g0 = run(nullptr), g1 = run(&far_away);
+    const double g2 = run(reinterpret_cast<volatile long*>(d + 16384 + 2048));  // a page the SME unit never touches
+    const double g3 = run(reinterpret_cast<volatile long*>(d + 2048 + 32));     // same page as SME data, unread line
+    const double g4 = run(reinterpret_cast<volatile long*>(d + 64));             // a line the SME unit reads
+    // stack scratch: a local of this frame
+    volatile long local = 0;
+    const double g5 = run(&local);
+    std::printf("SME loop, no core store %5.0f | core store: far heap %5.0f, untouched page %5.0f, same page other line %5.0f, "
+                "same line %5.0f, stack local %5.0f GFLOPS\n", g0, g1, g2, g3, g4, g5);
+    std::free(d);
   }
   {
     float* dst;
