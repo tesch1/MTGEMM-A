@@ -13,8 +13,8 @@ from matplotlib.colors import LinearSegmentedColormap, LogNorm
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 # Eigen builds are labelled with the first four hex digits of the commit third_party/build.sh pins.
 _pins = open(os.path.join(root, 'third_party', 'build.sh')).read()
-EIGEN_BR = r'Eigen$^{%s}$' % __import__('re').search(r'EIGEN_BRANCH_REV=(\w{4})', _pins).group(1)
-EIGEN_MASTER = r'Eigen$^{%s}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
+EIGEN_BR = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'EIGEN_BRANCH_REV=(\w{4})', _pins).group(1)
+EIGEN_MASTER = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
 RES = os.path.join(root, 'results')
 OUT = os.path.join(root, 'docs')
 
@@ -47,7 +47,7 @@ def merged(*names):
     return d
 
 def setup(t):
-    plt.rcParams.update({'svg.fonttype': 'none', 'font.family': 'sans-serif',
+    plt.rcParams.update({'svg.fonttype': 'none', 'mathtext.fontset': 'custom', 'mathtext.rm': 'sans', 'mathtext.it': 'sans:italic', 'font.family': 'sans-serif',
                          'font.sans-serif': ['Helvetica Neue', 'Helvetica', 'Arial', 'DejaVu Sans'], 'font.size': 10,
                          'text.color': t['ink2'], 'axes.labelcolor': t['muted'], 'xtick.color': t['muted'],
                          'ytick.color': t['muted'], 'axes.edgecolor': t['axis'], 'figure.facecolor': t['surface'],
@@ -193,8 +193,8 @@ def grid_chart(t, suffix, name, lib, label, orders, folder, what):
         im = heat(ax, t, load('%s/%s_grid%d_%s' % (folder, lib, k, o)), load('%s/accel_grid%d_%s' % (folder, k, o)),
                   '%s / Accelerate, K = %d, %s' % (label, k, 'column-major' if o == 'col' else 'row-major'))
     fig.suptitle('%s against Accelerate, %s' % (label, what), color=t['ink'], fontsize=12, fontweight='bold', x=0.08,
-                 ha='left')
-    fig.subplots_adjust(hspace=0.32, wspace=0.28)
+                 y=0.995, ha='left')
+    fig.subplots_adjust(hspace=0.32, wspace=0.28, top=0.95)
     cb = fig.colorbar(im, ax=axs.ravel().tolist(), orientation='horizontal', fraction=0.035 / rows, pad=0.09 / rows,
                       aspect=40)
     cb.ax.minorticks_off()

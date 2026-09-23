@@ -1,0 +1,18 @@
+# 2026-09-23 08:14:25 load before: { 2.92 3.22 3.17 } VECLIB_MAXIMUM_THREADS=1
+# thin row eigen-mt f32 beta=0 threads=12 sme_units=-1
+ 0     1  4096  4096     28  err/sqrtK=2.5e-06
+ 0     4  4096  4096     34  err/sqrtK=3.7e-06
+ 0     8  4096  4096     65  err/sqrtK=3.0e-06
+ 0    16  4096  4096    135  err/sqrtK=3.0e-06
+ 0    32  4096  4096    260  err/sqrtK=3.3e-06
+ 0    64  4096  4096    937  err/sqrtK=3.7e-06
+ 0  4096     1  4096     35  err/sqrtK=8.0e-07
+ 0  4096     4  4096     77  err/sqrtK=2.9e-06
+ 0  4096     8  4096    160  err/sqrtK=3.6e-06
+ 0  4096    16  4096    358  err/sqrtK=3.3e-06
+ 0  4096    32  4096    532  err/sqrtK=4.1e-06
+ 0  4096    64  4096    709  err/sqrtK=3.7e-06
+ 0     8     8  4096     28  err/sqrtK=7.2e-07
+ 0    16    16  4096    110  err/sqrtK=1.8e-06
+ 0    32    32  4096    410  err/sqrtK=1.6e-06
+# load after: { 2.76 3.19 3.16 }
