@@ -26,10 +26,22 @@ $(BUILD)/bench: bench/bench.cpp $(LIB)
 $(BUILD)/ubench: bench/ubench.cpp | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
+# Google Benchmark cross-check (fetched into build/, not part of 'all').
+GB := $(BUILD)/_deps/benchmark
+$(GB)/build/src/libbenchmark.a:
+	git clone -q --depth 1 --branch v1.9.1 https://github.com/google/benchmark $(GB)
+	cmake -S $(GB) -B $(GB)/build -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_TESTING=OFF -DBENCHMARK_ENABLE_GTEST_TESTS=OFF >/dev/null
+	cmake --build $(GB)/build -j4 >/dev/null
+
+$(BUILD)/gbench: bench/gbench.cpp $(LIB) $(GB)/build/src/libbenchmark.a
+	$(CXX) $(CPPFLAGS) -I$(GB)/include $(CXXFLAGS) -DACCELERATE_NEW_LAPACK $< $(LIB) $(GB)/build/src/libbenchmark.a $(ACCEL) -o $@
+
+gbench: $(BUILD)/gbench
+
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
 
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean
+.PHONY: all test clean gbench

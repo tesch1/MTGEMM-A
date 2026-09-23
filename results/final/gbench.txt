@@ -1,0 +1,136 @@
+# 2026-09-22 23:15:07 load before: { 2.23 2.52 2.80 } VECLIB_MAXIMUM_THREADS=1
+Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+This does not affect benchmark measurements, only the metadata output.
+***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+2026-09-22T23:15:08-05:00
+Running ./build/gbench
+Run on (12 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x12)
+Load Average: 2.23, 2.52, 2.80
+------------------------------------------------------------------------------------------------------------------------
+Benchmark                                                              Time             CPU   Iterations UserCounters...
+------------------------------------------------------------------------------------------------------------------------
+gemm/accel_row/4096/4096/4096/min_time:0.050/repeats:5_mean         86.7 ms         86.7 ms            5 GFLOPS=1.58558k/s
+gemm/accel_row/4096/4096/4096/min_time:0.050/repeats:5_median       86.5 ms         86.5 ms            5 GFLOPS=1.58852k/s
+gemm/accel_row/4096/4096/4096/min_time:0.050/repeats:5_stddev      0.328 ms        0.332 ms            5 GFLOPS=6.05892/s
+gemm/accel_row/4096/4096/4096/min_time:0.050/repeats:5_cv           0.38 %          0.38 %             5 GFLOPS=0.38%
+gemm/accel_row/4096/4096/4096/min_time:0.050/repeats:5_max          87.2 ms         87.2 ms            5 GFLOPS=1.59056k/s
+gemm/accel_row/64/2112/7168/min_time:0.050/repeats:5_mean           1.64 ms         1.64 ms            5 GFLOPS=1.17818k/s
+gemm/accel_row/64/2112/7168/min_time:0.050/repeats:5_median         1.64 ms         1.64 ms            5 GFLOPS=1.17869k/s
+gemm/accel_row/64/2112/7168/min_time:0.050/repeats:5_stddev        0.007 ms        0.007 ms            5 GFLOPS=4.67612/s
+gemm/accel_row/64/2112/7168/min_time:0.050/repeats:5_cv             0.40 %          0.40 %             5 GFLOPS=0.40%
+gemm/accel_row/64/2112/7168/min_time:0.050/repeats:5_max            1.66 ms         1.66 ms            5 GFLOPS=1.18324k/s
+gemm/accel_row/128/7168/2048/min_time:0.050/repeats:5_mean          3.85 ms         3.85 ms            5 GFLOPS=975.089/s
+gemm/accel_row/128/7168/2048/min_time:0.050/repeats:5_median        3.85 ms         3.85 ms            5 GFLOPS=975.566/s
+gemm/accel_row/128/7168/2048/min_time:0.050/repeats:5_stddev       0.009 ms        0.009 ms            5 GFLOPS=2.28917/s
+gemm/accel_row/128/7168/2048/min_time:0.050/repeats:5_cv            0.23 %          0.23 %             5 GFLOPS=0.23%
+gemm/accel_row/128/7168/2048/min_time:0.050/repeats:5_max           3.86 ms         3.86 ms            5 GFLOPS=978.161/s
+gemm/accel_row/4096/7168/2048/min_time:0.050/repeats:5_mean         71.3 ms         71.2 ms            5 GFLOPS=1.68862k/s
+gemm/accel_row/4096/7168/2048/min_time:0.050/repeats:5_median       70.8 ms         70.8 ms            5 GFLOPS=1.69891k/s
+gemm/accel_row/4096/7168/2048/min_time:0.050/repeats:5_stddev      0.980 ms        0.974 ms            5 GFLOPS=22.7502/s
+gemm/accel_row/4096/7168/2048/min_time:0.050/repeats:5_cv           1.37 %          1.37 %             5 GFLOPS=1.35%
+gemm/accel_row/4096/7168/2048/min_time:0.050/repeats:5_max          72.9 ms         72.9 ms            5 GFLOPS=1.70578k/s
+gemm/accel_row/4096/256/4096/min_time:0.050/repeats:5_mean          6.05 ms         6.05 ms            5 GFLOPS=1.41998k/s
+gemm/accel_row/4096/256/4096/min_time:0.050/repeats:5_median        6.05 ms         6.05 ms            5 GFLOPS=1.41948k/s
+gemm/accel_row/4096/256/4096/min_time:0.050/repeats:5_stddev       0.040 ms        0.040 ms            5 GFLOPS=9.43194/s
+gemm/accel_row/4096/256/4096/min_time:0.050/repeats:5_cv            0.66 %          0.66 %             5 GFLOPS=0.66%
+gemm/accel_row/4096/256/4096/min_time:0.050/repeats:5_max           6.11 ms         6.11 ms            5 GFLOPS=1.43324k/s
+gemm/accel_row/5120/256/13824/min_time:0.050/repeats:5_mean         25.8 ms         25.8 ms            5 GFLOPS=1.40362k/s
+gemm/accel_row/5120/256/13824/min_time:0.050/repeats:5_median       25.8 ms         25.8 ms            5 GFLOPS=1.40272k/s
+gemm/accel_row/5120/256/13824/min_time:0.050/repeats:5_stddev      0.186 ms        0.179 ms            5 GFLOPS=9.74767/s
+gemm/accel_row/5120/256/13824/min_time:0.050/repeats:5_cv           0.72 %          0.69 %             5 GFLOPS=0.69%
+gemm/accel_row/5120/256/13824/min_time:0.050/repeats:5_max          26.0 ms         26.0 ms            5 GFLOPS=1.41787k/s
+gemm/mt_row/4096/4096/4096/min_time:0.050/repeats:5_mean            81.9 ms         81.9 ms            5 GFLOPS=1.67874k/s
+gemm/mt_row/4096/4096/4096/min_time:0.050/repeats:5_median          81.8 ms         81.8 ms            5 GFLOPS=1.67969k/s
+gemm/mt_row/4096/4096/4096/min_time:0.050/repeats:5_stddev         0.237 ms        0.232 ms            5 GFLOPS=4.74965/s
+gemm/mt_row/4096/4096/4096/min_time:0.050/repeats:5_cv              0.29 %          0.28 %             5 GFLOPS=0.28%
+gemm/mt_row/4096/4096/4096/min_time:0.050/repeats:5_max             82.3 ms         82.3 ms            5 GFLOPS=1.68226k/s
+gemm/mt_row/64/2112/7168/min_time:0.050/repeats:5_mean              1.41 ms         1.41 ms            5 GFLOPS=1.36988k/s
+gemm/mt_row/64/2112/7168/min_time:0.050/repeats:5_median            1.41 ms         1.41 ms            5 GFLOPS=1.37478k/s
+gemm/mt_row/64/2112/7168/min_time:0.050/repeats:5_stddev           0.009 ms        0.009 ms            5 GFLOPS=8.87184/s
+gemm/mt_row/64/2112/7168/min_time:0.050/repeats:5_cv                0.66 %          0.65 %             5 GFLOPS=0.65%
+gemm/mt_row/64/2112/7168/min_time:0.050/repeats:5_max               1.43 ms         1.43 ms            5 GFLOPS=1.37751k/s
+gemm/mt_row/128/7168/2048/min_time:0.050/repeats:5_mean             2.84 ms         2.84 ms            5 GFLOPS=1.32351k/s
+gemm/mt_row/128/7168/2048/min_time:0.050/repeats:5_median           2.84 ms         2.84 ms            5 GFLOPS=1.32381k/s
+gemm/mt_row/128/7168/2048/min_time:0.050/repeats:5_stddev          0.034 ms        0.033 ms            5 GFLOPS=15.3422/s
+gemm/mt_row/128/7168/2048/min_time:0.050/repeats:5_cv               1.18 %          1.17 %             5 GFLOPS=1.16%
+gemm/mt_row/128/7168/2048/min_time:0.050/repeats:5_max              2.90 ms         2.89 ms            5 GFLOPS=1.33632k/s
+gemm/mt_row/4096/7168/2048/min_time:0.050/repeats:5_mean            71.6 ms         71.5 ms            5 GFLOPS=1.68104k/s
+gemm/mt_row/4096/7168/2048/min_time:0.050/repeats:5_median          71.5 ms         71.5 ms            5 GFLOPS=1.68145k/s
+gemm/mt_row/4096/7168/2048/min_time:0.050/repeats:5_stddev         0.176 ms        0.162 ms            5 GFLOPS=3.7927/s
+gemm/mt_row/4096/7168/2048/min_time:0.050/repeats:5_cv              0.25 %          0.23 %             5 GFLOPS=0.23%
+gemm/mt_row/4096/7168/2048/min_time:0.050/repeats:5_max             71.8 ms         71.8 ms            5 GFLOPS=1.68522k/s
+gemm/mt_row/4096/256/4096/min_time:0.050/repeats:5_mean             5.41 ms         5.41 ms            5 GFLOPS=1.58884k/s
+gemm/mt_row/4096/256/4096/min_time:0.050/repeats:5_median           5.41 ms         5.41 ms            5 GFLOPS=1.58695k/s
+gemm/mt_row/4096/256/4096/min_time:0.050/repeats:5_stddev          0.012 ms        0.013 ms            5 GFLOPS=3.68377/s
+gemm/mt_row/4096/256/4096/min_time:0.050/repeats:5_cv               0.23 %          0.23 %             5 GFLOPS=0.23%
+gemm/mt_row/4096/256/4096/min_time:0.050/repeats:5_max              5.42 ms         5.42 ms            5 GFLOPS=1.59427k/s
+gemm/mt_row/5120/256/13824/min_time:0.050/repeats:5_mean            22.9 ms         22.9 ms            5 GFLOPS=1.58512k/s
+gemm/mt_row/5120/256/13824/min_time:0.050/repeats:5_median          22.7 ms         22.7 ms            5 GFLOPS=1.59823k/s
+gemm/mt_row/5120/256/13824/min_time:0.050/repeats:5_stddev         0.424 ms        0.412 ms            5 GFLOPS=28.0437/s
+gemm/mt_row/5120/256/13824/min_time:0.050/repeats:5_cv              1.85 %          1.80 %             5 GFLOPS=1.77%
+gemm/mt_row/5120/256/13824/min_time:0.050/repeats:5_max             23.6 ms         23.6 ms            5 GFLOPS=1.60802k/s
+gemm/accel_col/4096/4096/4096/min_time:0.050/repeats:5_mean         92.0 ms         92.0 ms            5 GFLOPS=1.49358k/s
+gemm/accel_col/4096/4096/4096/min_time:0.050/repeats:5_median       92.0 ms         92.0 ms            5 GFLOPS=1.49445k/s
+gemm/accel_col/4096/4096/4096/min_time:0.050/repeats:5_stddev      0.410 ms        0.405 ms            5 GFLOPS=6.55918/s
+gemm/accel_col/4096/4096/4096/min_time:0.050/repeats:5_cv           0.45 %          0.44 %             5 GFLOPS=0.44%
+gemm/accel_col/4096/4096/4096/min_time:0.050/repeats:5_max          92.7 ms         92.6 ms            5 GFLOPS=1.50121k/s
+gemm/accel_col/64/2112/7168/min_time:0.050/repeats:5_mean           2.12 ms         2.12 ms            5 GFLOPS=913.816/s
+gemm/accel_col/64/2112/7168/min_time:0.050/repeats:5_median         2.12 ms         2.12 ms            5 GFLOPS=912.138/s
+gemm/accel_col/64/2112/7168/min_time:0.050/repeats:5_stddev        0.006 ms        0.006 ms            5 GFLOPS=2.74904/s
+gemm/accel_col/64/2112/7168/min_time:0.050/repeats:5_cv             0.30 %          0.30 %             5 GFLOPS=0.30%
+gemm/accel_col/64/2112/7168/min_time:0.050/repeats:5_max            2.13 ms         2.13 ms            5 GFLOPS=916.846/s
+gemm/accel_col/128/7168/2048/min_time:0.050/repeats:5_mean          3.10 ms         3.10 ms            5 GFLOPS=1.2121k/s
+gemm/accel_col/128/7168/2048/min_time:0.050/repeats:5_median        3.11 ms         3.11 ms            5 GFLOPS=1.21007k/s
+gemm/accel_col/128/7168/2048/min_time:0.050/repeats:5_stddev       0.011 ms        0.010 ms            5 GFLOPS=4.03506/s
+gemm/accel_col/128/7168/2048/min_time:0.050/repeats:5_cv            0.34 %          0.33 %             5 GFLOPS=0.33%
+gemm/accel_col/128/7168/2048/min_time:0.050/repeats:5_max           3.11 ms         3.11 ms            5 GFLOPS=1.21693k/s
+gemm/accel_col/4096/7168/2048/min_time:0.050/repeats:5_mean         78.7 ms         78.7 ms            5 GFLOPS=1.52868k/s
+gemm/accel_col/4096/7168/2048/min_time:0.050/repeats:5_median       78.6 ms         78.6 ms            5 GFLOPS=1.52906k/s
+gemm/accel_col/4096/7168/2048/min_time:0.050/repeats:5_stddev      0.316 ms        0.357 ms            5 GFLOPS=6.96078/s
+gemm/accel_col/4096/7168/2048/min_time:0.050/repeats:5_cv           0.40 %          0.45 %             5 GFLOPS=0.46%
+gemm/accel_col/4096/7168/2048/min_time:0.050/repeats:5_max          79.0 ms         79.0 ms            5 GFLOPS=1.5391k/s
+gemm/accel_col/4096/256/4096/min_time:0.050/repeats:5_mean          7.18 ms         7.18 ms            5 GFLOPS=1.19724k/s
+gemm/accel_col/4096/256/4096/min_time:0.050/repeats:5_median        7.17 ms         7.17 ms            5 GFLOPS=1.19734k/s
+gemm/accel_col/4096/256/4096/min_time:0.050/repeats:5_stddev       0.102 ms        0.100 ms            5 GFLOPS=16.6527/s
+gemm/accel_col/4096/256/4096/min_time:0.050/repeats:5_cv            1.42 %          1.40 %             5 GFLOPS=1.39%
+gemm/accel_col/4096/256/4096/min_time:0.050/repeats:5_max           7.33 ms         7.32 ms            5 GFLOPS=1.21397k/s
+gemm/accel_col/5120/256/13824/min_time:0.050/repeats:5_mean         30.7 ms         30.7 ms            5 GFLOPS=1.18152k/s
+gemm/accel_col/5120/256/13824/min_time:0.050/repeats:5_median       30.7 ms         30.7 ms            5 GFLOPS=1.18015k/s
+gemm/accel_col/5120/256/13824/min_time:0.050/repeats:5_stddev      0.098 ms        0.097 ms            5 GFLOPS=3.74282/s
+gemm/accel_col/5120/256/13824/min_time:0.050/repeats:5_cv           0.32 %          0.32 %             5 GFLOPS=0.32%
+gemm/accel_col/5120/256/13824/min_time:0.050/repeats:5_max          30.8 ms         30.8 ms            5 GFLOPS=1.18654k/s
+gemm/mt_col/4096/4096/4096/min_time:0.050/repeats:5_mean            81.8 ms         81.8 ms            5 GFLOPS=1.68092k/s
+gemm/mt_col/4096/4096/4096/min_time:0.050/repeats:5_median          81.7 ms         81.7 ms            5 GFLOPS=1.68179k/s
+gemm/mt_col/4096/4096/4096/min_time:0.050/repeats:5_stddev         0.236 ms        0.164 ms            5 GFLOPS=3.374/s
+gemm/mt_col/4096/4096/4096/min_time:0.050/repeats:5_cv              0.29 %          0.20 %             5 GFLOPS=0.20%
+gemm/mt_col/4096/4096/4096/min_time:0.050/repeats:5_max             82.2 ms         82.0 ms            5 GFLOPS=1.6835k/s
+gemm/mt_col/64/2112/7168/min_time:0.050/repeats:5_mean              1.74 ms         1.74 ms            5 GFLOPS=1.11386k/s
+gemm/mt_col/64/2112/7168/min_time:0.050/repeats:5_median            1.74 ms         1.73 ms            5 GFLOPS=1.11701k/s
+gemm/mt_col/64/2112/7168/min_time:0.050/repeats:5_stddev           0.011 ms        0.010 ms            5 GFLOPS=6.63451/s
+gemm/mt_col/64/2112/7168/min_time:0.050/repeats:5_cv                0.65 %          0.60 %             5 GFLOPS=0.60%
+gemm/mt_col/64/2112/7168/min_time:0.050/repeats:5_max               1.75 ms         1.75 ms            5 GFLOPS=1.12024k/s
+gemm/mt_col/128/7168/2048/min_time:0.050/repeats:5_mean             2.64 ms         2.64 ms            5 GFLOPS=1.4222k/s
+gemm/mt_col/128/7168/2048/min_time:0.050/repeats:5_median           2.64 ms         2.64 ms            5 GFLOPS=1.42121k/s
+gemm/mt_col/128/7168/2048/min_time:0.050/repeats:5_stddev          0.010 ms        0.009 ms            5 GFLOPS=5.1039/s
+gemm/mt_col/128/7168/2048/min_time:0.050/repeats:5_cv               0.37 %          0.36 %             5 GFLOPS=0.36%
+gemm/mt_col/128/7168/2048/min_time:0.050/repeats:5_max              2.65 ms         2.65 ms            5 GFLOPS=1.42821k/s
+gemm/mt_col/4096/7168/2048/min_time:0.050/repeats:5_mean            73.1 ms         72.9 ms            5 GFLOPS=1.64951k/s
+gemm/mt_col/4096/7168/2048/min_time:0.050/repeats:5_median          72.5 ms         72.5 ms            5 GFLOPS=1.65838k/s
+gemm/mt_col/4096/7168/2048/min_time:0.050/repeats:5_stddev          1.35 ms         1.06 ms            5 GFLOPS=23.6265/s
+gemm/mt_col/4096/7168/2048/min_time:0.050/repeats:5_cv              1.85 %          1.46 %             5 GFLOPS=1.43%
+gemm/mt_col/4096/7168/2048/min_time:0.050/repeats:5_max             75.4 ms         74.8 ms            5 GFLOPS=1.66746k/s
+gemm/mt_col/4096/256/4096/min_time:0.050/repeats:5_mean             5.52 ms         5.52 ms            5 GFLOPS=1.55518k/s
+gemm/mt_col/4096/256/4096/min_time:0.050/repeats:5_median           5.52 ms         5.52 ms            5 GFLOPS=1.55561k/s
+gemm/mt_col/4096/256/4096/min_time:0.050/repeats:5_stddev          0.016 ms        0.016 ms            5 GFLOPS=4.42486/s
+gemm/mt_col/4096/256/4096/min_time:0.050/repeats:5_cv               0.28 %          0.28 %             5 GFLOPS=0.28%
+gemm/mt_col/4096/256/4096/min_time:0.050/repeats:5_max              5.55 ms         5.55 ms            5 GFLOPS=1.55999k/s
+gemm/mt_col/5120/256/13824/min_time:0.050/repeats:5_mean            23.2 ms         23.2 ms            5 GFLOPS=1.56318k/s
+gemm/mt_col/5120/256/13824/min_time:0.050/repeats:5_median          23.2 ms         23.2 ms            5 GFLOPS=1.56467k/s
+gemm/mt_col/5120/256/13824/min_time:0.050/repeats:5_stddev         0.184 ms        0.179 ms            5 GFLOPS=12.028/s
+gemm/mt_col/5120/256/13824/min_time:0.050/repeats:5_cv              0.79 %          0.77 %             5 GFLOPS=0.77%
+gemm/mt_col/5120/256/13824/min_time:0.050/repeats:5_max             23.5 ms         23.4 ms            5 GFLOPS=1.57933k/s
+# load after: { 2.10 2.47 2.78 }
