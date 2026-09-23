@@ -606,8 +606,9 @@ void run_job(Job<T>& jb, const mt_options& o) {
   const int mr = o.shape == 1 ? 2 * VL : VL, nr = o.shape == 1 ? NT / 2 * VL : NT * VL;
   mt_blocking b;
   if (o.mc && o.nc && o.kc) b = {o.mc, o.nc, o.kc};
-  else if (o.model) b = mt_model_blocking(jb.M, jb.N, jb.K, sizeof(T), mr, nr);
-  else b = {256, 1024, 256};
+  else if (o.model == 1) b = mt_model_blocking(jb.M, jb.N, jb.K, sizeof(T), mr, nr);
+  else if (o.model == 0) b = {256, 1024, 256};
+  else b = {jb.M, jb.N, jb.K};  // model == 2: no cache blocking at all
   b.mc = round_up(std::max(b.mc, mr), mr);
   b.nc = round_up(std::max(b.nc, nr), nr);
   b.kc = std::max(b.kc, 1);

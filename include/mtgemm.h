@@ -9,7 +9,7 @@ struct mt_options {
   int online = 1;   // first-round online packing of B
   int x4 = 1;       // four-vector ld1/st1 in packing and micro-kernel (0: one vector per instruction)
   int heap = 1;     // packed buffers on the heap (0: on the stack of the calling thread)
-  int model = 1;    // mc/nc/kc from the analytical model (0: fixed kc=mc=256, nc=1024)
+  int model = 1;    // mc/nc/kc from the analytical model (0: fixed kc=mc=256, nc=1024; 2: no blocking)
   int shape = 0;    // main micro-kernel: 0 = 16x64 (fp64: 8x64), 1 = 32x32 (fp64: 16x32)
   int cdirect = 0;  // C tiles: 0 = x4 ld/st + one MOVA per slice (paper), 1 = ld1w/st1w ZA slices, 2 = 4-row MOVA vg4
   int pack4 = 0;    // A transposition in 4-row groups with MOVA vg4 (0: paper, one row and four MOVAs)
