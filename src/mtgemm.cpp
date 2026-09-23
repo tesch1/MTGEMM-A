@@ -568,9 +568,15 @@ __arm_locally_streaming __arm_new("za") void drive(const Job<T>& jb) {
         const int nb = std::min(nc, N - j), nmain = nb / NR * NR;
         const T* Bs = jb.B + long(k) * jb.ldb + j;
         T* Cb = jb.C + long(i) * jb.ldc + j;
+        // A column tail of at least half a main panel gets a half-width kernel with two tile rows (fp32 32x32):
+        // the edge kernel's one-vector C rows cost too much per call at short depths (96^3: 929 -> 1395 GFLOPS).
+        constexpr bool kMid = TMM == 1 && TNM == NT && TNM >= 2;
+        constexpr int TN2 = kMid ? TNM / 2 : 1, TM2 = kMid ? NT / TN2 : 1, W = TN2 * VL;
+        const int ecol = kMid && nb - nmain >= W ? nmain + W : nmain;
         if (!ON && !(jb.prof & 4)) {
           for (int jj = 0; jj < nmain; jj += NR) pack_b<T, TNM, X4>(kb, NR, Bs + jj, jb.ldb, jb.Bc + long(jj) * kb, jb.pf & kPfB);
-          for (int jj = nmain; jj < nb; jj += VL) pack_b<T, 1, X4>(kb, std::min(VL, nb - jj), Bs + jj, jb.ldb, jb.Bc + long(jj) * kb, jb.pf & kPfB);
+          if (ecol > nmain) pack_b<T, TN2, X4>(kb, W, Bs + nmain, jb.ldb, jb.Bc + long(nmain) * kb, jb.pf & kPfB);
+          for (int jj = ecol; jj < nb; jj += VL) pack_b<T, 1, X4>(kb, std::min(VL, nb - jj), Bs + jj, jb.ldb, jb.Bc + long(jj) * kb, jb.pf & kPfB);
         }
         if (jb.prof & 2) continue;
         for (int ii = 0; ii < mb; ii += MR) {
@@ -591,12 +597,26 @@ __arm_locally_streaming __arm_new("za") void drive(const Job<T>& jb) {
             }
           });
         }
-        if (nmain < nb) {
+        if constexpr (kMid) {
+          if (ecol > nmain)
+            for (int ii = 0; ii < mb; ii += TM2 * VL) {
+              const int rows = std::min(TM2 * VL, mb - ii);
+              with_tm<TM2>((rows + VL - 1) / VL, [&](auto TM) MT_LAMBDA {
+                T* Cp = Cb + long(ii) * jb.ldc + nmain;
+                T* Br = jb.Bc + long(nmain) * kb;
+                if (ON && ii == 0)
+                  kernel<T, TM, TN2, X4, true, CD>(kb, jb.Ac + long(ii) * kb, long(VL) * kb, Br, Bs + nmain, jb.ldb, W, Cp, jb.ldc, rows, cmode, jb.beta, jb.pf & kPfB);
+                else
+                  kernel<T, TM, TN2, X4, false, CD>(kb, jb.Ac + long(ii) * kb, long(VL) * kb, Br, nullptr, 0, W, Cp, jb.ldc, rows, cmode, jb.beta);
+              });
+            }
+        }
+        if (ecol < nb) {
           // Edge micro-kernel (paper: 64x16 for fp32): all tiles stacked along M, one VL-wide column panel.
           for (int ii = 0; ii < mb; ii += NT * VL) {
             const int rows = std::min(NT * VL, mb - ii);
             with_tm<NT>((rows + VL - 1) / VL, [&](auto TM) MT_LAMBDA {
-              for (int jj = nmain; jj < nb; jj += VL) {
+              for (int jj = ecol; jj < nb; jj += VL) {
                 const int cols = std::min(VL, nb - jj);
                 T* Cp = Cb + long(ii) * jb.ldc + jj;
                 T* Br = jb.Bc + long(jj) * kb;
