@@ -294,25 +294,25 @@ IDs 13-18 have M = 4096, IDs 19-24 have N = 256. The tables below give the geome
 
 ### fp32, one thread, row-major (beta = 0)
 
-| group | paper: MpGEMM | paper: Accelerate | Accelerate | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM |
-|---|---|---|---|---|---|---|
-| M = 64 (IDs 1-6) | 991 | 708 | 711 | 914 | 1070 | 1.08 |
-| M = 128 (7-12) | 1258 | 989 | 1008 | 1178 | 1348 | 1.07 |
-| M = 4096 (13-18) | 1576 | 1548 | 1597 | 1506 | 1681 | 1.07 |
-| N = 256 (19-24) | 1551 | 1297 | 1412 | 1396 | 1607 | 1.04 |
-| all 24 | 1321 | 1089 | 1128 | 1227 | **1405** | 1.06 |
-| squares 512-4096 | - | - | 1707 | 1568 | 1753 | - |
+| group | paper: MpGEMM | paper: Accelerate | Accelerate | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM | MTGEMM-A / Accelerate |
+|---|---|---|---|---|---|---|---|
+| M = 64 (IDs 1-6) | 991 | 708 | 711 | 914 | 1070 | 1.08 | 1.50 |
+| M = 128 (7-12) | 1258 | 989 | 1008 | 1178 | 1348 | 1.07 | 1.34 |
+| M = 4096 (13-18) | 1576 | 1548 | 1597 | 1506 | 1681 | 1.07 | 1.05 |
+| N = 256 (19-24) | 1551 | 1297 | 1412 | 1396 | 1607 | 1.04 | 1.14 |
+| all 24 | 1321 | 1089 | 1128 | 1227 | **1405** | 1.06 | 1.25 |
+| squares 512-4096 | - | - | 1707 | 1568 | 1753 | - | 1.03 |
 
 ### fp32, one thread, column-major (beta = 1)
 
-| group | paper: MpGEMM | paper: Accelerate | Accelerate | Eigen SME (!3164) | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM |
-|---|---|---|---|---|---|---|---|
-| M = 64 (IDs 1-6) | 1018 | 763 | 937 | 529 | 790 | 1105 | 1.09 |
-| M = 128 (7-12) | 1279 | 1037 | 1189 | 813 | 1070 | 1387 | 1.08 |
-| M = 4096 (13-18) | 1430 | 1422 | 1455 | 1604 | 1440 | 1663 | 1.16 |
-| N = 256 (19-24) | 1443 | 1231 | 1238 | 1275 | 1365 | 1571 | 1.09 |
-| all 24 | 1280 | 1085 | 1190 | 968 | 1136 | **1415** | 1.10 |
-| squares 512-4096 | - | - | 1616 | - | 1576 | 1730 | - |
+| group | paper: MpGEMM | paper: Accelerate | Accelerate | Eigen SME (!3164) | paper design | MTGEMM-A | MTGEMM-A / paper MpGEMM | MTGEMM-A / Accelerate |
+|---|---|---|---|---|---|---|---|---|
+| M = 64 (IDs 1-6) | 1018 | 763 | 937 | 529 | 790 | 1105 | 1.09 | 1.18 |
+| M = 128 (7-12) | 1279 | 1037 | 1189 | 813 | 1070 | 1387 | 1.08 | 1.17 |
+| M = 4096 (13-18) | 1430 | 1422 | 1455 | 1604 | 1440 | 1663 | 1.16 | 1.14 |
+| N = 256 (19-24) | 1443 | 1231 | 1238 | 1275 | 1365 | 1571 | 1.09 | 1.27 |
+| all 24 | 1280 | 1085 | 1190 | 968 | 1136 | **1415** | 1.10 | 1.19 |
+| squares 512-4096 | - | - | 1616 | - | 1576 | 1730 | - | 1.07 |
 
 "Eigen SME (!3164)" is explained in [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend).
 
@@ -323,18 +323,18 @@ The best single-thread result is 1760 GFLOPS (ID 13, row-major). The FMOPA peak 
 
 Accelerate uses its default thread count here. MTGEMM-A uses two threads, one for each SME unit.
 
-| group | paper: MpGEMM | paper: Accelerate | Accelerate | paper design 2T | MTGEMM-A 2T |
-|---|---|---|---|---|---|
-| row-major, M = 64 | 1994 | 1398 | 1457 | 1783 | 2036 |
-| row-major, M = 128 | 2508 | 1960 | 2127 | 2313 | 2602 |
-| row-major, M = 4096 | 3144 | 3001 | 3303 | 2989 | 3366 |
-| row-major, N = 256 | 3117 | 2543 | 3081 | 2685 | 3146 |
-| row-major, all 24 | 2646 | 2138 | 2370 | 2398 | **2737** |
-| column-major, M = 64 | 2058 | 1507 | 1904 | 1487 | 2131 |
-| column-major, M = 128 | 2586 | 2056 | 2534 | 2090 | 2702 |
-| column-major, M = 4096 | 2915 | 2798 | 3026 | 2850 | 3295 |
-| column-major, N = 256 | 2963 | 2427 | 2558 | 2697 | 3089 |
-| column-major, all 24 | 2604 | 2142 | 2472 | 2211 | **2767** |
+| group | paper: MpGEMM | paper: Accelerate | Accelerate | paper design 2T | MTGEMM-A 2T | MTGEMM-A 2T / Accelerate |
+|---|---|---|---|---|---|---|
+| row-major, M = 64 | 1994 | 1398 | 1457 | 1783 | 2036 | 1.40 |
+| row-major, M = 128 | 2508 | 1960 | 2127 | 2313 | 2602 | 1.22 |
+| row-major, M = 4096 | 3144 | 3001 | 3303 | 2989 | 3366 | 1.02 |
+| row-major, N = 256 | 3117 | 2543 | 3081 | 2685 | 3146 | 1.02 |
+| row-major, all 24 | 2646 | 2138 | 2370 | 2398 | **2737** | 1.15 |
+| column-major, M = 64 | 2058 | 1507 | 1904 | 1487 | 2131 | 1.12 |
+| column-major, M = 128 | 2586 | 2056 | 2534 | 2090 | 2702 | 1.07 |
+| column-major, M = 4096 | 2915 | 2798 | 3026 | 2850 | 3295 | 1.09 |
+| column-major, N = 256 | 2963 | 2427 | 2558 | 2697 | 3089 | 1.21 |
+| column-major, all 24 | 2604 | 2142 | 2472 | 2211 | **2767** | 1.12 |
 
 Two threads give 1.95x (row-major) and 1.96x (column-major) over one thread for both configurations.
 On the square sizes the two-thread mode is not reliable: 512^3 gains nothing, and some runs at 1000^3 and
@@ -342,39 +342,39 @@ On the square sizes the two-thread mode is not reliable: 512^3 gains nothing, an
 
 ### fp64, row-major (beta = 0)
 
-| group | paper: MpGEMM 1T | paper: Accel 1T | Accel 1T | paper design 1T | MTGEMM-A 1T | paper: MpGEMM par. | paper: Accel par. | Accel (all threads) | MTGEMM-A 2T |
-|---|---|---|---|---|---|---|---|---|---|
-| M = 64 | 316 | 247 | 232 | 299 | 380 | 646 | 492 | 486 | 704 |
-| M = 128 | 370 | 313 | 295 | 354 | 422 | 750 | 622 | 622 | 798 |
-| M = 4096 | 425 | 394 | 388 | 402 | 434 | 870 | 788 | 829 | 900 |
-| N = 256 | 417 | 375 | 393 | 374 | 419 | 842 | 753 | 832 | 855 |
-| all 24 | 379 | 327 | 320 | 355 | **413** | 772 | 653 | 676 | **811** |
+| group | paper: MpGEMM 1T | paper: Accel 1T | Accel 1T | paper design 1T | MTGEMM-A 1T | paper: MpGEMM par. | paper: Accel par. | Accel (all threads) | MTGEMM-A 2T | MTGEMM-A 1T / Accel 1T | MTGEMM-A 2T / Accel (all threads) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| M = 64 | 316 | 247 | 232 | 299 | 380 | 646 | 492 | 486 | 704 | 1.64 | 1.45 |
+| M = 128 | 370 | 313 | 295 | 354 | 422 | 750 | 622 | 622 | 798 | 1.43 | 1.28 |
+| M = 4096 | 425 | 394 | 388 | 402 | 434 | 870 | 788 | 829 | 900 | 1.12 | 1.09 |
+| N = 256 | 417 | 375 | 393 | 374 | 419 | 842 | 753 | 832 | 855 | 1.07 | 1.03 |
+| all 24 | 379 | 327 | 320 | 355 | **413** | 772 | 653 | 676 | **811** | 1.29 | 1.20 |
 
 The fp64 FMOPA peak is 502 GFLOPS for one unit, so MTGEMM-A reaches 82% of peak on average.
 
 ### Irregular shapes (fp32, row-major, K = 25600)
 
-| M = N | Accelerate | paper design | MTGEMM-A |
-|---|---|---|---|
-| 80 | 714 | 1021 | 1167 |
-| 110 | 837 | 1017 | 1206 |
-| 140 | 944 | 1049 | 1255 |
-| 170 | 999 | 987 | 1206 |
-| 200 | 1080 | 1041 | 1277 |
+| M = N | Accelerate | paper design | MTGEMM-A | MTGEMM-A / Accelerate |
+|---|---|---|---|---|
+| 80 | 714 | 1021 | 1167 | 1.63 |
+| 110 | 837 | 1017 | 1206 | 1.44 |
+| 140 | 944 | 1049 | 1255 | 1.33 |
+| 170 | 999 | 987 | 1206 | 1.21 |
+| 200 | 1080 | 1041 | 1277 | 1.18 |
 
 ### LIBXSMM, KleidiAI and OpenBLAS
 
 These runs were made in one session at load 2-3, together with a new run of Accelerate and MTGEMM-A
 (`results/ext/`). Geometric mean GFLOPS per group of the paper's workloads, fp32, one thread:
 
-| group | LIBXSMM (col) | Accelerate (col) | MTGEMM-A (col) | KleidiAI (row) | OpenBLAS (row) | Accelerate (row) | MTGEMM-A (row) |
-|---|---|---|---|---|---|---|---|
-| M = 64 (IDs 1-6) | 671 | 935 | 1098 | 605 | 420 | 704 | 1069 |
-| M = 128 (IDs 7-12) | 924 | 1192 | 1376 | 751 | 417 | 1002 | 1347 |
-| M = 4096 (IDs 13-18) | 552 | 1473 | 1680 | 980 | 114 | 1595 | 1695 |
-| N = 256 (IDs 19-24) | 499 | 1245 | 1569 | 1119 | 1044 | 1422 | 1597 |
-| all 24 | 643 | 1196 | 1413 | 840 | 380 | 1124 | 1405 |
-| squares 512-4096 | 1037 | 1633 | 1722 | 1432 | 762 | 1687 | 1749 |
+| group | LIBXSMM (col) | Accelerate (col) | MTGEMM-A (col) | KleidiAI (row) | OpenBLAS (row) | Accelerate (row) | MTGEMM-A (row) | MTGEMM-A / Accelerate (col) | MTGEMM-A / Accelerate (row) |
+|---|---|---|---|---|---|---|---|---|---|
+| M = 64 (IDs 1-6) | 671 | 935 | 1098 | 605 | 420 | 704 | 1069 | 1.17 | 1.52 |
+| M = 128 (IDs 7-12) | 924 | 1192 | 1376 | 751 | 417 | 1002 | 1347 | 1.15 | 1.34 |
+| M = 4096 (IDs 13-18) | 552 | 1473 | 1680 | 980 | 114 | 1595 | 1695 | 1.14 | 1.06 |
+| N = 256 (IDs 19-24) | 499 | 1245 | 1569 | 1119 | 1044 | 1422 | 1597 | 1.26 | 1.12 |
+| all 24 | 643 | 1196 | 1413 | 840 | 380 | 1124 | 1405 | 1.18 | 1.25 |
+| squares 512-4096 | 1037 | 1633 | 1722 | 1432 | 762 | 1687 | 1749 | 1.05 | 1.04 |
 
 The paper's numbers for the same libraries, geometric mean over the 24 workloads: LIBXSMM 657 (col),
 KleidiAI 564 and OpenBLAS 464 (row).
@@ -492,15 +492,16 @@ The column "Eigen SME (!3164)" in the column-major table is Eigen's SME2 GEMM ba
 this project. It was measured with `bench/baseline/mpshapes.cpp` (column-major `C.noalias() += A * B`, one
 thread, the same timing method). The file `bench/baseline/eigen_accel_paper_shapes_2026-09-22.txt` has three
 numbers per shape: Accelerate, Eigen master with only !3160 merged, and Eigen with the !3164 branch
-(commit 689098839). The tables use the last.
+(commit 689098839). The tables use the last, except the table below, which shows both. Accelerate is the
+one-thread column-major run from `results/final/`.
 
-| group (column-major) | Eigen SME (!3164) | paper design | MTGEMM-A | MTGEMM-A / Eigen |
-|---|---|---|---|---|
-| M = 64 | 529 | 790 | 1105 | 2.09 |
-| M = 128 | 813 | 1070 | 1387 | 1.71 |
-| M = 4096 | 1604 | 1440 | 1663 | 1.04 |
-| N = 256 | 1275 | 1365 | 1571 | 1.23 |
-| all 24 | 968 | 1136 | 1415 | 1.46 |
+| group (column-major) | Accelerate | Eigen SME (!3160) | Eigen SME (!3164) | paper design | MTGEMM-A | !3164 / !3160 | MTGEMM-A / Eigen (!3164) | MTGEMM-A / Accelerate |
+|---|---|---|---|---|---|---|---|---|
+| M = 64 | 937 | 518 | 529 | 790 | 1105 | 1.02 | 2.09 | 1.18 |
+| M = 128 | 1189 | 810 | 813 | 1070 | 1387 | 1.00 | 1.71 | 1.17 |
+| M = 4096 | 1455 | 1560 | 1604 | 1440 | 1663 | 1.03 | 1.04 | 1.14 |
+| N = 256 | 1238 | 1143 | 1275 | 1365 | 1571 | 1.12 | 1.23 | 1.27 |
+| all 24 | 1190 | 930 | 968 | 1136 | 1415 | 1.04 | 1.46 | 1.19 |
 
 For large M, Eigen is already within 4% of MTGEMM-A and faster than the paper design. The gaps are at small M
 and at N = 256.
