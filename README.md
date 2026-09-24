@@ -18,7 +18,7 @@ The project has two configurations of one code base:
 
 It also serves as a demonstration platform for Eigen's SME GEMM backend: a design element is measured here first
 and then ported to Eigen (see [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend)).
-Eigen builds are labelled with the first four hex digits of their commit: Eigen<sup>ba12</sup> is the SME branch
+Eigen builds are labelled with the first four hex digits of their commit: Eigen<sup>afc1</sup> is the SME branch
 that carries this work, Eigen<sup>ec85</sup> is Eigen master.
 
 ## Contents
@@ -42,16 +42,16 @@ own thread count, MTGEMM-A in its automatic mode (`threads=0`: two threads, one 
 multiply-adds), Eigen on a thread pool of one thread per core. "One thread" compares the libraries on a single SME
 unit, as the paper does.
 
-| threading | workloads | Accelerate | MTGEMM-A | Eigen<sup>ba12</sup> | Eigen<sup>ec85</sup> | MTGEMM-A / Accelerate | Eigen<sup>ba12</sup> / Accelerate |
+| threading | workloads | Accelerate | MTGEMM-A | Eigen<sup>afc1</sup> | Eigen<sup>ec85</sup> | MTGEMM-A / Accelerate | Eigen<sup>afc1</sup> / Accelerate |
 |---|---|---|---|---|---|---|---|
-| default | paper's 24, column-major | 2363 | **2777** | 2584 | 1044 | 1.18 | 1.09 |
-| default | paper's 24, row-major | 2366 | **2760** | 2517 | 1000 | 1.17 | 1.06 |
-| default | squares 512-4096, column-major | 2878 | **3406** | 3246 | 980 | 1.18 | 1.13 |
-| default | squares 512-4096, row-major | 3193 | **3473** | 3197 | 960 | 1.09 | 1.00 |
-| one thread | paper's 24, column-major | 1196 | **1421** | 1338 | 933 | 1.19 | 1.12 |
-| one thread | paper's 24, row-major | 1124 | **1416** | 1316 | 940 | 1.26 | 1.17 |
-| one thread | squares 512-4096, column-major | 1633 | **1735** | 1700 | 1588 | 1.06 | 1.04 |
-| one thread | squares 512-4096, row-major | 1687 | **1759** | 1687 | 1573 | 1.04 | 1.00 |
+| default | paper's 24, column-major | 2363 | **2777** | 2608 | 1044 | 1.18 | 1.10 |
+| default | paper's 24, row-major | 2366 | **2760** | 2533 | 1000 | 1.17 | 1.07 |
+| default | squares 512-4096, column-major | 2878 | **3406** | 3290 | 980 | 1.18 | 1.14 |
+| default | squares 512-4096, row-major | 3193 | **3473** | 3249 | 960 | 1.09 | 1.02 |
+| one thread | paper's 24, column-major | 1196 | **1421** | 1333 | 933 | 1.19 | 1.11 |
+| one thread | paper's 24, row-major | 1124 | **1416** | 1325 | 940 | 1.26 | 1.18 |
+| one thread | squares 512-4096, column-major | 1633 | **1735** | 1718 | 1588 | 1.06 | 1.05 |
+| one thread | squares 512-4096, row-major | 1687 | **1759** | 1699 | 1573 | 1.04 | 1.01 |
 
 Against the paper's own numbers (its charts), one SME unit and two, fp32 and fp64:
 
@@ -76,9 +76,9 @@ Against the paper's own numbers (its charts), one SME unit and two, fp32 and fp6
   (column-major), 1.7x faster than KleidiAI and 3.7x faster than OpenBLAS (row-major). LIBXSMM measures within
   2% of the paper's LIBXSMM numbers, so the paper's baselines hold up. See
   [LIBXSMM, KleidiAI and OpenBLAS](#libxsmm-kleidiai-and-openblas).
-- Eigen<sup>ba12</sup>, which carries the elements ported from this project, is ahead of Accelerate on the paper's
-  workloads at default threading (1.09x column-major, 1.06x row-major) and on one thread
-  (1.12x, 1.17x). Where Accelerate is still faster, and why, is in
+- Eigen<sup>afc1</sup>, which carries the elements ported from this project, is ahead of Accelerate on the paper's
+  workloads at default threading (1.10x column-major, 1.07x row-major) and on one thread
+  (1.11x, 1.18x). Where Accelerate is still faster, and why, is in
   [Where Accelerate is still faster](#where-accelerate-is-still-faster).
 
 ## Design as built
@@ -341,7 +341,7 @@ of each run. LIBXSMM and KleidiAI have no multi-threaded SME path and appear onl
 
 - MTGEMM-A is 1.2x-2.0x faster than Accelerate from 192^3 to 512^3: it uses both SME units from 2^22
   multiply-adds, Accelerate only from about 512^3. Below 64^3 it is slower (0.17x-0.9x).
-- Eigen<sup>ba12</sup> is at 0.7x-0.9x of Accelerate from 24^3 to 128^3 in column-major order and 1.05x-1.6x from
+- Eigen<sup>afc1</sup> is at 0.7x-0.9x of Accelerate from 24^3 to 128^3 in column-major order and 1.05x-1.6x from
   192^3 up, where it splits a product over both SME units earlier than Accelerate does. Row-major is lower up to
   128^3 (0.4x-0.75x): those runs are `C = A * B`, which Eigen computes by zeroing C first (see
   [Where Accelerate is still faster](#where-accelerate-is-still-faster)).
@@ -358,8 +358,9 @@ of each run. LIBXSMM and KleidiAI have no multi-threaded SME path and appear onl
 </picture>
 
 - MTGEMM-A is slower than Accelerate (below 0.9x) on 10 of 484 grid cells: K = 512 with one side of 32 or less
-  and the other of 512 or more, and the 4 x 4 corner. Eigen<sup>ba12</sup> is slower on 85 of 484, mostly where both
-  sides are 64 or less, and where one side is 16 or less at M or N = 256 or below; its grid is in
+  and the other of 512 or more, and the 4 x 4 corner. Eigen<sup>afc1</sup> is slower on 40 of 484, all but 3 of them at K = 512: 15
+  where both sides are 64 or less, 14 where one side is 16 or less and the other 128-1024, and 11 row-major cells
+  with M = 2048-4096 (0.81x-0.89x); its grid is in
   [Where Accelerate is still faster](#where-accelerate-is-still-faster).
 
 ### Across sizes and shapes, one thread
@@ -378,8 +379,8 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-4). `t
   1.1x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup, packing)
   dominates.
 - LIBXSMM is the fastest library from 16^3 to 48^3 (up to 2x Accelerate) and falls to 0.3x-0.6x from 2048^3 up.
-- Eigen<sup>ba12</sup> is faster than Accelerate at 12^3-16^3 (1.1x-1.5x, its NEON path for small blocks), at
-  0.7x-0.9x from 24^3 to 384^3 in column-major order (0.33x-0.8x row-major), and level from 512^3 up.
+- Eigen<sup>afc1</sup> is faster than Accelerate at 12^3-16^3 (1.04x-1.4x, its NEON path for small blocks), at
+  0.7x-0.93x from 24^3 to 384^3 in column-major order (0.34x-0.91x row-major), and level from 512^3 up.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/thin-dark.svg">
@@ -393,6 +394,11 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-4). `t
   <source media="(prefers-color-scheme: dark)" srcset="docs/grid_mtgemm-dark.svg">
   <img alt="Heatmaps of MTGEMM-A speedup over Accelerate over M and N from 4 to 4096 at K 512 and 4096" src="docs/grid_mtgemm.svg">
 </picture>
+
+- On one thread, MTGEMM-A is slower than Accelerate (below 0.9x) on 44 of 484 grid cells and Eigen<sup>afc1</sup>
+  on 39. Both lose mostly at K = 512; MTGEMM-A where one side is 512 or more and the other 16 or less,
+  Eigen<sup>afc1</sup> where one side is 4-16 and the other 128-512, in row-major order at 4 x 4 to 32 x 64, and in
+  row-major order at M = 64-128 against N of 1024 or more (0.75x-0.87x).
 
 - K = 4096: MTGEMM-A is faster almost everywhere, up to 3.0x where one side is small. The exceptions are a few
   cells at 0.8x-0.9x: M = 512 with N <= 32 (column-major) and M <= 32 with N = 512 (row-major).
@@ -598,37 +604,37 @@ This project serves as a demonstration platform for Eigen's SME GEMM backend (`E
 design element is measured here first, then ported. Two Eigen builds appear in the results, labelled with the
 first four hex digits of their commit:
 
-- **Eigen<sup>ba12</sup>**: the branch [`sme-phase4`](https://gitlab.com/tesch1/eigen/-/tree/sme-phase4) at
-  commit ba12f5f, which is merge request [!3164](https://gitlab.com/libeigen/eigen/-/merge_requests/3164) plus
+- **Eigen<sup>afc1</sup>**: the branch [`sme-phase4`](https://gitlab.com/tesch1/eigen/-/tree/sme-phase4) at
+  commit afc12a1, which is merge request [!3164](https://gitlab.com/libeigen/eigen/-/merge_requests/3164) plus
   the elements ported from this project. It is the Eigen that the comparison is about.
 - **Eigen<sup>ec85</sup>**: Eigen master at commit ec8593a, which contains
   [!3160](https://gitlab.com/libeigen/eigen/-/merge_requests/3160) but not !3164.
 
 `third_party/build.sh` pins both. Every Eigen number in this README and in the charts comes from one of these two
 commits. The default-threading Eigen builds run on a thread pool of one thread per core, as an application would
-create; Eigen<sup>ba12</sup> caps a product at the two SME units, Eigen<sup>ec85</sup> does not.
+create; Eigen<sup>afc1</sup> caps a product at the two SME units, Eigen<sup>ec85</sup> does not.
 
-| threading | workloads (column-major) | Accelerate | MTGEMM-A | Eigen<sup>ba12</sup> | Eigen<sup>ec85</sup> | Eigen<sup>ba12</sup> / Accelerate | Eigen<sup>ba12</sup> / MTGEMM-A |
+| threading | workloads (column-major) | Accelerate | MTGEMM-A | Eigen<sup>afc1</sup> | Eigen<sup>ec85</sup> | Eigen<sup>afc1</sup> / Accelerate | Eigen<sup>afc1</sup> / MTGEMM-A |
 |---|---|---|---|---|---|---|---|
-| default threading | M = 64 (IDs 1-6) | 1836 | 2153 | 1862 | 746 | 1.01 | 0.86 |
-| default threading | M = 128 (IDs 7-12) | 2368 | 2715 | 2445 | 920 | 1.03 | 0.90 |
-| default threading | M = 4096 (IDs 13-18) | 2903 | 3285 | 3362 | 1582 | 1.16 | 1.02 |
-| default threading | N = 256 (IDs 19-24) | 2472 | 3097 | 2914 | 1093 | 1.18 | 0.94 |
-| default threading | all 24 | 2363 | 2777 | 2584 | 1044 | 1.09 | 0.93 |
-| default threading | squares 512-4096 | 2878 | 3406 | 3246 | 980 | 1.13 | 0.95 |
-| one thread | M = 64 (IDs 1-6) | 935 | 1108 | 987 | 526 | 1.06 | 0.89 |
-| one thread | M = 128 (IDs 7-12) | 1192 | 1388 | 1262 | 825 | 1.06 | 0.91 |
-| one thread | M = 4096 (IDs 13-18) | 1473 | 1684 | 1697 | 1538 | 1.15 | 1.01 |
-| one thread | N = 256 (IDs 19-24) | 1245 | 1576 | 1516 | 1137 | 1.22 | 0.96 |
-| one thread | all 24 | 1196 | 1421 | 1338 | 933 | 1.12 | 0.94 |
-| one thread | squares 512-4096 | 1633 | 1735 | 1700 | 1588 | 1.04 | 0.98 |
+| default threading | M = 64 (IDs 1-6) | 1836 | 2153 | 1884 | 746 | 1.03 | 0.87 |
+| default threading | M = 128 (IDs 7-12) | 2368 | 2715 | 2451 | 920 | 1.03 | 0.90 |
+| default threading | M = 4096 (IDs 13-18) | 2903 | 3285 | 3388 | 1582 | 1.17 | 1.03 |
+| default threading | N = 256 (IDs 19-24) | 2472 | 3097 | 2956 | 1093 | 1.20 | 0.95 |
+| default threading | all 24 | 2363 | 2777 | 2608 | 1044 | 1.10 | 0.94 |
+| default threading | squares 512-4096 | 2878 | 3406 | 3290 | 980 | 1.14 | 0.97 |
+| one thread | M = 64 (IDs 1-6) | 935 | 1108 | 991 | 526 | 1.06 | 0.89 |
+| one thread | M = 128 (IDs 7-12) | 1192 | 1388 | 1270 | 825 | 1.07 | 0.92 |
+| one thread | M = 4096 (IDs 13-18) | 1473 | 1684 | 1669 | 1538 | 1.13 | 0.99 |
+| one thread | N = 256 (IDs 19-24) | 1245 | 1576 | 1502 | 1137 | 1.21 | 0.95 |
+| one thread | all 24 | 1196 | 1421 | 1333 | 933 | 1.11 | 0.94 |
+| one thread | squares 512-4096 | 1633 | 1735 | 1718 | 1588 | 1.05 | 0.99 |
 
 GFLOPS, geometric means, fp32, column-major `C.noalias() += A * B`. Default threading: `results/regular/`; one
 thread: `results/ext/`.
 
-- **Default threading:** Eigen<sup>ba12</sup> is 1.09x Accelerate on the paper's workloads and 1.13x on
-  squares, at 0.93x of MTGEMM-A. Eigen<sup>ec85</sup> runs 12 threads on two SME units and reaches 0.3x-0.45x.
-- **One thread:** Eigen<sup>ba12</sup> is 1.12x Accelerate on the paper's workloads and 1.04x on squares.
+- **Default threading:** Eigen<sup>afc1</sup> is 1.10x Accelerate on the paper's workloads and 1.14x on
+  squares, at 0.94x of MTGEMM-A. Eigen<sup>ec85</sup> runs 12 threads on two SME units and reaches 0.3x-0.45x.
+- **One thread:** Eigen<sup>afc1</sup> is 1.11x Accelerate on the paper's workloads and 1.05x on squares.
 
 ### What was ported
 
@@ -649,9 +655,17 @@ Each element below came from this project's ablation and was measured in Eigen b
 8. MTGEMM-A's edge kernel for RHS panels of 16 or fewer columns: the four tiles stacked along M, two LHS panels
    against one B vector, instead of half of a 2 x 2 grid. With it, when the whole RHS is one panel the LHS is read
    in place instead of packed, since each element is read once.
+9. The ZA transposer for tail panels of 5-31 columns, as MTGEMM-A packs its narrow operand, instead of a NEON
+   transposer that ran at 36-45 GB/s at 16-24 columns; panels of 8 or fewer store two depth steps per vector,
+   since the SME unit stores partial cache lines slowly.
+10. For a block that fills only one or two of the four ZA tiles (M or N of 16 or less), consecutive depth steps go
+   to the spare tiles and the partial sums are added before the store: FMOPAs into one tile wait on each other,
+   so such a block ran at a quarter or half of the peak rate.
 
 Starting from !3164, the first five moved the paper's workloads from 968 to 1352 GFLOPS on one thread (1.40x);
-the last three took default threading from 0.94x to 1.09x of Accelerate.
+6-8 took default threading from 0.94x to 1.09x of Accelerate. 9 and 10 took the one-thread grid cells below
+0.9x of Accelerate from 94 to 39 of 484 (85 to 40 at default threading), and made M, N = 8 and 16 1.4x-3.2x
+faster than Accelerate at K = 4096.
 
 ### Where Accelerate is still faster
 
@@ -659,26 +673,26 @@ the last three took default threading from 0.94x to 1.09x of Accelerate.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/grid_eigen-dark.svg">
-  <img alt="Heatmaps of Eigen ba12 speedup over Accelerate on one thread" src="docs/grid_eigen.svg">
+  <img alt="Heatmaps of Eigen afc1 speedup over Accelerate on one thread" src="docs/grid_eigen.svg">
 </picture>
 
 </td></tr><tr><td>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/grid_eigen_regular-dark.svg">
-  <img alt="Heatmaps of Eigen ba12 speedup over Accelerate at default threading" src="docs/grid_eigen_regular.svg">
+  <img alt="Heatmaps of Eigen afc1 speedup over Accelerate at default threading" src="docs/grid_eigen_regular.svg">
 </picture>
 
 </td></tr></table>
 
 Gain from the second SME unit over one thread, squares, column-major:
 
-  | size | Accelerate | MTGEMM-A | Eigen<sup>ba12</sup> |
+  | size | Accelerate | MTGEMM-A | Eigen<sup>afc1</sup> |
   |---|---|---|---|
-  | 256^3 | 1.00 | 1.70 | 1.63 |
-  | 384^3 | 1.01 | 1.88 | 1.73 |
-  | 512^3 | 1.42 | 1.91 | 1.80 |
-  | 1024^3 | 1.74 | 2.01 | 1.79 |
+  | 256^3 | 1.00 | 1.70 | 1.61 |
+  | 384^3 | 1.01 | 1.88 | 1.74 |
+  | 512^3 | 1.42 | 1.91 | 1.88 |
+  | 1024^3 | 1.74 | 2.01 | 1.78 |
   | 4096^3 | 1.79 | 1.93 | 1.96 |
 
 - **`C = A * B` on small and short products.** Eigen evaluates `C = A * B` by zeroing C with core stores and then
@@ -696,11 +710,16 @@ Gain from the second SME unit over one thread, squares, column-major:
   `C = A * B` (as the paper does) and the column-major runs `C += A * B`, which is why Eigen looked weaker in
   row-major order. The fix is an overwrite mode in which the first depth block stores C without reading it;
   that changes Eigen's generic product evaluation, so it has not been ported yet.
-- **Small products.** Below 192^3 Eigen<sup>ba12</sup> is at 0.7x-0.9x of Accelerate even with `C += A * B`: the
+- **Small products.** Below 192^3 Eigen<sup>afc1</sup> is at 0.7x-0.9x of Accelerate even with `C += A * B`: the
   SME path pays a fixed cost for streaming mode and ZA setup (Eigen's NEON path for small blocks keeps it level at
   12^3-16^3).
-- **One side of 16 or less against a mid-size other side.** With M or N of 256 or less and the other side of 16 or
-  less, Eigen is at 0.5x-0.7x; from 1024 up it is 1.15x-1.45x ahead of Accelerate.
+- **A side of 4 against a mid-size other side, K = 512.** With one side of 4-16 and the other of 128-512, Eigen is
+  at 0.57x-0.9x (0.57x-0.76x at 4 columns, which the NEON packer and one predicated tile handle). At K = 4096 the
+  same shapes are at 0.92x-1.32x of Accelerate.
+- **Transposing a single deep panel.** At 32 x 32 x 4096 (column-major) packing the right-hand side takes 62% of
+  the product: Eigen reaches 684 GFLOPS, MTGEMM-A 1126, Accelerate 736. The ZA transposer slows from 245 to 158 GB/s
+  at source strides of 16 KB or more. MTGEMM-A packs while it computes (online packing), so it hides this cost;
+  Eigen packs in a separate pass.
 
 ### Starting point: !3164
 
