@@ -1,18 +1,18 @@
-# 2026-09-23 23:21:24 load before: { 1.70 3.58 4.67 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-24 00:08:48 load before: { 2.68 5.88 4.75 } VECLIB_MAXIMUM_THREADS=1
 # thin col eigen-branch f32 beta=1 threads=1 sme_units=2
- 0     1  4096  4096     35  err/sqrtK=9.2e-07
- 0     4  4096  4096     94  err/sqrtK=2.7e-06
- 0     8  4096  4096    189  err/sqrtK=3.5e-06
- 0    16  4096  4096    401  err/sqrtK=3.9e-06
- 0    32  4096  4096    653  err/sqrtK=3.6e-06
- 0    64  4096  4096    960  err/sqrtK=3.9e-06
+ 0     1  4096  4096     34  err/sqrtK=9.2e-07
+ 0     4  4096  4096     92  err/sqrtK=2.7e-06
+ 0     8  4096  4096    187  err/sqrtK=3.5e-06
+ 0    16  4096  4096    393  err/sqrtK=3.9e-06
+ 0    32  4096  4096    655  err/sqrtK=3.6e-06
+ 0    64  4096  4096    961  err/sqrtK=3.9e-06
  0  4096     1  4096     28  err/sqrtK=2.6e-06
- 0  4096     4  4096     83  err/sqrtK=2.6e-06
- 0  4096     8  4096    160  err/sqrtK=2.9e-06
- 0  4096    16  4096    365  err/sqrtK=3.1e-06
- 0  4096    32  4096    624  err/sqrtK=3.6e-06
- 0  4096    64  4096    972  err/sqrtK=3.7e-06
- 0     8     8  4096    155  err/sqrtK=2.0e-06
- 0    16    16  4096    592  err/sqrtK=1.5e-06
- 0    32    32  4096    685  err/sqrtK=1.8e-06
-# load after: { 1.72 3.55 4.66 }
+ 0  4096     4  4096     81  err/sqrtK=2.6e-06
+ 0  4096     8  4096    157  err/sqrtK=2.9e-06
+ 0  4096    16  4096    361  err/sqrtK=3.1e-06
+ 0  4096    32  4096    620  err/sqrtK=3.6e-06
+ 0  4096    64  4096    958  err/sqrtK=3.7e-06
+ 0     8     8  4096    154  err/sqrtK=2.0e-06
+ 0    16    16  4096    589  err/sqrtK=1.5e-06
+ 0    32    32  4096    680  err/sqrtK=1.8e-06
+# load after: { 2.71 5.83 4.74 }
