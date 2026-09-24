@@ -1,16 +1,16 @@
-# 2026-09-23 08:30:17 load before: { 2.01 2.60 2.81 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-23 22:06:53 load before: { 2.49 2.89 2.67 } VECLIB_MAXIMUM_THREADS=1
 # small col eigen-branch f32 beta=1 threads=1 sme_units=2
  0     4     4     4      5  err/sqrtK=0.0e+00
  0     8     8     8     17  err/sqrtK=0.0e+00
  0    12    12    12     38  err/sqrtK=0.0e+00
  0    16    16    16     56  err/sqrtK=6.0e-08
  0    24    24    24     79  err/sqrtK=4.9e-08
- 0    32    32    32    274  err/sqrtK=8.4e-08
- 0    48    48    48    358  err/sqrtK=1.0e-07
- 0    64    64    64    840  err/sqrtK=1.2e-07
- 0    96    96    96   1090  err/sqrtK=9.7e-08
- 0   128   128   128   1269  err/sqrtK=8.4e-08
- 0   192   192   192   1271  err/sqrtK=1.4e-07
- 0   256   256   256   1473  err/sqrtK=1.8e-07
- 0   384   384   384   1653  err/sqrtK=1.9e-07
-# load after: { 2.01 2.59 2.81 }
+ 0    32    32    32    271  err/sqrtK=8.4e-08
+ 0    48    48    48    383  err/sqrtK=1.0e-07
+ 0    64    64    64    830  err/sqrtK=1.2e-07
+ 0    96    96    96   1087  err/sqrtK=9.7e-08
+ 0   128   128   128   1270  err/sqrtK=8.4e-08
+ 0   192   192   192   1273  err/sqrtK=1.4e-07
+ 0   256   256   256   1470  err/sqrtK=1.8e-07
+ 0   384   384   384   1650  err/sqrtK=1.9e-07
+# load after: { 2.37 2.86 2.66 }
