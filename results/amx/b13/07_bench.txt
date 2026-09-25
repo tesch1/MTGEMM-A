@@ -1,0 +1,26 @@
+# bench paper row mt trials=5 ms=40 online=0
+# paper row mt f32 beta=0 online=0 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 1    64  2112  7168    578  err/sqrtK=0.0e+00  peak=1638 eff=0.353
+ 2    64 24576  1536    489  err/sqrtK=0.0e+00  peak=1638 eff=0.299
+ 3    64 32768   512    427  err/sqrtK=0.0e+00  peak=1637 eff=0.261
+ 4    64  7168 16384    562  err/sqrtK=0.0e+00  peak=1639 eff=0.343
+ 5    64  4096  7168    472  err/sqrtK=0.0e+00  peak=1640 eff=0.288
+ 6    64  7168  2048    563  err/sqrtK=0.0e+00  peak=1639 eff=0.343
+ 7   128  2112  7168    812  err/sqrtK=0.0e+00  peak=1635 eff=0.496
+ 8   128 24576  1536    725  err/sqrtK=0.0e+00  peak=1638 eff=0.442
+ 9   128 32768   512    656  err/sqrtK=0.0e+00  peak=1638 eff=0.400
+10   128  7168 16384    790  err/sqrtK=0.0e+00  peak=1640 eff=0.482
+11   128  4096  7168    702  err/sqrtK=0.0e+00  peak=1638 eff=0.429
+12   128  7168  2048    801  err/sqrtK=0.0e+00  peak=1639 eff=0.489
+13  4096  2112  7168    995  err/sqrtK=0.0e+00  peak=1467 eff=0.678
+14  4096 24576  1536    960  err/sqrtK=0.0e+00  peak=1523 eff=0.630
+15  4096 32768   512    936  err/sqrtK=0.0e+00  peak=1528 eff=0.613
+16  4096  7168 16384    961  err/sqrtK=0.0e+00  peak=1480 eff=0.649
+17  4096  4096  7168    947  err/sqrtK=0.0e+00  peak=1528 eff=0.620
+18  4096  7168  2048    941  err/sqrtK=0.0e+00  peak=1467 eff=0.642
+19  4096   256  4096    820  err/sqrtK=0.0e+00  peak=1583 eff=0.518
+20 11008   256  4096    771  err/sqrtK=0.0e+00  peak=1637 eff=0.471
+21  4096   256 11008    820  err/sqrtK=0.0e+00  peak=1583 eff=0.518
+22  5120   256  5120    824  err/sqrtK=0.0e+00  peak=1580 eff=0.521
+23 13824   256  5120    804  err/sqrtK=0.0e+00  peak=1528 eff=0.526
+24  5120   256 13824    831  err/sqrtK=0.0e+00  peak=1580 eff=0.526

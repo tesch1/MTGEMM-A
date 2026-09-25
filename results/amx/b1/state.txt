@@ -1,0 +1,27 @@
+start 0
+done 0 rc=0 sec=2.3
+start 1
+done 1 rc=0 sec=2.3
+start 2
+done 2 rc=0 sec=3.3
+start 3
+done 3 rc=0 sec=0.8
+start 4
+done 4 rc=0 sec=5.3
+start 5
+done 5 rc=0 sec=2.2
+start 6
+done 6 rc=0 sec=1.6
+start 7
+done 7 rc=0 sec=12.0
+start 8
+done 8 rc=0 sec=6.8
+start 9
+done 9 rc=0 sec=2.0
+start 10
+done 10 rc=0 sec=2.3
+start 11
+done 11 rc=0 sec=3.9
+start 12
+done 12 rc=0 sec=6.1
+batch-complete fails=0

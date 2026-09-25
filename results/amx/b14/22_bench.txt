@@ -1,0 +1,15 @@
+# bench small row accel trials=5 ms=40
+# small row accel f32 beta=0
+ 0     4     4     4      3  peak=1639 eff=0.002
+ 0     8     8     8     11  peak=1638 eff=0.006
+ 0    12    12    12     15  peak=1639 eff=0.009
+ 0    16    16    16     20  peak=1639 eff=0.012
+ 0    24    24    24     56  peak=1639 eff=0.034
+ 0    32    32    32    148  peak=1639 eff=0.090
+ 0    48    48    48    238  peak=1639 eff=0.145
+ 0    64    64    64    555  peak=1639 eff=0.339
+ 0    96    96    96    682  peak=1639 eff=0.416
+ 0   128   128   128    709  peak=1639 eff=0.432
+ 0   192   192   192    761  peak=1584 eff=0.480
+ 0   256   256   256    780  peak=1528 eff=0.511
+ 0   384   384   384    922  peak=1468 eff=0.628

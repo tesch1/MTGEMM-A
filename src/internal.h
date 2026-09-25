@@ -14,5 +14,7 @@ mt_blocking model_blocking(int M, int N, int K, int es, int mr, int nr);
 
 // Runs fn(a1) on the worker thread and fn(a0) on the caller, then waits for both.
 void run_pair(void (*fn)(void*), void* a0, void* a1);
+// Same with the worker on the efficiency cluster (QoS background).
+void run_pair_e(void (*fn)(void*), void* a0, void* a1);
 
 }  // namespace mt

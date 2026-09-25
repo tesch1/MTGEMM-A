@@ -1,0 +1,38 @@
+#batch b6
+bench 2048x2048x2048 row accel trials=7 ms=40
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=2
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=0
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 prof=5
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 prof=5
+bench 2048x2048x2048 row accel trials=7 ms=40
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=2
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=0
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 prof=5
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 prof=5
+bench 2048x2048x2048 row accel trials=7 ms=40
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=2
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=0
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 prof=5
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 prof=5
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=2048 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=256 kc=1024 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=64 kc=1024 pf=7 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=1024 nc=128 kc=1024 pf=7 online=1
+bench 4096x4096x4096 row accel trials=3 ms=40
+bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=4096 nc=128 kc=1024 online=1
+bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=2048 nc=128 kc=1024 online=1
+bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=4096 nc=256 kc=1024 online=1
+bench 1024x1024x1024 row accel trials=7 ms=40
+bench 1024x1024x1024 row mt threads=1 trials=7 ms=40 mc=1024 nc=128 kc=1024 online=1
+bench 1024x1024x1024 row mt threads=1 trials=7 ms=40 mc=1024 nc=64 kc=1024 online=1
+bench 2048x2048x2048 row accel trials=7 ms=40 f64
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 f64 mc=2048 nc=128 kc=512 online=1
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 f64 mc=2048 nc=128 kc=512 online=2
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 f64 mc=2048 nc=64 kc=512 online=2
+bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 f64 mc=2048 nc=128 kc=1024 online=2

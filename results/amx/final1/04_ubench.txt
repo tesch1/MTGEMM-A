@@ -1,0 +1,11 @@
+# ubench kern
+# 32x32 fp32 kernel step (4 quad loads + 16 fma32), A and B streams of equal size: footprint GFLOPS
+kern no-loads  1623.7
+kern     16 KB x2  1567.3
+kern     64 KB x2  1604.1
+kern    256 KB x2  1608.6
+kern   1024 KB x2  1625.3
+kern   4096 KB x2  1472.5
+kern   8192 KB x2   799.6
+kern  12288 KB x2   414.5
+kern  32768 KB x2   416.6

@@ -1,0 +1,11 @@
+# ubench fma
+# fma peak, one thread: accumulators GFLOPS
+fma32 1   407.3
+fma32 2   819.7
+fma32 3  1230.1
+fma32 4  1639.9
+fma64 1   102.5
+fma64 2   205.0
+fma64 4   410.1
+fma64 6   410.1
+fma64 8   410.0

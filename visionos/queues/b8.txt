@@ -1,0 +1,16 @@
+#batch b8
+test 40
+bench squares row accel trials=3 ms=40
+bench squares row mt threads=1 trials=3 ms=40
+bench squares row mt threads=1 trials=3 ms=40 online=0
+bench squares row mt threads=1 trials=3 ms=40 online=2
+bench squares row accel trials=3 ms=40
+bench paper row accel trials=2 ms=30
+bench paper row mt threads=1 trials=2 ms=30
+bench paper row mt threads=1 trials=2 ms=30 online=0
+bench paper row mt threads=1 trials=2 ms=30 online=2
+bench paper col accel trials=2 ms=30
+bench paper col mt threads=1 trials=2 ms=30
+bench squares row accel trials=3 ms=40 f64
+bench squares row mt threads=1 trials=3 ms=40 f64
+bench squares row mt threads=1 trials=3 ms=40 f64 online=2

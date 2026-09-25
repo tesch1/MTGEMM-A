@@ -1,0 +1,17 @@
+# bench thin row mt trials=5 ms=40
+# thin row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0     1  4096  4096      8  err/sqrtK=0.0e+00  peak=1394 eff=0.006
+ 0     4  4096  4096     34  err/sqrtK=0.0e+00  peak=1312 eff=0.026
+ 0     8  4096  4096     68  err/sqrtK=0.0e+00  peak=1310 eff=0.052
+ 0    16  4096  4096    131  err/sqrtK=0.0e+00  peak=1312 eff=0.100
+ 0    32  4096  4096    273  err/sqrtK=0.0e+00  peak=1314 eff=0.208
+ 0    64  4096  4096    449  err/sqrtK=0.0e+00  peak=1308 eff=0.343
+ 0  4096     1  4096      7  err/sqrtK=2.5e-06  peak=1393 eff=0.005
+ 0  4096     4  4096     27  err/sqrtK=0.0e+00  peak=1465 eff=0.018
+ 0  4096     8  4096     53  err/sqrtK=0.0e+00  peak=1461 eff=0.036
+ 0  4096    16  4096    106  err/sqrtK=0.0e+00  peak=1528 eff=0.069
+ 0  4096    32  4096    222  err/sqrtK=0.0e+00  peak=1461 eff=0.152
+ 0  4096    64  4096    375  err/sqrtK=0.0e+00  peak=1458 eff=0.258
+ 0     8     8  4096     10  err/sqrtK=0.0e+00  peak=1468 eff=0.007
+ 0    16    16  4096     41  err/sqrtK=0.0e+00  peak=1389 eff=0.030
+ 0    32    32  4096    269  err/sqrtK=0.0e+00  peak=1350 eff=0.199

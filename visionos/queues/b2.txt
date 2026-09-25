@@ -1,0 +1,14 @@
+#batch b2
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=2048 mc=256 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=1024 mc=256 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=512 mc=256 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=512 mc=256 nc=512 pf=0
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=256 mc=256 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=2048 mc=64 nc=128
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=5 kc=512 mc=64 nc=128
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=2
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=3
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 prof=6
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 kc=2048 mc=256 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 kc=1024 mc=512 nc=512
+bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 kc=1024 mc=1024 nc=256

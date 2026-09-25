@@ -1,0 +1,22 @@
+# ubench threads
+# fma peak by threads (QoS user-interactive = P, background = E)
+fma32 P=1 E=0  P-threads  1584.9  E-threads     0.0  total  1584.9 GFLOPS
+fma32 P=2 E=0  P-threads  1499.8  E-threads     0.0  total  1499.8 GFLOPS
+fma32 P=3 E=0  P-threads  1385.7  E-threads     0.0  total  1385.7 GFLOPS
+fma32 P=4 E=0  P-threads  1598.8  E-threads     0.0  total  1598.8 GFLOPS
+fma32 P=0 E=1  P-threads     0.0  E-threads   118.3  total   118.3 GFLOPS
+fma32 P=0 E=2  P-threads     0.0  E-threads   116.0  total   116.0 GFLOPS
+fma32 P=0 E=4  P-threads     0.0  E-threads    98.0  total    98.0 GFLOPS
+fma32 P=1 E=1  P-threads  1591.3  E-threads    82.4  total  1673.8 GFLOPS
+fma32 P=1 E=4  P-threads  1592.3  E-threads    63.3  total  1655.7 GFLOPS
+fma32 P=2 E=4  P-threads  1483.3  E-threads    82.8  total  1566.1 GFLOPS
+fma64 P=1 E=0  P-threads   398.0  E-threads     0.0  total   398.0 GFLOPS
+fma64 P=2 E=0  P-threads   370.8  E-threads     0.0  total   370.8 GFLOPS
+fma64 P=3 E=0  P-threads   346.5  E-threads     0.0  total   346.5 GFLOPS
+fma64 P=4 E=0  P-threads   397.7  E-threads     0.0  total   397.7 GFLOPS
+fma64 P=0 E=1  P-threads     0.0  E-threads    24.3  total    24.3 GFLOPS
+fma64 P=0 E=2  P-threads     0.0  E-threads    23.6  total    23.6 GFLOPS
+fma64 P=0 E=4  P-threads     0.0  E-threads    24.4  total    24.4 GFLOPS
+fma64 P=1 E=1  P-threads   397.9  E-threads    22.4  total   420.3 GFLOPS
+fma64 P=1 E=4  P-threads   398.1  E-threads    23.6  total   421.7 GFLOPS
+fma64 P=2 E=4  P-threads   370.8  E-threads    22.7  total   393.5 GFLOPS

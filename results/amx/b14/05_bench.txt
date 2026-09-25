@@ -1,0 +1,3 @@
+# bench 4096x4096x4096 row accel trials=5 ms=40
+# 4096x4096x4096 row accel f32 beta=0
+ 0  4096  4096  4096   1025  peak=1639 eff=0.625

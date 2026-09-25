@@ -1,0 +1,8 @@
+# bench squares row accel trials=5 ms=40
+# squares row accel f32 beta=0
+ 0   512   512   512   1281  peak=1584 eff=0.808
+ 0  1000  1000  1000   1070  peak=1525 eff=0.702
+ 0  1024  1024  1024   1155  peak=1529 eff=0.756
+ 0  2048  2048  2048   1056  peak=1535 eff=0.688
+ 0  3000  3000  3000    883  peak=1609 eff=0.549
+ 0  4096  4096  4096    881  peak=1584 eff=0.556

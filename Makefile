@@ -87,7 +87,56 @@ test_eigen: bench_eigen
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
 
+# AMX backend (M1-M3 class, Vision Pro M2): same API, built without SME; runs on this M4 as well.
+# The _emu variants execute every AMX instruction in corsix's emulator with M2 semantics (fetched into build/).
+AMXFLAGS ?= -std=c++17 -O3 -DNDEBUG -Wall -Wextra -Wno-unused-parameter
+AMX_OBJS := $(BUILD)/amx/mtgemm_amx.o $(BUILD)/amx/model.o $(BUILD)/amx/threads.o
+AMX_LIB  := $(BUILD)/libmtgemm_amx.a
+CORSIX   := $(BUILD)/_deps/amx
+EMU_SRC  := ldst extr fma fms genlut mac16 matfp matint vecfp vecint
+EMU_OBJS := $(EMU_SRC:%=$(BUILD)/emu/%.o) $(BUILD)/emu/amx_ver.o
+EMU_LOBJS := $(BUILD)/emu/mtgemm_amx.o $(BUILD)/emu/model.o $(BUILD)/emu/threads.o
+
+$(BUILD)/amx $(BUILD)/emu:
+	mkdir -p $@
+
+$(BUILD)/amx/%.o: src/%.cpp include/mtgemm.h src/internal.h src/amx.h | $(BUILD)/amx
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) -c $< -o $@
+
+$(AMX_LIB): $(AMX_OBJS)
+	ar rcs $@ $^
+
+$(BUILD)/test_gemm_amx: tests/test_gemm.cpp $(AMX_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< $(AMX_LIB) -o $@
+
+$(BUILD)/bench_amx: bench/bench.cpp bench/shapes.h $(AMX_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) -DACCELERATE_NEW_LAPACK -DMT_BENCH_AMX $< $(AMX_LIB) $(ACCEL) -o $@
+
+$(BUILD)/ubench_amx: bench/ubench_amx.cpp src/amx.h | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< -o $@
+
+$(CORSIX)/emulate.h:
+	git clone -q https://github.com/corsix/amx $(CORSIX)
+
+$(BUILD)/emu/%.o: $(CORSIX)/%.c $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CC) -O2 -w -c $< -o $@
+
+$(BUILD)/emu/amx_ver.o: tests/amx_ver.c $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CC) -O2 -I$(CORSIX) -c $< -o $@
+
+$(BUILD)/emu/%.o: src/%.cpp include/mtgemm.h src/internal.h src/amx.h $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CXX) $(CPPFLAGS) -I$(CORSIX) -DMT_AMX_EMULATE $(AMXFLAGS) -c $< -o $@
+
+$(BUILD)/test_gemm_amx_emu: tests/test_gemm.cpp $(EMU_LOBJS) $(EMU_OBJS)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< $(EMU_LOBJS) $(EMU_OBJS) -o $@
+
+amx: $(AMX_LIB) $(BUILD)/test_gemm_amx $(BUILD)/bench_amx $(BUILD)/ubench_amx
+
+test_amx: $(BUILD)/test_gemm_amx $(BUILD)/test_gemm_amx_emu
+	./$(BUILD)/test_gemm_amx
+	./$(BUILD)/test_gemm_amx_emu 60
+
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen
+.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen amx test_amx

@@ -1,0 +1,18 @@
+#batch b9
+test 40
+bench paper row accel trials=3 ms=30 ids=1-12
+bench paper row mt threads=1 trials=3 ms=30 ids=1-12
+bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1
+bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=0
+bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=2
+bench paper row mt threads=1 trials=3 ms=30 ids=1-12 pfdist=64
+bench thin row accel trials=3 ms=30
+bench thin row mt threads=1 trials=3 ms=30
+bench thin row mt threads=1 trials=3 ms=30 shape=1
+bench squares row accel trials=3 ms=30
+bench squares row mt threads=1 trials=3 ms=30
+bench paper row accel trials=3 ms=30 ids=13-24
+bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+bench paper row accel trials=3 ms=30 ids=1-12

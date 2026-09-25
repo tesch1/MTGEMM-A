@@ -1,0 +1,28 @@
+#batch final2
+probe
+ubench fma
+test
+bench squares row accel trials=5 ms=40
+bench squares row mt trials=5 ms=40
+bench squares col accel trials=5 ms=40
+bench squares col mt trials=5 ms=40
+bench paper row accel trials=5 ms=40
+bench paper row mt trials=5 ms=40
+bench paper col accel trials=5 ms=40
+bench paper col mt trials=5 ms=40
+bench irr row accel trials=5 ms=40
+bench irr row mt trials=5 ms=40
+bench irr col accel trials=5 ms=40
+bench irr col mt trials=5 ms=40
+bench thin row accel trials=5 ms=40
+bench thin row mt trials=5 ms=40
+bench thin col accel trials=5 ms=40
+bench thin col mt trials=5 ms=40
+bench small row accel trials=5 ms=40
+bench small row mt trials=5 ms=40
+bench small col accel trials=5 ms=40
+bench small col mt trials=5 ms=40
+bench squares row accel trials=5 ms=40 f64
+bench squares row mt trials=5 ms=40 f64
+bench paper row accel trials=5 ms=40 f64
+bench paper row mt trials=5 ms=40 f64

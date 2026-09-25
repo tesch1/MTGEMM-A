@@ -1,0 +1,51 @@
+start 0
+done 0 rc=0 sec=0.3
+start 1
+done 1 rc=0 sec=0.3
+start 2
+done 2 rc=0 sec=0.3
+start 3
+done 3 rc=0 sec=0.4
+start 4
+done 4 rc=0 sec=0.3
+start 5
+done 5 rc=0 sec=0.4
+start 6
+done 6 rc=0 sec=0.3
+start 7
+done 7 rc=0 sec=0.4
+start 8
+done 8 rc=0 sec=0.4
+start 9
+done 9 rc=0 sec=0.4
+start 10
+done 10 rc=0 sec=0.4
+start 11
+done 11 rc=0 sec=0.4
+start 12
+done 12 rc=0 sec=0.4
+start 13
+done 13 rc=0 sec=0.4
+start 14
+done 14 rc=0 sec=0.4
+start 15
+done 15 rc=0 sec=0.4
+start 16
+done 16 rc=0 sec=0.4
+start 17
+done 17 rc=0 sec=0.4
+start 18
+done 18 rc=0 sec=0.4
+start 19
+done 19 rc=0 sec=0.3
+start 20
+done 20 rc=0 sec=13.6
+start 21
+done 21 rc=0 sec=20.6
+start 22
+done 22 rc=0 sec=20.3
+start 23
+done 23 rc=0 sec=14.4
+start 24
+done 24 rc=0 sec=21.5
+batch-complete fails=0

@@ -1,0 +1,15 @@
+# bench small row mt trials=5 ms=40
+# small row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0     4     4     4      0  err/sqrtK=0.0e+00  peak=1524 eff=0.000
+ 0     8     8     8      3  err/sqrtK=0.0e+00  peak=1578 eff=0.002
+ 0    12    12    12      7  err/sqrtK=0.0e+00  peak=1640 eff=0.004
+ 0    16    16    16     16  err/sqrtK=0.0e+00  peak=1639 eff=0.010
+ 0    24    24    24     32  err/sqrtK=0.0e+00  peak=1636 eff=0.020
+ 0    32    32    32    149  err/sqrtK=0.0e+00  peak=1634 eff=0.091
+ 0    48    48    48    114  err/sqrtK=0.0e+00  peak=1638 eff=0.070
+ 0    64    64    64    438  err/sqrtK=0.0e+00  peak=1578 eff=0.278
+ 0    96    96    96    570  err/sqrtK=0.0e+00  peak=1524 eff=0.374
+ 0   128   128   128    648  err/sqrtK=0.0e+00  peak=1529 eff=0.424
+ 0   192   192   192    641  err/sqrtK=0.0e+00  peak=1466 eff=0.438
+ 0   256   256   256    766  err/sqrtK=0.0e+00  peak=1468 eff=0.522
+ 0   384   384   384    798  err/sqrtK=0.0e+00  peak=1393 eff=0.573

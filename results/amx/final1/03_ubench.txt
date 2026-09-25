@@ -1,0 +1,29 @@
+# ubench load
+# X/Y load bandwidth, one thread: footprint width GB/s
+load     16 KB x1   184.9
+load     16 KB x2   363.4
+load     16 KB x4   514.4
+load     64 KB x1   202.7
+load     64 KB x2   379.5
+load     64 KB x4   692.6
+load    256 KB x1   203.2
+load    256 KB x2   401.4
+load    256 KB x4   762.7
+load   1024 KB x1   206.9
+load   1024 KB x2   405.6
+load   1024 KB x4   763.4
+load   4096 KB x1   208.0
+load   4096 KB x2   408.4
+load   4096 KB x4   763.5
+load   8192 KB x1   209.1
+load   8192 KB x2   409.0
+load   8192 KB x4   761.9
+load  12288 KB x1   182.5
+load  12288 KB x2   295.3
+load  12288 KB x4   363.4
+load  32768 KB x1    78.8
+load  32768 KB x2    78.6
+load  32768 KB x4    67.9
+load 131072 KB x1    50.3
+load 131072 KB x2    47.4
+load 131072 KB x4    49.4

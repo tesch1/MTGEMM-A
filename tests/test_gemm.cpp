@@ -79,17 +79,17 @@ static int run(int trials) {
     mt_options op;
     const int v = t % 9;
     if (v == 1) op.online = 0;
-    if (v == 2) op.x4 = 0;
+    if (v == 2) { op.x4 = 0; op.online = 2; }
     if (v == 3) op.heap = 0;
-    if (v == 4) op.model = 0;
+    if (v == 4) { op.model = 0; op.online = 4; }
     if (v == 5) op.shape = 1;
-    if (v == 6) op.cdirect = 1;
+    if (v == 6) { op.cdirect = 1; op.online = 3; }
     if (v == 0 && t % 4 == 0) op.cdirect = 2;
     if (v == 5 && t % 2 == 0) op.cdirect = 2;
     if (t % 3 == 0) op.pack4 = 0;
     if (t % 5 == 0) op.prefetch = 0;
     if (t % 7 == 0) op.cdirect = 0;
-    if (v == 7) op.threads = 2;
+    if (v == 7) op.threads = t % 2 ? 2 : 3;
     if (v == 8) { op.mc = 16 * rnd(1, 6); op.nc = 64 * rnd(1, 4); op.kc = rnd(1, 150); }
     const bool big = t % 17 == 0;
     const int M = big ? rnd(100, 400) : rnd(1, 150), N = big ? rnd(100, 400) : rnd(1, 150), K = big ? rnd(200, 700) : rnd(1, 130);
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
   for (auto& s : combos)
     for (int bits = 0; bits < 256; ++bits) {
       mt_options op;
-      op.online = bits & 1;
+      op.online = (bits & 1) ? 2 + ((bits >> 2) & 1) : 0;
       op.x4 = (bits >> 1) & 1;
       op.shape = (bits >> 2) & 1;
       op.cdirect = (bits >> 3) & 3;

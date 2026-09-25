@@ -1,0 +1,14 @@
+#batch b1
+ubench fma
+ubench kern
+ubench overlap
+ubench z
+test 60
+bench squares row mt threads=1 trials=3 ms=30
+bench squares row accel trials=3 ms=30
+ubench threads
+ubench load
+bench squares row mt threads=1 trials=3 ms=30 prof=5
+bench squares row mt threads=2 trials=3 ms=30
+bench squares row accel trials=3 ms=30 f64
+bench squares row mt threads=1 trials=3 ms=30 f64

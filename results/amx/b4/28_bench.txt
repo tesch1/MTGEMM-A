@@ -1,0 +1,3 @@
+# bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 f64 mc=2048 nc=128 kc=512 prof=5
+# 2048x2048x2048 row mt f64 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0  2048  2048  2048    359  err/sqrtK=1.7e+01
