@@ -1,5 +1,4 @@
-// Apple AMX (M1-M4) instruction encodings after corsix/amx; only M2-level features are used.
-// MT_AMX_EMULATE routes every instruction to corsix's emulator (per-thread state) for checks against M2 semantics.
+// Apple AMX instruction encodings after corsix/amx (M2-level features); MT_AMX_EMULATE runs them in its emulator.
 #pragma once
 #include <cstdint>
 
@@ -66,7 +65,7 @@ namespace mt::amx { inline thread_local amx_state emu_state; }
 
 namespace mt::amx {
 
-// Operand builders. Loads and stores: pointer in bits 0-55, register in 56+, pair (62), quad on M2+ (62 + 60).
+// Load/store operands: pointer in bits 0-55, register from bit 56, pair (62), quad on M2+ (62 + 60).
 constexpr uint64_t kPair = 1ull << 62, kQuad = (1ull << 62) | (1ull << 60);
 inline uint64_t ptr(const void* p) { return reinterpret_cast<uint64_t>(p) & ((1ull << 56) - 1); }
 inline uint64_t xy(const void* p, int reg, uint64_t mult = 0) { return ptr(p) | uint64_t(reg) << 56 | mult; }
@@ -74,11 +73,8 @@ inline uint64_t zr(const void* p, int row, bool pair = false) { return ptr(p) | 
 
 // fma32 / fma64 matrix mode: z[row + stride*j][i] += x[i] * y[j]; offsets in bytes into the 512-byte X / Y files.
 constexpr uint64_t kSkipZ = 1ull << 27;
-constexpr uint64_t fma(int zrow, int xoff, int yoff, bool skipz = false) {
+constexpr uint64_t fma_op(int zrow, int xoff, int yoff, bool skipz = false) {
   return uint64_t(zrow) << 20 | uint64_t(xoff & 0x1FF) << 10 | uint64_t(yoff & 0x1FF) | (skipz ? kSkipZ : 0);
 }
-// Writemask on X lanes (bits 41-47) and Y lanes (32-38): mode 2 = first n lanes (n > 0).
-constexpr uint64_t xfirst(int n) { return (2ull << 46) | uint64_t(n & 31) << 41; }
-constexpr uint64_t yfirst(int n) { return (2ull << 37) | uint64_t(n & 31) << 32; }
 
 }  // namespace mt::amx

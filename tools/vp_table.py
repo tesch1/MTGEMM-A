@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Side-by-side GFLOPS table of the bench runs in a device batch directory (build/vp_results/out_<id>).
-usage: vp_table.py <dir> [filter-substring]   Runs over the same shape set share one table; the test run is summarized."""
+"""GFLOPS tables of a device batch directory, one per shape set; usage: vp_table.py <dir> [filter-substring]"""
 import os
 import re
 import sys

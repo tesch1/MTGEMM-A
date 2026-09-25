@@ -87,8 +87,8 @@ test_eigen: bench_eigen
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
 
-# AMX backend (M1-M3 class, Vision Pro M2): same API, built without SME; runs on this M4 as well.
-# The _emu variants execute every AMX instruction in corsix's emulator with M2 semantics (fetched into build/).
+# AMX backend (Vision Pro M2, also runs on M4); _emu builds run every AMX instruction in corsix's M2 emulator.
+CORSIX_REV := 483714bb051da088d08a66724b22dd08a5db3c99
 AMXFLAGS ?= -std=c++17 -O3 -DNDEBUG -Wall -Wextra -Wno-unused-parameter
 AMX_OBJS := $(BUILD)/amx/mtgemm_amx.o $(BUILD)/amx/model.o $(BUILD)/amx/threads.o
 AMX_LIB  := $(BUILD)/libmtgemm_amx.a
@@ -116,7 +116,7 @@ $(BUILD)/ubench_amx: bench/ubench_amx.cpp src/amx.h | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< -o $@
 
 $(CORSIX)/emulate.h:
-	git clone -q https://github.com/corsix/amx $(CORSIX)
+	git clone -q https://github.com/corsix/amx $(CORSIX) && git -C $(CORSIX) checkout -q $(CORSIX_REV)
 
 $(BUILD)/emu/%.o: $(CORSIX)/%.c $(CORSIX)/emulate.h | $(BUILD)/emu
 	$(CC) -O2 -w -c $< -o $@

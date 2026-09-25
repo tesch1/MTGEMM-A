@@ -1,5 +1,13 @@
 #pragma once
 #include "mtgemm.h"
+#include <algorithm>
+#include <cstdlib>
+
+#if defined(__ARM_FEATURE_SME)
+#define MT_STREAMING_COMPAT __arm_streaming_compatible
+#else
+#define MT_STREAMING_COMPAT
+#endif
 
 namespace mt {
 
@@ -9,12 +17,38 @@ constexpr int kTlbEntries = 160;     // assumed L1D TLB entries of a P-core (M1 
 
 inline int round_up(int x, int m) { return (x + m - 1) / m * m; }
 
+// Block size near `block` (a multiple of step) that splits `total` into equal blocks.
+inline int balance(int total, int block, int step) {
+  if (block >= total) return round_up(total, step);
+  const int nblk = (total + block - 1) / block;
+  return std::min(round_up(block, step), round_up((total + nblk - 1) / nblk, step));
+}
+
+// Core-side prefetch (prfm pldl2keep) of `bytes` starting at p; the matrix unit reads through L2.
+__attribute__((always_inline)) inline void pf_l2(const void* p, int bytes) MT_STREAMING_COMPAT {
+  for (int l = 0; l < bytes; l += 128) __builtin_prefetch(static_cast<const char*>(p) + l, 0, 2);
+}
+
+// Per-thread packed buffers, reused across calls so that timing does not include page faults.
+struct Buf {
+  void* p = nullptr;
+  size_t n = 0;
+  ~Buf() { std::free(p); }
+  void* get(size_t bytes) {
+    if (bytes > n) {
+      std::free(p);
+      p = nullptr;
+      if (posix_memalign(&p, 16384, bytes)) std::abort();
+      n = bytes;
+    }
+    return p;
+  }
+};
+
 int model_kc_max(int es, int mr, int nr);
 mt_blocking model_blocking(int M, int N, int K, int es, int mr, int nr);
 
 // Runs fn(a1) on the worker thread and fn(a0) on the caller, then waits for both.
 void run_pair(void (*fn)(void*), void* a0, void* a1);
-// Same with the worker on the efficiency cluster (QoS background).
-void run_pair_e(void (*fn)(void*), void* a0, void* a1);
 
 }  // namespace mt

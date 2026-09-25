@@ -38,10 +38,10 @@ static double amx_peak() {
     do {
       for (int i = 0; i < 256; ++i) {
         if constexpr (sizeof(T) == 4) {
-          AMX_FMA32(fma(0, 0, 0)); AMX_FMA32(fma(1, 64, 64)); AMX_FMA32(fma(2, 128, 128)); AMX_FMA32(fma(3, 192, 192));
+          AMX_FMA32(fma_op(0, 0, 0)); AMX_FMA32(fma_op(1, 64, 64)); AMX_FMA32(fma_op(2, 128, 128)); AMX_FMA32(fma_op(3, 192, 192));
         } else {
-          AMX_FMA64(fma(0, 0, 0)); AMX_FMA64(fma(1, 64, 64)); AMX_FMA64(fma(2, 128, 128)); AMX_FMA64(fma(3, 192, 192));
-          AMX_FMA64(fma(4, 256, 256)); AMX_FMA64(fma(5, 320, 320)); AMX_FMA64(fma(6, 384, 384)); AMX_FMA64(fma(7, 448, 448));
+          AMX_FMA64(fma_op(0, 0, 0)); AMX_FMA64(fma_op(1, 64, 64)); AMX_FMA64(fma_op(2, 128, 128)); AMX_FMA64(fma_op(3, 192, 192));
+          AMX_FMA64(fma_op(4, 256, 256)); AMX_FMA64(fma_op(5, 320, 320)); AMX_FMA64(fma_op(6, 384, 384)); AMX_FMA64(fma_op(7, 448, 448));
         }
       }
       n += 256;
@@ -149,8 +149,6 @@ static void* body(void*) {
     else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
     else if (std::sscanf(a, "ids=%d-%d", &id_lo, &id_hi) == 2) {}
     else if (std::sscanf(a, "online=%d", &v) == 1) o.online = v;
-    else if (std::sscanf(a, "pfdist=%d", &v) == 1) o.pfdist = v;
-    else if (std::sscanf(a, "eshare=%d", &v) == 1) o.eshare = v;
     else if (std::sscanf(a, "x4=%d", &v) == 1) o.x4 = v;
     else if (std::sscanf(a, "heap=%d", &v) == 1) o.heap = v;
     else if (std::sscanf(a, "model=%d", &v) == 1) o.model = v;

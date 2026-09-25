@@ -1,7 +1,5 @@
 #!/bin/zsh
-# Runs a queue on the Vision Pro: build + install the runner app, push the queue, wait until the headset is
-# unlocked, launch (relaunch after a crash; the runner resumes), copy Documents/out_<batch> to build/vp_results/.
-# usage: tools/vp_batch.sh <queue.txt> [--no-build] [--wait-minutes N]
+# usage: tools/vp_batch.sh <queue.txt> [--no-build] [--wait-minutes N]  (build, install, wait for unlock, run, copy back)
 set -u
 DEV=${VP_DEVICE:-00008112-001C38E23CC1A01E}
 APP=com.michaeltesch.mtgemmvp
@@ -25,7 +23,8 @@ cd $ROOT
 if (( BUILD )); then
   (cd visionos && xcodegen generate -q) || exit 1
   xcodebuild -project visionos/MTGemmVP.xcodeproj -scheme MTGemmVP -destination "id=$DEV" -configuration Release \
-    -derivedDataPath build/vp-dd -allowProvisioningUpdates build 2>&1 | grep -E "error:|BUILD" || exit 1
+    -derivedDataPath build/vp-dd -allowProvisioningUpdates build >build/vp_build.log 2>&1 ||
+    { grep -E "error:" build/vp_build.log; echo "build failed, see build/vp_build.log"; exit 1 }
   xcrun devicectl device install app --device $DEV build/vp-dd/Build/Products/Release-xros/MTGemmVP.app >/dev/null || exit 1
 fi
 xcrun devicectl device copy to --device $DEV --domain-type appDataContainer --domain-identifier $APP \

@@ -1,0 +1,14 @@
+#batch review1
+test
+bench squares row accel trials=5 ms=40
+bench squares row mt trials=5 ms=40
+bench squares col accel trials=5 ms=40
+bench squares col mt trials=5 ms=40
+bench small row accel trials=5 ms=40
+bench small row mt trials=5 ms=40
+bench squares row mt trials=5 ms=40 beta=0.5
+bench squares row mt trials=5 ms=40 beta=1
+bench paper row accel trials=3 ms=30 ids=1-12
+bench paper row mt trials=3 ms=30 ids=1-12
+bench squares row accel trials=5 ms=40 f64
+bench squares row mt trials=5 ms=40 f64

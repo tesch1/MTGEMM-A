@@ -1,6 +1,4 @@
-// AMX GEMM (Apple M1-M3 class, target Vision Pro M2): the blocking of the SME version with an AMX micro-kernel.
-// fp32: 32x32 C block in the four 16x16 Z accumulators; fp64: 16x32 in the eight 8x8 ones. Row-major core,
-// column-major solved as C^T = B^T A^T. A is packed k-major into Y-side panels, B into X-side panels.
+// AMX GEMM (Vision Pro M2): 32x32 fp32 / 16x32 fp64 C blocks in Z, row-major core, column-major as C^T = B^T A^T.
 #include "internal.h"
 #include "amx.h"
 #include <arm_neon.h>
@@ -22,18 +20,16 @@ template <class T> struct Ak;
 template <> struct Ak<float> { static constexpr int MR = 32, NR = 32; };
 template <> struct Ak<double> { static constexpr int MR = 16, NR = 32; };
 
-constexpr int kKU = 4;  // packed depth is padded with zeros to a multiple of this
+constexpr int kKU = 4;        // packed depth is padded with zeros to a multiple of this
+constexpr int kPfRowsB = 32;  // B source rows prefetched ahead when AMX reads B from the source
+constexpr int kAmxPfChunks = 4;  // source chunks prefetched ahead of the AMX transposition of A
+enum BMode { kBPacked = 0, kBAuto = 1, kBSource = 2 };  // values of mt_options::online in this backend
 
-// Elements from one packed B panel to the next: 256 bytes more than the panel, so that the panels of a block
-// (written a row at a time) do not all fall into the same L1 sets when kp * NR is a power of two.
+// B panel stride: 256 bytes of padding keep the panels of a block out of the same L1 sets.
 template <class T>
 constexpr long bstride(int kp) { return long(kp) * Ak<T>::NR + 256 / long(sizeof(T)); }
 
-MT_INL void pf_l2(const void* p, int bytes) {
-  for (int l = 0; l < bytes; l += 128) __builtin_prefetch(static_cast<const char*>(p) + l, 0, 2);
-}
-
-// Z <-> C. fp32 row m = 16p + j lives in Z rows 4j + 2p + {0,1}; fp64 row m = 8p + j in Z rows 8j + 4p + {0..3}.
+// fp32 C row 16p + j is in Z rows 4j + 2p + {0,1}; fp64 C row 8p + j is in Z rows 8j + 4p + {0..3}.
 template <class T, bool STORE>
 MT_INL void z_io(T* C, long ldc) {
   const bool pair = ((reinterpret_cast<uintptr_t>(C) | uintptr_t(ldc * sizeof(T))) & 127) == 0;
@@ -66,116 +62,99 @@ MT_INL void z_io(T* C, long ldc) {
   }
 }
 
-// B rows straight from the source (online = 2): single-register X loads (no alignment needed), and the rows are
-// written to the packed panel with X stores for the later rows of kernels; rows from kb up to kp read zeros.
+// z_io load with C scaled by beta: each 64-byte piece goes to X, then vector-mode fma (skip-Z) writes x * beta to Z.
+template <class T>
+MT_INL void z_load_scaled(const T* C, long ldc, const T* bvec) {
+  constexpr uint64_t kVec = 1ull << 63;
+  constexpr int E = 64 / int(sizeof(T));  // elements per Z row
+  AMX_LDY(xy(bvec, 7));
+  int u = 0;
+  auto row = [&](const T* p, int z) __attribute__((always_inline)) {
+    AMX_LDX(xy(p, u));
+    const uint64_t op = kVec | fma_op(z, 64 * u, 448, true);
+    if constexpr (sizeof(T) == 4) AMX_FMA32(op); else AMX_FMA64(op);
+    u = (u + 1) & 7;
+  };
+  constexpr int RP = sizeof(T) == 4 ? 16 : 8, ZS = sizeof(T) == 4 ? 4 : 8, ZH = sizeof(T) == 4 ? 2 : 4;
+  for (int p = 0; p < 2; ++p)
+    for (int j = 0; j < RP; ++j)
+      for (int q = 0; q < ZH; ++q) row(C + long(RP * p + j) * ldc + q * E, ZS * j + ZH * p + q);
+}
+
+// Unpacked B panel: its rows are read from the source with single-register loads; rows from kb on read zeros.
 template <class T>
 struct SrcB {
   const T* src;
   long ldb;
-  int kb, pfrows;
-  bool store;  // write the packed copy for later rows of kernels
+  int kb;
 };
 alignas(256) const float kZeros[64] = {};
 
 template <class T>
-MT_INL void src_rows(const SrcB<T>& s, int r0, int nrows, char* dst) {
+MT_INL void src_rows(const SrcB<T>& s, int r0, int nrows) {
   constexpr int RB = Ak<T>::NR * int(sizeof(T));  // bytes per B row: 128 (fp32) or 256 (fp64)
   for (int u = 0; u < nrows; ++u) {
     const int r = r0 + u;
     const char* p = r < s.kb ? reinterpret_cast<const char*>(s.src + long(r) * s.ldb) : reinterpret_cast<const char*>(kZeros);
-    if (s.pfrows && r + s.pfrows < s.kb) pf_l2(s.src + long(r + s.pfrows) * s.ldb, RB);
-    const int x0 = u * RB / 64;
-    for (int q = 0; q < RB / 64; ++q) AMX_LDX(xy(p + 64 * q, x0 + q));
-    if (s.store)
-      for (int q = 0; q < RB / 128; ++q) AMX_STX(xy(dst + long(r) * RB + 128 * q, x0 + 2 * q, kPair));
+    if (r + kPfRowsB < s.kb) pf_l2(s.src + long(r + kPfRowsB) * s.ldb, RB);
+    for (int q = 0; q < RB / 64; ++q) AMX_LDX(xy(p + 64 * q, u * RB / 64 + q));
   }
 }
 
-// Four depth steps of fp32 from 512-byte slabs of the A and B panels: 2 + 2 quad loads, 16 fma32.
-template <bool SKIPZ, bool SRC = false>
-MT_INL void step4_f32(const char* a, const char* b, const SrcB<float>* s = nullptr, int k = 0, char* bp = nullptr) {
-  if constexpr (SRC) src_rows(*s, k, 4, bp);
+// Four depth steps of fp32: 512-byte slabs of A (Y) and B (X), 2 + 2 quad loads (or B from the source), 16 fma32.
+template <bool SKIPZ, bool SRC>
+MT_INL void step4_f32(const char* a, const char* b, const SrcB<float>* s, int k) {
+  if constexpr (SRC) src_rows(*s, k, 4);
   else { AMX_LDX(xy(b, 0, kQuad)); AMX_LDX(xy(b + 256, 4, kQuad)); }
   AMX_LDY(xy(a, 0, kQuad)); AMX_LDY(xy(a + 256, 4, kQuad));
 #define MT_K(k, S) \
-  AMX_FMA32(fma(0, 128 * k, 128 * k, S)); AMX_FMA32(fma(1, 128 * k + 64, 128 * k, S)); \
-  AMX_FMA32(fma(2, 128 * k, 128 * k + 64, S)); AMX_FMA32(fma(3, 128 * k + 64, 128 * k + 64, S));
+  AMX_FMA32(fma_op(0, 128 * k, 128 * k, S)); AMX_FMA32(fma_op(1, 128 * k + 64, 128 * k, S)); \
+  AMX_FMA32(fma_op(2, 128 * k, 128 * k + 64, S)); AMX_FMA32(fma_op(3, 128 * k + 64, 128 * k + 64, S));
   MT_K(0, SKIPZ) MT_K(1, false) MT_K(2, false) MT_K(3, false)
 #undef MT_K
 }
 
-// Four depth steps of fp64: A slab 4 x 16 (512 B, all of Y), B slab 4 x 32 (1 KB, X holds two steps at a time).
-template <bool SKIPZ, bool SRC = false>
-MT_INL void step4_f64(const char* a, const char* b, const SrcB<double>* s = nullptr, int k = 0, char* bp = nullptr) {
+// Four depth steps of fp64: A slab 4 x 16 fills Y, B slab 4 x 32 goes through X two steps at a time, 32 fma64.
+template <bool SKIPZ, bool SRC>
+MT_INL void step4_f64(const char* a, const char* b, const SrcB<double>* s, int k) {
   AMX_LDY(xy(a, 0, kQuad)); AMX_LDY(xy(a + 256, 4, kQuad));
 #define MT_K(kx, ky, S) \
-  AMX_FMA64(fma(0, 256 * kx, 128 * ky, S)); AMX_FMA64(fma(1, 256 * kx + 64, 128 * ky, S)); \
-  AMX_FMA64(fma(2, 256 * kx + 128, 128 * ky, S)); AMX_FMA64(fma(3, 256 * kx + 192, 128 * ky, S)); \
-  AMX_FMA64(fma(4, 256 * kx, 128 * ky + 64, S)); AMX_FMA64(fma(5, 256 * kx + 64, 128 * ky + 64, S)); \
-  AMX_FMA64(fma(6, 256 * kx + 128, 128 * ky + 64, S)); AMX_FMA64(fma(7, 256 * kx + 192, 128 * ky + 64, S));
-  if constexpr (SRC) src_rows(*s, k, 2, bp);
+  AMX_FMA64(fma_op(0, 256 * kx, 128 * ky, S)); AMX_FMA64(fma_op(1, 256 * kx + 64, 128 * ky, S)); \
+  AMX_FMA64(fma_op(2, 256 * kx + 128, 128 * ky, S)); AMX_FMA64(fma_op(3, 256 * kx + 192, 128 * ky, S)); \
+  AMX_FMA64(fma_op(4, 256 * kx, 128 * ky + 64, S)); AMX_FMA64(fma_op(5, 256 * kx + 64, 128 * ky + 64, S)); \
+  AMX_FMA64(fma_op(6, 256 * kx + 128, 128 * ky + 64, S)); AMX_FMA64(fma_op(7, 256 * kx + 192, 128 * ky + 64, S));
+  if constexpr (SRC) src_rows(*s, k, 2);
   else { AMX_LDX(xy(b, 0, kQuad)); AMX_LDX(xy(b + 256, 4, kQuad)); }
   MT_K(0, 0, SKIPZ) MT_K(1, 1, false)
-  if constexpr (SRC) src_rows(*s, k + 2, 2, bp);
+  if constexpr (SRC) src_rows(*s, k + 2, 2);
   else { AMX_LDX(xy(b + 512, 0, kQuad)); AMX_LDX(xy(b + 768, 4, kQuad)); }
   MT_K(0, 2, false) MT_K(1, 3, false)
 #undef MT_K
 }
 
-// A full-width B panel packed by the core while AMX computes: 4 rows per 4-step, zero rows from kb up to kp.
+// Per-call extras: B read from the source (src), next A panel to prefetch (pfa), 64 bytes of beta to scale C by.
 template <class T>
-struct NextB {
-  const T* src;
-  long ldb;
-  T* dst;
-  int kb, pfrows;
-};
-constexpr int kPfRowsB = 32;  // B source rows prefetched ahead of the interleaved packing
-
-template <class T>
-MT_INL void pack_rows4(const NextB<T>& nb, int r0) {
-  constexpr int NR = Ak<T>::NR, nf = NR * int(sizeof(T)) / 4;
-  for (int u = 0; u < 4; ++u) {
-    const int r = r0 + u;
-    float* d = reinterpret_cast<float*>(nb.dst + long(r) * NR);
-    if (r < nb.kb) {
-      const float* s = reinterpret_cast<const float*>(nb.src + long(r) * nb.ldb);
-      if (nb.pfrows && r + nb.pfrows < nb.kb) pf_l2(nb.src + long(r + nb.pfrows) * nb.ldb, NR * int(sizeof(T)));
-      for (int c = 0; c < nf; c += 16) vst1q_f32_x4(d + c, vld1q_f32_x4(s + c));
-    } else {
-      const float32x4x4_t z = {vdupq_n_f32(0), vdupq_n_f32(0), vdupq_n_f32(0), vdupq_n_f32(0)};
-      for (int c = 0; c < nf; c += 16) vst1q_f32_x4(d + c, z);
-    }
-  }
-}
-
-// Side work of one kernel call. Online B packing: mode 1 packs the next panel with the core (nb), mode 2 has AMX
-// read this call's panel from the source and write it to Bp (sb). pfa: next A panel, prefetched into L2 alongside.
-template <class T>
-struct Onl {
-  int mode;
-  NextB<T> nb;
-  SrcB<T> sb;
+struct Side {
+  const SrcB<T>* src;
   const char* pfa;
+  const T* bvec;
 };
 
-template <class T, int MODE>
-MT_INL void kernel_body(int kp, const T* Ap, const T* Bp, T* C, long ldc, bool load, const Onl<T>* on) {
+template <class T, bool SRC>
+MT_INL void kernel_body(int kp, const T* Ap, const T* Bp, T* C, long ldc, bool load, const Side<T>& sd) {
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
+  constexpr long sa = 4 * MR * sizeof(T), sb = 4 * NR * sizeof(T);
   const char* a = reinterpret_cast<const char*>(Ap);
   const char* b = reinterpret_cast<const char*>(Bp);
-  char* bp = const_cast<char*>(b);
-  constexpr long sa = 4 * MR * sizeof(T), sb = 4 * NR * sizeof(T);
   auto step = [&](auto skip, int k) __attribute__((always_inline)) {
-    if constexpr (sizeof(T) == 4) step4_f32<decltype(skip)::value, MODE == 2>(a, b, MODE == 2 ? &on->sb : nullptr, k, bp);
-    else step4_f64<decltype(skip)::value, MODE == 2>(a, b, MODE == 2 ? &on->sb : nullptr, k, bp);
-    if constexpr (MODE == 1) pack_rows4(on->nb, k);
-    if (on && on->pfa) pf_l2(on->pfa + long(k) * MR * long(sizeof(T)), int(sa));
+    if constexpr (sizeof(T) == 4) step4_f32<decltype(skip)::value, SRC>(a, b, sd.src, k);
+    else step4_f64<decltype(skip)::value, SRC>(a, b, sd.src, k);
+    if (sd.pfa) pf_l2(sd.pfa + long(k) * MR * long(sizeof(T)), int(sa));
   };
   int k = 0;
   if (load) {
-    z_io<T, false>(C, ldc);
-  } else {
+    if (sd.bvec) z_load_scaled<T>(C, ldc, sd.bvec); else z_io<T, false>(C, ldc);
+  } else {  // the first step overwrites Z (skip-Z), so C is not read
     step(std::true_type{}, 0);
     k = 4; a += sa; b += sb;
   }
@@ -183,28 +162,25 @@ MT_INL void kernel_body(int kp, const T* Ap, const T* Bp, T* C, long ldc, bool l
   z_io<T, true>(C, ldc);
 }
 
-// Micro-kernel: MR x NR block of C += A panel (kp x MR) * B panel (kp x NR), kp a multiple of 4.
-// load = false: the first step overwrites Z (skip-Z), so C is not read.
+// MR x NR block of C (+)= A panel (kp x MR) * B panel (kp x NR), kp a multiple of 4.
 template <class T>
-MT_NOINL void kernel(int kp, const T* Ap, const T* Bp, T* C, long ldc, bool load, const Onl<T>* on) {
-  if (!on || on->mode == 0) kernel_body<T, 0>(kp, Ap, Bp, C, ldc, load, on);
-  else if (on->mode == 1) kernel_body<T, 1>(kp, Ap, Bp, C, ldc, load, on);
-  else kernel_body<T, 2>(kp, Ap, Bp, C, ldc, load, on);
+MT_NOINL void kernel(int kp, const T* Ap, const T* Bp, T* C, long ldc, bool load, const Side<T>& sd) {
+  if (sd.src) kernel_body<T, true>(kp, Ap, Bp, C, ldc, load, sd);
+  else kernel_body<T, false>(kp, Ap, Bp, C, ldc, load, sd);
 }
 
 // Partial C block (rows < MR or cols < NR) through an aligned scratch tile.
 template <class T>
 MT_NOINL void kernel_edge(int kp, const T* Ap, const T* Bp, T* C, long ldc, int rows, int cols, bool load,
-                          const Onl<T>* on) {
+                          const Side<T>& sd) {
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
   alignas(128) T t[MR * NR];
   if (load)
     for (int r = 0; r < rows; ++r) std::memcpy(t + r * NR, C + long(r) * ldc, cols * sizeof(T));
-  kernel<T>(kp, Ap, Bp, t, NR, load, on);
+  kernel<T>(kp, Ap, Bp, t, NR, load, sd);
   for (int r = 0; r < rows; ++r) std::memcpy(C + long(r) * ldc, t + r * NR, cols * sizeof(T));
 }
 
-// A block (mb x kb, row-major, lda) to panels of MR rows: Ap[panel][k][r], depth padded to kp, rows to MR, zeros.
 MT_INL void tr4(const float* s, long lda, float* d, int dstride, float32x4_t al, bool sc) {
   float32x4_t r0 = vld1q_f32(s), r1 = vld1q_f32(s + lda), r2 = vld1q_f32(s + 2 * lda), r3 = vld1q_f32(s + 3 * lda);
   if (sc) { r0 = vmulq_f32(r0, al); r1 = vmulq_f32(r1, al); r2 = vmulq_f32(r2, al); r3 = vmulq_f32(r3, al); }
@@ -225,18 +201,14 @@ MT_INL void tr4(const double* s, long lda, double* d, int dstride, float64x2_t a
   }
 }
 
-constexpr int kAmxPfChunks = 4;  // source chunks prefetched ahead of the AMX transposition
-
-// 32 depth steps of a full A panel (MR = 2E rows, E = 64 bytes of elements) transposed by AMX through Z: row m,
-// depth group g (E steps) goes in with ldz to tile 2g + m/E; each depth step k comes out as a column of the two
-// tiles of its group (extrv: y[j] = z[NT j + tile][k % E]) and leaves with one Y pair store.
+// 32 depth steps of a full A panel through Z: rows in with ldz, each depth step out as a Z column (extrv) to Y.
 template <class T>
 MT_INL void tr32_amx(const T* A, long lda, T* dst) {
   constexpr int E = 64 / int(sizeof(T)), NT = E == 16 ? 4 : 8, MR = 2 * E;
   constexpr uint64_t kExtrY = (1ull << 63) | (uint64_t(E == 16 ? 8 : 1) << 11) | (1ull << 26) | (1ull << 10);
-  for (int m = 0; m < MR; ++m)
+  for (int m = 0; m < MR; ++m)  // row m, depth group g goes to tile 2g + m / E
     for (int g = 0; g < 32 / E; ++g) AMX_LDZ(zr(A + long(m) * lda + g * E, NT * (m % E) + 2 * g + m / E));
-  for (int k = 0; k < 32; ++k) {
+  for (int k = 0; k < 32; ++k) {  // y[j] = z[NT j + tile][k % E] for the two tiles of the group of k
     const int t = 2 * (k / E), c = k % E, y = 128 * (k & 3);
     AMX_EXTRY(kExtrY | uint64_t(c * NT + t) << 20 | uint64_t(y));
     AMX_EXTRY(kExtrY | uint64_t(c * NT + t + 1) << 20 | uint64_t(y + 64));
@@ -244,11 +216,10 @@ MT_INL void tr32_amx(const T* A, long lda, T* dst) {
   }
 }
 
-// The panel is written one chunk of KB depth steps at a time (one 128-byte line of each of the MR source rows),
-// so each destination line is complete before the next chunk; pf: prefetch the source two chunks ahead.
-template <class T, int MR = Ak<T>::MR>
+// A block (mb x kb) to panels Ap[panel][k][r] of MR rows, zero padded; full panels through Z (amx, alpha = 1).
+template <class T>
 MT_NOINL void pack_a(int mb, int kb, int kp, const T* A, long lda, T alpha, T* Ap, bool pf, bool amx) {
-  constexpr int KB = 128 / int(sizeof(T));
+  constexpr int MR = Ak<T>::MR, KB = 128 / int(sizeof(T));
   const bool sc = alpha != T(1);
   auto al = [&] { if constexpr (sizeof(T) == 4) return vdupq_n_f32(alpha); else return vdupq_n_f64(alpha); }();
   for (int p0 = 0; p0 < mb; p0 += MR) {
@@ -258,16 +229,15 @@ MT_NOINL void pack_a(int mb, int kb, int kp, const T* A, long lda, T alpha, T* A
     int kz = 0;
     if (amx && rows == MR && !sc)
       for (; kz + 32 <= kb; kz += 32) {
-        if (pf) {  // AMX waits in order on each miss: the whole chunk kAmxPfChunks ahead, into the next panel too
+        if (pf) {  // AMX waits in order on each miss: prefetch whole chunks ahead, into the next panel too
           int kf = kz + 32 * kAmxPfChunks, pf0 = p0;
           if (kf + 32 > kb) { kf -= kb / 32 * 32; pf0 += MR; }
-          if (pf0 + MR <= mb && kf >= 0)
-            for (int r = 0; r < MR; ++r)
-              for (int b = 0; b < 32 * int(sizeof(T)); b += 128) __builtin_prefetch(reinterpret_cast<const char*>(A + long(pf0 + r) * lda + kf) + b, 0, 2);
+          if (pf0 + MR <= mb && kf >= 0 && kf + 32 <= kb)
+            for (int r = 0; r < MR; ++r) pf_l2(A + long(pf0 + r) * lda + kf, 32 * int(sizeof(T)));
         }
         tr32_amx<T>(A + long(p0) * lda + kz, lda, dst + long(kz) * MR);
       }
-    for (int k0 = kz; k0 < k4; k0 += KB) {
+    for (int k0 = kz; k0 < k4; k0 += KB) {  // one 128-byte line of each source row per chunk
       const int k1 = std::min(k4, k0 + KB);
       for (int r = 0; r < r4; r += 4) {
         const T* src = A + long(p0 + r) * lda;
@@ -291,58 +261,31 @@ MT_NOINL void pack_a(int mb, int kb, int kp, const T* A, long lda, T alpha, T* A
   }
 }
 
-// B block (kb x ncols, row-major, ldb) to one panel of NR columns: Bp[k][c], zero padded to kp x NR.
-template <class T>
-MT_NOINL void pack_b(int kb, int kp, int ncols, const T* B, long ldb, T* Bp) {
-  constexpr int NR = Ak<T>::NR;
-  if (ncols == NR) {
-    for (int k = 0; k < kb; ++k) {
-      const float* s = reinterpret_cast<const float*>(B + long(k) * ldb);
-      float* d = reinterpret_cast<float*>(Bp + long(k) * NR);
-      constexpr int nf = NR * sizeof(T) / 4;
-      for (int c = 0; c < nf; c += 16) vst1q_f32_x4(d + c, vld1q_f32_x4(s + c));
-    }
-  } else {
-    for (int k = 0; k < kb; ++k) {
-      std::memcpy(Bp + long(k) * NR, B + long(k) * ldb, ncols * sizeof(T));
-      std::memset(Bp + long(k) * NR + ncols, 0, (NR - ncols) * sizeof(T));
-    }
-  }
-  std::memset(Bp + long(kb) * NR, 0, size_t(kp - kb) * NR * sizeof(T));
-}
-
-// Whole B block (kb x nb) to its panels in source row order, so that each source row streams contiguously
-// (panel order touches one 128-byte piece per row, a page apart when ldb is large).
+// B columns [0, nb) of kb rows to panels of NR columns, in source row order so that each row streams contiguously.
 template <class T>
 MT_NOINL void pack_b_rows(int kb, int kp, int nb, const T* B, long ldb, T* Bc, bool pf) {
   constexpr int NR = Ak<T>::NR, nf = NR * int(sizeof(T)) / 4;
+  const long bs = bstride<T>(kp);
   const int nfull = nb / NR * NR;
   for (int k = 0; k < kb; ++k) {
     const T* s = B + long(k) * ldb;
-    if (pf && k + 8 < kb)
-      for (int c = 0; c < nb; c += 128 / int(sizeof(T))) __builtin_prefetch(s + 8 * ldb + c, 0, 2);
+    if (pf && k + 8 < kb) pf_l2(s + 8 * ldb, nb * int(sizeof(T)));
     for (int jj = 0; jj < nfull; jj += NR) {
       const float* sf = reinterpret_cast<const float*>(s + jj);
-      float* d = reinterpret_cast<float*>(Bc + long(jj / NR) * bstride<T>(kp) + long(k) * NR);
+      float* d = reinterpret_cast<float*>(Bc + long(jj / NR) * bs + long(k) * NR);
       for (int c = 0; c < nf; c += 16) vst1q_f32_x4(d + c, vld1q_f32_x4(sf + c));
     }
     if (nfull < nb) {
-      T* d = Bc + long(nfull / NR) * bstride<T>(kp) + long(k) * NR;
+      T* d = Bc + long(nfull / NR) * bs + long(k) * NR;
       std::memcpy(d, s + nfull, (nb - nfull) * sizeof(T));
       std::memset(d + (nb - nfull), 0, (NR - (nb - nfull)) * sizeof(T));
     }
   }
   if (kp > kb)
-    for (int jj = 0; jj < nb; jj += NR) std::memset(Bc + long(jj / NR) * bstride<T>(kp) + long(kb) * NR, 0, size_t(kp - kb) * NR * sizeof(T));
+    for (int jj = 0; jj < nb; jj += NR) std::memset(Bc + long(jj / NR) * bs + long(kb) * NR, 0, size_t(kp - kb) * NR * sizeof(T));
 }
 
-// AMX blocking: depth of about 4 KB per row (C is reloaded once per depth block), A block up to 8 MB, B block the
-// rest of a 6 MB budget but at least 8 panels; each balanced over the problem so that blocks come out even.
-inline int balance(int total, int block, int step) {
-  if (block >= total) return round_up(total, step);
-  const int nblk = (total + block - 1) / block;
-  return std::min(round_up(block, step), round_up((total + nblk - 1) / nblk, step));
-}
+// Blocking: depth of about 4 KB per row, A block up to 8 MB, B block the rest of 6 MB but at least 8 panels.
 template <class T>
 mt_blocking amx_blocking(int M, int N, int K) {
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR, es = sizeof(T);
@@ -361,11 +304,11 @@ struct Job {
   long lda;
   const T* B;
   long ldb;
-  bool load;  // C holds data to accumulate onto (beta = 1 after any pre-scaling)
+  T beta;
   T* C;
   long ldc;
   mt_blocking blk;
-  int prof, pf, online, pfdist, pack4;
+  int prof, pf, bmode, pack4;
   T* Ac;
   T* Bc;
 };
@@ -375,30 +318,25 @@ void drive(const Job<T>& jb) {
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
   const int M = jb.M, N = jb.N, K = jb.K;
   const int mc = jb.blk.mc, nc = jb.blk.nc, kc = jb.blk.kc;
+  const bool scale = jb.beta != T(0) && jb.beta != T(1);
+  alignas(64) T bvec[64 / sizeof(T)];
+  std::fill(bvec, bvec + 64 / sizeof(T), jb.beta);
   for (int i = 0; i < M; i += mc) {
     const int mb = std::min(mc, M - i);
     for (int k = 0; k < K; k += kc) {
       const int kb = std::min(kc, K - k), kp = round_up(kb, kKU);
       const long bs = bstride<T>(kp);
       if (!(jb.prof & 1)) pack_a<T>(mb, kb, kp, jb.A + long(i) * jb.lda + k, jb.lda, jb.alpha, jb.Ac, jb.pf & 1, jb.pack4);
-      const bool load = k > 0 || jb.load;
+      const bool load = k > 0 || jb.beta != T(0);
       for (int j = 0; j < N; j += nc) {
         const int nb = std::min(nc, N - j);
         const T* Bs = jb.B + long(k) * jb.ldb + j;
-        // B modes (option online, 1 = auto chosen in run_job): 0 packed up front in source row order; 3 = the core packs each
-        // next panel during the kernel before it (first row of kernels, ii = 0); 2 = AMX reads full-width panels
-        // from the source in that row and writes the packed copy; 4 = AMX reads full-width panels from the source in
-        // every row and nothing is packed.
-        const int online = jb.prof & 6 ? 0 : (jb.online == 2 || jb.online == 4 ? jb.online : jb.online == 3 ? 1 : 0);
-        const int pfr = (jb.pf & 2) ? jb.pfdist : 0;
+        const bool src = jb.bmode == kBSource && !(jb.prof & 4);
         if (jb.prof & 4) {
-        } else if (online == 0) {
+        } else if (!src) {
           pack_b_rows<T>(kb, kp, nb, Bs, jb.ldb, jb.Bc, jb.pf & 2);
-        } else {
-          for (int jj = 0; jj < nb; jj += NR) {
-            const int cols = std::min(NR, nb - jj);
-            if ((online == 1 && jj == 0) || cols < NR) pack_b<T>(kb, kp, cols, Bs + jj, jb.ldb, jb.Bc + long(jj / NR) * bs);
-          }
+        } else if (nb % NR) {  // the partial panel is packed even when B is read from the source
+          pack_b_rows<T>(kb, kp, nb % NR, Bs + nb / NR * NR, jb.ldb, jb.Bc + long(nb / NR) * bs, jb.pf & 2);
         }
         if (jb.prof & 2) continue;
         T* Cb = jb.C + long(i) * jb.ldc + j;
@@ -408,30 +346,20 @@ void drive(const Job<T>& jb) {
           for (int jj = 0; jj < nb; jj += NR) {
             const int cols = std::min(NR, nb - jj);
             T* Cp = Cb + long(ii) * jb.ldc + jj;
-            Onl<T> on{0, {}, {}, nullptr}, *pon = nullptr;
-            if (ii == 0 && online == 1 && nb - (jj + NR) >= NR) {
-              on.mode = 1;
-              on.nb = {Bs + jj + NR, jb.ldb, jb.Bc + long(jj / NR + 1) * bs, kb, pfr};
-              pon = &on;
-            } else if (((ii == 0 && online == 2) || online == 4) && cols == NR) {
-              on.mode = 2;
-              on.sb = {Bs + jj, jb.ldb, kb, pfr, online == 2};
-              pon = &on;
-            }
-            if (jj == 0 && (jb.pf & 1) && !(jb.pf & 8)) {  // next A panel of this block (the first again for next j)
+            SrcB<T> sb{Bs + jj, jb.ldb, kb};
+            Side<T> sd{src && cols == NR ? &sb : nullptr, nullptr, scale && k == 0 ? bvec : nullptr};
+            if (jj == 0 && (jb.pf & 1)) {  // next A panel of this block (the first again for the next j)
               const T* An = ii + MR < mb ? Ap + long(MR) * kp : (j + nc < N ? jb.Ac : nullptr);
-              if (An) {
-                on.pfa = reinterpret_cast<const char*>(An);
-                pon = &on;
-              }
+              sd.pfa = reinterpret_cast<const char*>(An);
             }
-            if (load && (jb.pf & 4)) {  // next C tile towards L2: ldz latency on C otherwise stalls the tile start
+            if (load && (jb.pf & 4)) {  // next C tile towards L2: the tile start otherwise waits for ldz
               const T* Cn = jj + NR < nb ? Cp + NR : Cb + long(ii + MR) * jb.ldc;
               if (jj + NR < nb || ii + MR < mb)
                 for (int r = 0; r < MR; ++r) pf_l2(Cn + long(r) * jb.ldc, NR * int(sizeof(T)));
             }
-            if (rows == MR && cols == NR) kernel<T>(kp, Ap, jb.Bc + long(jj / NR) * bs, Cp, jb.ldc, load, pon);
-            else kernel_edge<T>(kp, Ap, jb.Bc + long(jj / NR) * bs, Cp, jb.ldc, rows, cols, load, pon);
+            const T* Bp = jb.Bc + long(jj / NR) * bs;
+            if (rows == MR && cols == NR) kernel<T>(kp, Ap, Bp, Cp, jb.ldc, load, sd);
+            else kernel_edge<T>(kp, Ap, Bp, Cp, jb.ldc, rows, cols, load, sd);
           }
         }
       }
@@ -439,21 +367,6 @@ void drive(const Job<T>& jb) {
   }
 }
 
-// Per-thread packed buffers, reused across calls so that timing does not include page faults.
-struct Buf {
-  void* p = nullptr;
-  size_t n = 0;
-  ~Buf() { std::free(p); }
-  void* get(size_t bytes) {
-    if (bytes > n) {
-      std::free(p);
-      p = nullptr;
-      if (posix_memalign(&p, 16384, bytes)) std::abort();
-      n = bytes;
-    }
-    return p;
-  }
-};
 thread_local Buf tl_buf;
 
 template <class T>
@@ -461,12 +374,10 @@ void run_job(Job<T>& jb, const mt_options& o) {
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
   jb.prof = o.prof;
   jb.pf = o.prefetch;
-  // online = 1 (default): B is not packed when all of it fits in 2 MB (fp64 always, fp32 only for M <= 128: fp64
-  // has twice the fma per load, fp32 pays the extra single-register loads once per row of kernels), else up front.
-  jb.online = o.online != 1 ? o.online
-              : (long(jb.K) * jb.N * long(sizeof(T)) <= (2L << 20) && (sizeof(T) == 8 || jb.M <= 128) ? 4 : 0);
-  jb.pfdist = o.pfdist ? o.pfdist : kPfRowsB;
   jb.pack4 = o.pack4;
+  // Auto: B is read from the source when all of it fits in 2 MB (fp64 always, fp32 only for M <= 128).
+  const bool small_b = long(jb.K) * jb.N * long(sizeof(T)) <= (2L << 20) && (sizeof(T) == 8 || jb.M <= 128);
+  jb.bmode = o.online == kBAuto ? (small_b ? kBSource : kBPacked) : o.online == kBSource ? kBSource : kBPacked;
   mt_blocking b;
   if (o.mc && o.nc && o.kc) b = {o.mc, o.nc, o.kc};
   else if (o.model == 1) b = amx_blocking<T>(jb.M, jb.N, jb.K);
@@ -513,31 +424,24 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
       for (int j = 0; j < N; ++j) C[long(i) * ldc + j] = beta == T(0) ? T(0) : beta * C[long(i) * ldc + j];
     return;
   }
-  if (beta != T(0) && beta != T(1))
-    for (int i = 0; i < M; ++i)
-      for (int j = 0; j < N; ++j) C[long(i) * ldc + j] *= beta;
-  Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta != T(0), C, ldc, {}, 0, 0, 0, 0, 0, nullptr, nullptr};
-  constexpr int MR = Ak<T>::MR;
-  if (o.threads < 2) return run_job(jb, o);  // M2: the cores of the P cluster share one AMX unit (threads=0 is 1)
-  // threads = 3: the calling (P-cluster) thread and an efficiency-cluster thread with eshare percent of the work.
-  const bool pe = o.threads == 3;
-  const double f0 = pe ? 1.0 - o.eshare / 100.0 : 0.5;
+  Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, {}, 0, 0, 0, 0, nullptr, nullptr};
+  if (o.threads < 2) return run_job(jb, o);  // threads = 0 is 1: the M2's P-cluster cores share one AMX unit
+  constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
   Half<T> h0{jb, o}, h1{jb, o};
   if (M >= N) {
-    const int m0 = std::min(M, round_up(int(M * f0 + 0.5), MR));
+    const int m0 = std::min(M, round_up((M + 1) / 2, MR));
     h0.jb.M = m0;
     h1.jb.M = M - m0;
     h1.jb.A = A + long(m0) * lda;
     h1.jb.C = C + long(m0) * ldc;
   } else {
-    const int n0 = std::min(N, round_up(int(N * f0 + 0.5), Ak<T>::NR));
+    const int n0 = std::min(N, round_up((N + 1) / 2, NR));
     h0.jb.N = n0;
     h1.jb.N = N - n0;
     h1.jb.B = B + n0;
     h1.jb.C = C + n0;
   }
-  if (pe) run_pair_e(run_half<T>, &h0, &h1);
-  else run_pair(run_half<T>, &h0, &h1);
+  run_pair(run_half<T>, &h0, &h1);
 }
 
 }  // namespace

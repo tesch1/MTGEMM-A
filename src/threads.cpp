@@ -1,5 +1,4 @@
-// One persistent worker thread; both threads run at QoS user-interactive so they land on P-clusters. run_pair_e:
-// a second worker at QoS background, which runs on the efficiency cluster (AMX backend, threads = 3).
+// One persistent worker thread; both threads run at QoS user-interactive so they land on P-clusters.
 // The worker spins on an atomic for a short while before it sleeps, so back-to-back calls do not pay a wake-up.
 #include "internal.h"
 #include <pthread.h>
@@ -23,11 +22,11 @@ struct Worker {
   std::atomic<bool> sleeping{false};
   pthread_t th;
 
-  explicit Worker(qos_class_t qos) {
+  Worker() {
     pthread_attr_t at;
     pthread_attr_init(&at);
     pthread_attr_setstacksize(&at, 64 << 20);
-    pthread_attr_set_qos_class_np(&at, qos, 0);
+    pthread_attr_set_qos_class_np(&at, QOS_CLASS_USER_INTERACTIVE, 0);
     pthread_create(&th, &at, &Worker::entry, this);
     pthread_attr_destroy(&at);
   }
@@ -54,7 +53,10 @@ struct Worker {
   }
 };
 
-void run_on(Worker* w, void (*fn)(void*), void* a0, void* a1) {
+}  // namespace
+
+void run_pair(void (*fn)(void*), void* a0, void* a1) {
+  static Worker* w = new Worker;  // never joined: lives for the process
   static std::mutex call_mu;
   std::lock_guard<std::mutex> cg(call_mu);
   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
@@ -69,18 +71,6 @@ void run_on(Worker* w, void (*fn)(void*), void* a0, void* a1) {
   fn(a0);
   while (w->done.load(std::memory_order_acquire) != ticket) {
   }
-}
-
-}  // namespace
-
-void run_pair(void (*fn)(void*), void* a0, void* a1) {
-  static Worker* w = new Worker(QOS_CLASS_USER_INTERACTIVE);  // never joined: lives for the process
-  run_on(w, fn, a0, a1);
-}
-
-void run_pair_e(void (*fn)(void*), void* a0, void* a1) {
-  static Worker* w = new Worker(QOS_CLASS_BACKGROUND);
-  run_on(w, fn, a0, a1);
 }
 
 }  // namespace mt

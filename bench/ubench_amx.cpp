@@ -1,6 +1,4 @@
-// AMX microbenchmarks (M2 target): fma peak by accumulator count and thread placement, X/Y load bandwidth by
-// footprint and width, the 32x32 fp32 kernel step (4 quad loads + 16 fma32) by footprint, Z row load/store.
-// usage: ubench_amx [fma|threads|load|kern|z|all]
+// AMX microbenchmarks (fma peak, threads, loads, kernel step, Z I/O); usage: ubench_amx [fma|threads|load|kern|z|overlap|all]
 #include "../src/amx.h"
 #include <pthread.h>
 #include <pthread/qos.h>
@@ -36,23 +34,23 @@ static double timeit(const std::function<void()>& f) {
 template <int NA>
 __attribute__((noinline)) void fma32_loop(long n) {
   for (long i = 0; i < n; ++i) {
-    AMX_FMA32(fma(0, 0, 0));
-    if (NA > 1) AMX_FMA32(fma(1, 64, 64));
-    if (NA > 2) AMX_FMA32(fma(2, 128, 128));
-    if (NA > 3) AMX_FMA32(fma(3, 192, 192));
+    AMX_FMA32(fma_op(0, 0, 0));
+    if (NA > 1) AMX_FMA32(fma_op(1, 64, 64));
+    if (NA > 2) AMX_FMA32(fma_op(2, 128, 128));
+    if (NA > 3) AMX_FMA32(fma_op(3, 192, 192));
   }
 }
 template <int NA>
 __attribute__((noinline)) void fma64_loop(long n) {
   for (long i = 0; i < n; ++i) {
-    AMX_FMA64(fma(0, 0, 0));
-    if (NA > 1) AMX_FMA64(fma(1, 64, 64));
-    if (NA > 2) AMX_FMA64(fma(2, 128, 128));
-    if (NA > 3) AMX_FMA64(fma(3, 192, 192));
-    if (NA > 4) AMX_FMA64(fma(4, 256, 256));
-    if (NA > 5) AMX_FMA64(fma(5, 320, 320));
-    if (NA > 6) AMX_FMA64(fma(6, 384, 384));
-    if (NA > 7) AMX_FMA64(fma(7, 448, 448));
+    AMX_FMA64(fma_op(0, 0, 0));
+    if (NA > 1) AMX_FMA64(fma_op(1, 64, 64));
+    if (NA > 2) AMX_FMA64(fma_op(2, 128, 128));
+    if (NA > 3) AMX_FMA64(fma_op(3, 192, 192));
+    if (NA > 4) AMX_FMA64(fma_op(4, 256, 256));
+    if (NA > 5) AMX_FMA64(fma_op(5, 320, 320));
+    if (NA > 6) AMX_FMA64(fma_op(6, 384, 384));
+    if (NA > 7) AMX_FMA64(fma_op(7, 448, 448));
   }
 }
 
@@ -160,8 +158,8 @@ __attribute__((noinline)) void kern_loop(const char* a, const char* b, long byte
       AMX_LDY(xy(a + o, 0, kQuad)); AMX_LDY(xy(a + o + 256, 4, kQuad));
     }
 #define MT_K(k) \
-    AMX_FMA32(fma(0, 128 * k, 128 * k)); AMX_FMA32(fma(1, 128 * k + 64, 128 * k)); \
-    AMX_FMA32(fma(2, 128 * k, 128 * k + 64)); AMX_FMA32(fma(3, 128 * k + 64, 128 * k + 64));
+    AMX_FMA32(fma_op(0, 128 * k, 128 * k)); AMX_FMA32(fma_op(1, 128 * k + 64, 128 * k)); \
+    AMX_FMA32(fma_op(2, 128 * k, 128 * k + 64)); AMX_FMA32(fma_op(3, 128 * k + 64, 128 * k + 64));
     MT_K(0) MT_K(1) MT_K(2) MT_K(3)
 #undef MT_K
   }
@@ -207,7 +205,7 @@ static void bench_z() {
 template <int S, bool LD>
 __attribute__((noinline)) void overlap_loop(float* c, long n) {
   for (long i = 0; i < n; ++i) {
-    for (int u = 0; u < 8; ++u) { AMX_FMA32(fma(0, 64 * u, 0)); AMX_FMA32(fma(1, 64 * u, 64)); }
+    for (int u = 0; u < 8; ++u) { AMX_FMA32(fma_op(0, 64 * u, 0)); AMX_FMA32(fma_op(1, 64 * u, 64)); }
     for (int s = 0; s < S; ++s) {
       if (LD) AMX_LDZ(zr(c + ((i * S + s) & 16383) * 16, 4 * (s & 15) + 2 + (s >> 4 & 1)));
       else AMX_STZ(zr(c + ((i * S + s) & 16383) * 16, 4 * (s & 15) + 2 + (s >> 4 & 1)));

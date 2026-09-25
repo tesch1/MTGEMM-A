@@ -106,11 +106,6 @@ enum CMode { kZero = 0, kLoad = 1, kScale = 2 };
 enum Prefetch { kPfA = 1, kPfB = 2, kPfC = 4 };
 constexpr int kPfRowsB = 8;  // B rows ahead for the core prefetch of B strips
 
-// Core-side prefetch into L2 (prfm pldl2keep) of `bytes` starting at p; the SME unit reads through L2.
-MT_INL void pf_l2(const void* p, int bytes) __arm_streaming_compatible {
-  for (int l = 0; l < bytes; l += 128) __builtin_prefetch(static_cast<const char*>(p) + l, 0, 2);
-}
-
 // Four rows x 64 columns into horizontal slices r..r+3 of every tile: strided-register x4 loads put the four
 // rows of one tile into z(4t)..z(4t+3), so one MOVA vg4 per tile suffices (inline asm to pin the registers).
 template <class T>
@@ -656,21 +651,6 @@ DriveFn<T> pick(const mt_options& o) {
   return pick3<T, 1, NT>(o.x4, o.online, o.cdirect);
 }
 
-// Per-thread packed buffers, reused across calls so that timing does not include page faults.
-struct Buf {
-  void* p = nullptr;
-  size_t n = 0;
-  ~Buf() { std::free(p); }
-  void* get(size_t bytes) {
-    if (bytes > n) {
-      std::free(p);
-      p = nullptr;
-      if (posix_memalign(&p, 16384, bytes)) std::abort();
-      n = bytes;
-    }
-    return p;
-  }
-};
 thread_local Buf tl_buf;
 
 template <class T>

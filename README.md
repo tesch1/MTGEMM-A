@@ -806,7 +806,8 @@ So the M2 has one AMX unit that counts: more P-core threads share it, and the ef
   four depth steps take two Y quad loads, four X quad loads and 32 `fma64`. When C is not read (beta = 0,
   first depth block), the first step uses the skip-Z form, so Z is never zeroed or loaded. C moves with
   `ldz`/`stz` pairs when the rows are 128-byte aligned, else with single rows; edge blocks go through a
-  scratch tile.
+  scratch tile. For beta other than 0 and 1, the first depth block loads C through X and writes x * beta
+  into Z with one vector-mode `fma` per row, so C gets no separate scaling pass.
 - **A packing through Z.** A must be transposed (Y takes MR values of one depth step). Full panels go through
   Z: 32 depth steps of MR rows are loaded with `ldz`, each depth step leaves as a Z column (`extrv`,
   y[j] = z[NT j + tile][k]) and one Y pair store. Tails and alpha != 1 use NEON 4x4 transposes. AMX waits in
@@ -814,23 +815,25 @@ So the M2 has one AMX unit that counts: more P-core threads share it, and the ef
 - **B packing** in source row order into panels whose stride is padded by 256 bytes. Packing panel by panel
   reads one 128-byte piece per source row, a page apart; and with unpadded panels of 64 KB, 16 write streams
   fell into the same L1 sets (on the M4, 64x32768x512 packed B 4.6x slower than with the padding; on the M2 the
-  paper shapes 1-12 (M = 64, 128) went from 274 to 610 GFLOPS geomean, B packed up front). With `online = 1` (the default) B is not packed
-  when it fits in 2 MB (fp64, or fp32 with M <= 128): AMX then reads each B row from the source with single
-  64-byte loads (no alignment needed).
+  paper shapes 1-12 (M = 64, 128) went from 274 to 610 GFLOPS geomean, B packed up front). Option `online`: 0 packs B
+  up front, 2 does not pack it (AMX reads each B row from the source with single 64-byte loads, which need no
+  alignment), 1 (the default) chooses 2 when B fits in 2 MB (fp64, or fp32 with M <= 128), else 0.
 - **Blocking** (`model = 1`): kc of about 4 KB of depth per row (1024 fp32, 512 fp64), mc up to an 8 MB A
   block (the whole M up to 2048), nc from the rest of a 6 MB budget but at least 256. This was measured on
   the headset; the SME model (`model = 3`) chose small blocks that re-packed B four times.
 - **Prefetch** by the core into L2: the next C tile (the tile start otherwise waits for `ldz`), the next A
   panel during the first kernel of a row, the A source ahead of the transposition.
 - **Threads.** One thread by default (`threads = 0` means 1). `threads = 2` splits over two P-core threads
-  (no gain on M2, they share the unit); `threads = 3` gives `eshare` percent to an efficiency-cluster thread
-  (5%: within noise, 8-12%: slower, the P thread waits).
+  (no gain on M2, they share the unit).
 
-What did not work on the M2 (all measured, see `results/amx/b*`): packing the next B panel with the core
-inside the kernel (the core stalls on DRAM and stops issuing AMX instructions: 823 against 1106 GFLOPS on
-squares), AMX reading B from the source in the first row of kernels (`online = 2`), and a 64x16 kernel that
-reads B straight from the source for M <= 64 (282 against 610 GFLOPS on the thin paper shapes: each 16-column
-strip walks thousands of rows a page apart).
+What did not work on the M2 (all measured, see `results/amx/b*`; none of it is in the code): packing the next
+B panel with the core inside the kernel (the core stalls on DRAM and stops issuing AMX instructions: 823
+against 1106 GFLOPS on squares), AMX reading B from the source in the first row of kernels only and storing
+the packed copy for the other rows, a 64x16 kernel that reads B straight from the source for M <= 64 (282
+against 610 GFLOPS on the thin paper shapes: each 16-column strip walks thousands of rows a page apart), and
+a fixed share of the work (5-12%) for a thread on the efficiency cluster (b14: within noise at 5%, up to 2x
+slower at 8-12%, because the P thread waits for the throttled E thread). The queue files of the early batches
+use the option values of that time (`online=3`, `online=4`, `threads=3`).
 
 ### Results against Accelerate
 

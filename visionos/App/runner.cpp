@@ -1,6 +1,4 @@
-// Batch runner for the device: runs each line of Documents/queue.txt as "<prog> args..." with stdout in
-// Documents/out/NN_<prog>.txt. Progress in out/state.txt survives a crash: a line started but not finished is
-// recorded as crashed and skipped on the next launch, so relaunching resumes the batch.
+// Device batch runner: each line of Documents/queue.txt to out_<batch>/NN_<prog>.txt; a crashed line is skipped on relaunch.
 #include <fcntl.h>
 #include <unistd.h>
 #include <chrono>
