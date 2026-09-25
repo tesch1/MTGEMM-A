@@ -931,10 +931,15 @@ multiply-adds, AMX `threads=1` and `threads=2`):
   the small matrices (4-48).
 - On large work AMX reaches 86-99% of SME on one unit. The M4 runs the AMX instructions on the same units (the
   AMX fma32 peak is 2000 GFLOPS per unit, the same as FMOPA).
-- AMX falls furthest behind on the long-K shapes (irregular set, 0.58): its blocking, chosen on the M2, reloads C
-  every 1024 depth steps (25 times for K = 25600). On the thin shapes (0.54) it pads narrow panels to 32
-  columns, while the SME backend has narrower edge kernels. AMX wins at 32x32x32 (654 against 254, B not
-  packed) and is even at 4096x64x4096 (947 against 970).
+- AMX falls furthest behind on the long-K shapes (irregular set, 0.58). Longer depth blocks do not help (kc from
+  1024 to 8192: within 5%), so C reloads are not the cause; these shapes pack 16 MB of A and B for 0.3-1.0
+  GFLOP, and the AMX packing is slower than the SME one, which packs B inside its first row of kernels. On the
+  thin shapes (0.54) AMX pads narrow panels to 32 columns, while the SME backend has narrower edge kernels
+  (not measured separately).
+- AMX wins at 32x32x32 (654 against 254) and is even at 4096x64x4096 (947 against 970). At 32^3 the gain comes
+  from not packing B (AMX with B packed: 324); the SME backend packs B, and its A transposition takes a
+  row-by-row path when a chunk has fewer than 64 depth steps (SME without A packing: 390).
+- Blocking tuned on the M4 changes AMX squares by at most 3-5% (`mc` up to 4096, `kc` 2048).
 - The M4 has two P-cluster AMX units: with `threads=2` AMX nearly doubles (3076 against 1627). On the M2 the
   second thread gains nothing, because there is only one unit.
 
