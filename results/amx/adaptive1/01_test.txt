@@ -1,0 +1,6 @@
+# test 60
+backend: amx
+option combinations: 2304 checks
+sgemm: 60 / 60 passed
+dgemm: 30 / 30 passed
+ALL PASSED

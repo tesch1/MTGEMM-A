@@ -1,0 +1,5 @@
+# test
+option combinations: 2304 checks
+sgemm: 600 / 600 passed
+dgemm: 300 / 300 passed
+ALL PASSED

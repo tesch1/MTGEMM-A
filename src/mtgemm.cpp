@@ -106,21 +106,16 @@ enum CMode { kZero = 0, kLoad = 1, kScale = 2 };
 enum Prefetch { kPfA = 1, kPfB = 2, kPfC = 4 };
 constexpr int kPfRowsB = 8;  // B rows ahead for the core prefetch of B strips
 
-// Core-side prefetch into L2 (prfm pldl2keep) of `bytes` starting at p; the SME unit reads through L2.
-MT_INL void pf_l2(const void* p, int bytes) __arm_streaming_compatible {
-  for (int l = 0; l < bytes; l += 128) __builtin_prefetch(static_cast<const char*>(p) + l, 0, 2);
-}
-
-// Four rows x 64 columns into horizontal slices r..r+3 of every tile: strided-register x4 loads put the four
-// rows of one tile into z(4t)..z(4t+3), so one MOVA vg4 per tile suffices (inline asm to pin the registers).
+// First n <= 64 columns of four rows into slices r..r+3 of every tile (zeros past n), one MOVA vg4 per tile.
 template <class T>
-MT_INL void rows_in4(const T* src, long ld, uint32_t r) MT_S MT_ZA {
+MT_INL void rows_in4(const T* src, long ld, uint32_t r, long n = 64) MT_S MT_ZA {
+  const long h = 32, z = 0;
   const T* p1 = src + ld;
   const T* p2 = src + 2 * ld;
   const T* p3 = src + 3 * ld;
   if constexpr (sizeof(T) == 4) {
     asm volatile(
-        "ptrue pn8.s\n"
+        "whilelt pn8.s, %x[z], %x[n], vlx4\n"
         "ld1w {z16.s, z20.s, z24.s, z28.s}, pn8/z, [%[a0]]\n"
         "ld1w {z17.s, z21.s, z25.s, z29.s}, pn8/z, [%[a1]]\n"
         "ld1w {z18.s, z22.s, z26.s, z30.s}, pn8/z, [%[a2]]\n"
@@ -130,12 +125,12 @@ MT_INL void rows_in4(const T* src, long ld, uint32_t r) MT_S MT_ZA {
         "mova za2h.s[%w[r], 0:3], {z24.s - z27.s}\n"
         "mova za3h.s[%w[r], 0:3], {z28.s - z31.s}\n"
         :
-        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r)
+        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r), [n] "r"(n), [z] "r"(z)
         : "p8", "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23", "z24", "z25", "z26", "z27", "z28", "z29",
           "z30", "z31", "memory");
   } else {
     asm volatile(
-        "ptrue pn8.d\n"
+        "whilelt pn8.d, %x[z], %x[n], vlx4\n whilelt pn9.d, %x[h], %x[n], vlx4\n"
         "ld1d {z16.d, z20.d, z24.d, z28.d}, pn8/z, [%[a0]]\n"
         "ld1d {z17.d, z21.d, z25.d, z29.d}, pn8/z, [%[a1]]\n"
         "ld1d {z18.d, z22.d, z26.d, z30.d}, pn8/z, [%[a2]]\n"
@@ -144,17 +139,17 @@ MT_INL void rows_in4(const T* src, long ld, uint32_t r) MT_S MT_ZA {
         "mova za1h.d[%w[r], 0:3], {z20.d - z23.d}\n"
         "mova za2h.d[%w[r], 0:3], {z24.d - z27.d}\n"
         "mova za3h.d[%w[r], 0:3], {z28.d - z31.d}\n"
-        "ld1d {z16.d, z20.d, z24.d, z28.d}, pn8/z, [%[a0], #4, mul vl]\n"
-        "ld1d {z17.d, z21.d, z25.d, z29.d}, pn8/z, [%[a1], #4, mul vl]\n"
-        "ld1d {z18.d, z22.d, z26.d, z30.d}, pn8/z, [%[a2], #4, mul vl]\n"
-        "ld1d {z19.d, z23.d, z27.d, z31.d}, pn8/z, [%[a3], #4, mul vl]\n"
+        "ld1d {z16.d, z20.d, z24.d, z28.d}, pn9/z, [%[a0], #4, mul vl]\n"
+        "ld1d {z17.d, z21.d, z25.d, z29.d}, pn9/z, [%[a1], #4, mul vl]\n"
+        "ld1d {z18.d, z22.d, z26.d, z30.d}, pn9/z, [%[a2], #4, mul vl]\n"
+        "ld1d {z19.d, z23.d, z27.d, z31.d}, pn9/z, [%[a3], #4, mul vl]\n"
         "mova za4h.d[%w[r], 0:3], {z16.d - z19.d}\n"
         "mova za5h.d[%w[r], 0:3], {z20.d - z23.d}\n"
         "mova za6h.d[%w[r], 0:3], {z24.d - z27.d}\n"
         "mova za7h.d[%w[r], 0:3], {z28.d - z31.d}\n"
         :
-        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r)
-        : "p8", "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23", "z24", "z25", "z26", "z27", "z28", "z29",
+        : [a0] "r"(src), [a1] "r"(p1), [a2] "r"(p2), [a3] "r"(p3), [r] "Ucj"(r), [n] "r"(n), [z] "r"(z), [h] "r"(h)
+        : "p8", "p9", "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23", "z24", "z25", "z26", "z27", "z28", "z29",
           "z30", "z31", "memory");
   }
 }
@@ -468,12 +463,12 @@ MT_NOINL void pack_a(int mb, int kb, const T* A, long lda, T alpha, T* Ac, bool 
       const int kn = std::min(CH, kb - k0);
       if (rows < VL) svzero_za();
       int r = 0;
-      if (PK4 && !SCALE && kn >= CH)
+      if (PK4 && !SCALE)
         for (; r + 4 <= rows; r += 4) {
           const T* q = A + long(p0 + r) * lda + k0;
           if (pf && k0 + CH < kb)
             for (int u = 0; u < 4; ++u) pf_l2(q + u * lda + CH, CH * int(sizeof(T)));
-          rows_in4<T>(q, lda, r);
+          rows_in4<T>(q, lda, r, kn);
         }
       for (; r < rows; ++r) {
         const T* src = A + long(p0 + r) * lda + k0;
@@ -656,21 +651,6 @@ DriveFn<T> pick(const mt_options& o) {
   return pick3<T, 1, NT>(o.x4, o.online, o.cdirect);
 }
 
-// Per-thread packed buffers, reused across calls so that timing does not include page faults.
-struct Buf {
-  void* p = nullptr;
-  size_t n = 0;
-  ~Buf() { std::free(p); }
-  void* get(size_t bytes) {
-    if (bytes > n) {
-      std::free(p);
-      p = nullptr;
-      if (posix_memalign(&p, 16384, bytes)) std::abort();
-      n = bytes;
-    }
-    return p;
-  }
-};
 thread_local Buf tl_buf;
 
 template <class T>
@@ -679,6 +659,7 @@ void run_job(Job<T>& jb, const mt_options& o) {
   const int mr = o.shape == 1 ? 2 * VL : VL, nr = o.shape == 1 ? NT / 2 * VL : NT * VL;
   mt_blocking b;
   if (o.mc && o.nc && o.kc) b = {o.mc, o.nc, o.kc};
+  else if (o.model == 1 && (long(jb.M) + jb.N) * jb.K * long(sizeof(T)) <= (256L << 10)) b = {jb.M, jb.N, jb.K};  // one block
   else if (o.model == 1) b = mt_model_blocking(jb.M, jb.N, jb.K, sizeof(T), mr, nr);
   else if (o.model == 0) b = {256, 1024, 256};
   else b = {jb.M, jb.N, jb.K};  // model == 2: no cache blocking at all
@@ -753,11 +734,11 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
 }  // namespace
 }  // namespace mt
 
-void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
+void mt::sme_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
               float beta, float* C, int ldc, const mt_options* opt) {
   mt::gemm<float>(order, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, opt);
 }
-void mt_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A, int lda, const double* B, int ldb,
+void mt::sme_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A, int lda, const double* B, int ldb,
               double beta, double* C, int ldc, const mt_options* opt) {
   mt::gemm<double>(order, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, opt);
 }

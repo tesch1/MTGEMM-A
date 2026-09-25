@@ -79,9 +79,9 @@ static int run(int trials) {
     mt_options op;
     const int v = t % 9;
     if (v == 1) op.online = 0;
-    if (v == 2) op.x4 = 0;
+    if (v == 2) { op.x4 = 0; op.online = 2; }
     if (v == 3) op.heap = 0;
-    if (v == 4) op.model = 0;
+    if (v == 4) { op.model = 0; op.online = 2; }
     if (v == 5) op.shape = 1;
     if (v == 6) op.cdirect = 1;
     if (v == 0 && t % 4 == 0) op.cdirect = 2;
@@ -106,6 +106,7 @@ static int run(int trials) {
 int main(int argc, char** argv) {
   const int trials = argc > 1 ? std::atoi(argv[1]) : 600;
   int f = 0;
+  std::printf("backend: %s\n", mt_backend_name(mt_select_backend()));
   // Fixed shapes: exact multiples, one-off tails and degenerate sizes.
   const int fixed[][3] = {{16, 64, 4}, {64, 64, 64}, {17, 65, 5}, {1, 1, 1}, {15, 63, 3}, {64, 16, 7}, {80, 200, 25},
                           {200, 80, 131}, {128, 256, 512}, {33, 17, 1}, {5, 300, 2}};
@@ -121,7 +122,7 @@ int main(int argc, char** argv) {
   for (auto& s : combos)
     for (int bits = 0; bits < 256; ++bits) {
       mt_options op;
-      op.online = bits & 1;
+      op.online = (bits & 1) ? 1 + ((bits >> 1) & 1) : 0;
       op.x4 = (bits >> 1) & 1;
       op.shape = (bits >> 2) & 1;
       op.cdirect = (bits >> 3) & 3;

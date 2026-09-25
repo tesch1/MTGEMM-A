@@ -1,0 +1,8 @@
+# 2026-09-25 09:52:02 load before: { 2.58 2.47 2.47 } VECLIB_MAXIMUM_THREADS=1
+# irr col accel f32 beta=1
+ 0    80    80 25600    663  peak=1996 eff=0.332
+ 0   110   110 25600    804  peak=1973 eff=0.408
+ 0   140   140 25600    930  peak=2008 eff=0.463
+ 0   170   170 25600    985  peak=2000 eff=0.493
+ 0   200   200 25600   1064  peak=1993 eff=0.534
+# load after: { 2.58 2.47 2.47 }

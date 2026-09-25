@@ -3,3 +3,4 @@ refs/
 __pycache__/
 third_party/src/
 third_party/install/
+visionos/MTGemmVP.xcodeproj/

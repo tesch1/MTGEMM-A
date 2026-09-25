@@ -16,12 +16,6 @@ int model_kc_max(int es, int mr, int nr) {
   return best;
 }
 
-static int balance(int total, int block, int step) {
-  if (block >= total) return round_up(total, step);
-  const int nblk = (total + block - 1) / block;
-  return std::min(block, round_up((total + nblk - 1) / nblk, step));
-}
-
 mt_blocking model_blocking(int M, int N, int K, int es, int mr, int nr) {
   const long budget = kL2Bytes / es;
   const int kcap = std::min(model_kc_max(es, mr, nr), round_up(K, 16));

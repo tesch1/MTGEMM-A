@@ -1,0 +1,20 @@
+# probe
+hw.machine: RealityDevice14,1
+hw.model: N301AP
+kern.osversion: 24N5093f
+hw.ncpu: 8
+hw.perflevel0.physicalcpu: 4
+hw.perflevel1.physicalcpu: 4
+hw.perflevel0.cpusperl2: 4
+hw.cpufamily: 3660830781
+hw.perflevel0.l2cachesize: 16777216
+hw.perflevel1.l2cachesize: 4194304
+hw.l1dcachesize: 65536
+hw.memsize: 16508813312
+hw.optional.arm.FEAT_SME: 0
+hw.optional.arm.FEAT_BF16: 1
+hw.optional.arm.FEAT_I8MM: 1
+AMX: executes; fma32 check PASS (z[4][15]=32)
+fma32 4 accumulators: 1292.5 GFLOPS (0.032 s)
+fma32 4 accumulators: 1331.0 GFLOPS (0.031 s)
+fma32 4 accumulators: 1529.8 GFLOPS (0.027 s)

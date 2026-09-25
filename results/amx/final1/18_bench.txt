@@ -1,0 +1,7 @@
+# bench irr col accel trials=5 ms=40
+# irr col accel f32 beta=1
+ 0    80    80 25600    454  peak=1574 eff=0.289
+ 0   110   110 25600    480  peak=1578 eff=0.304
+ 0   140   140 25600    482  peak=1577 eff=0.306
+ 0   170   170 25600    531  peak=1584 eff=0.335
+ 0   200   200 25600    530  peak=1530 eff=0.346

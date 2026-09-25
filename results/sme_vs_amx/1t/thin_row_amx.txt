@@ -1,0 +1,18 @@
+# 2026-09-25 09:51:39 load before: { 2.42 2.43 2.46 } VECLIB_MAXIMUM_THREADS=1
+# thin row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=amx
+ 0     1  4096  4096     13  err/sqrtK=0.0e+00  peak=1988 eff=0.006
+ 0     4  4096  4096     54  err/sqrtK=0.0e+00  peak=1994 eff=0.027
+ 0     8  4096  4096    107  err/sqrtK=0.0e+00  peak=1992 eff=0.054
+ 0    16  4096  4096    211  err/sqrtK=0.0e+00  peak=2006 eff=0.105
+ 0    32  4096  4096    434  err/sqrtK=0.0e+00  peak=1999 eff=0.217
+ 0    64  4096  4096    697  err/sqrtK=0.0e+00  peak=1974 eff=0.353
+ 0  4096     1  4096     19  err/sqrtK=2.4e-06  peak=1994 eff=0.009
+ 0  4096     4  4096     74  err/sqrtK=0.0e+00  peak=1955 eff=0.038
+ 0  4096     8  4096    147  err/sqrtK=0.0e+00  peak=2008 eff=0.073
+ 0  4096    16  4096    297  err/sqrtK=0.0e+00  peak=2003 eff=0.148
+ 0  4096    32  4096    632  err/sqrtK=0.0e+00  peak=1982 eff=0.319
+ 0  4096    64  4096    930  err/sqrtK=0.0e+00  peak=1998 eff=0.466
+ 0     8     8  4096     16  err/sqrtK=0.0e+00  peak=2001 eff=0.008
+ 0    16    16  4096     66  err/sqrtK=0.0e+00  peak=2006 eff=0.033
+ 0    32    32  4096    749  err/sqrtK=0.0e+00  peak=1992 eff=0.376
+# load after: { 2.42 2.43 2.46 }

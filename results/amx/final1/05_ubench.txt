@@ -1,0 +1,5 @@
+# ubench z
+# Z rows: 32 ldz/stz pairs per 32x32 fp32 tile, C tile resident in L1: ns per tile
+stz pair   78.0
+ldz pair   42.8
+stz single  108.5

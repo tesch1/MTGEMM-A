@@ -3,7 +3,7 @@ CXXFLAGS ?= -std=c++17 -O3 -DNDEBUG -march=armv8.6-a+sme2+sme-f64f64 -Wall -Wext
 CPPFLAGS += -Iinclude
 BUILD    := build
 LIB      := $(BUILD)/libmtgemm.a
-OBJS     := $(BUILD)/mtgemm.o $(BUILD)/model.o $(BUILD)/threads.o
+OBJS     := $(BUILD)/mtgemm.o $(BUILD)/model.o $(BUILD)/threads.o $(BUILD)/dispatch.o
 ACCEL    := -framework Accelerate
 
 all: $(LIB) $(BUILD)/test_gemm $(BUILD)/bench $(BUILD)/ubench
@@ -13,6 +13,8 @@ $(BUILD):
 
 $(BUILD)/%.o: src/%.cpp include/mtgemm.h src/internal.h | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/dispatch.o: CPPFLAGS += -DMT_WITH_SME
 
 $(LIB): $(OBJS)
 	ar rcs $@ $^
@@ -87,7 +89,88 @@ test_eigen: bench_eigen
 test: $(BUILD)/test_gemm
 	./$(BUILD)/test_gemm
 
+# AMX backend (Vision Pro M2, also runs on M4); _emu builds run every AMX instruction in corsix's M2 emulator.
+CORSIX_REV := 483714bb051da088d08a66724b22dd08a5db3c99
+AMXFLAGS ?= -std=c++17 -O3 -DNDEBUG -Wall -Wextra -Wno-unused-parameter
+AMX_OBJS := $(BUILD)/amx/mtgemm_amx.o $(BUILD)/amx/model.o $(BUILD)/amx/threads.o $(BUILD)/amx/dispatch.o
+AMX_LIB  := $(BUILD)/libmtgemm_amx.a
+CORSIX   := $(BUILD)/_deps/amx
+EMU_SRC  := ldst extr fma fms genlut mac16 matfp matint vecfp vecint
+EMU_OBJS := $(EMU_SRC:%=$(BUILD)/emu/%.o) $(BUILD)/emu/amx_ver.o
+EMU_LOBJS := $(BUILD)/emu/mtgemm_amx.o $(BUILD)/emu/model.o $(BUILD)/emu/threads.o $(BUILD)/emu/dispatch.o
+
+$(BUILD)/amx $(BUILD)/emu:
+	mkdir -p $@
+
+$(BUILD)/amx/%.o: src/%.cpp include/mtgemm.h src/internal.h src/amx.h | $(BUILD)/amx
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) -c $< -o $@
+
+$(BUILD)/amx/dispatch.o $(BUILD)/emu/dispatch.o: CPPFLAGS += -DMT_WITH_AMX
+
+$(AMX_LIB): $(AMX_OBJS)
+	ar rcs $@ $^
+
+$(BUILD)/test_gemm_amx: tests/test_gemm.cpp $(AMX_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< $(AMX_LIB) -o $@
+
+$(BUILD)/bench_amx: bench/bench.cpp bench/shapes.h $(AMX_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) -DACCELERATE_NEW_LAPACK -DMT_BENCH_AMX $< $(AMX_LIB) $(ACCEL) -o $@
+
+$(BUILD)/ubench_amx: bench/ubench_amx.cpp src/amx.h | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< -o $@
+
+$(CORSIX)/emulate.h:
+	git clone -q https://github.com/corsix/amx $(CORSIX) && git -C $(CORSIX) checkout -q $(CORSIX_REV)
+
+$(BUILD)/emu/%.o: $(CORSIX)/%.c $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CC) -O2 -w -c $< -o $@
+
+$(BUILD)/emu/amx_ver.o: tests/amx_ver.c $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CC) -O2 -I$(CORSIX) -c $< -o $@
+
+$(BUILD)/emu/%.o: src/%.cpp include/mtgemm.h src/internal.h src/amx.h $(CORSIX)/emulate.h | $(BUILD)/emu
+	$(CXX) $(CPPFLAGS) -I$(CORSIX) -DMT_AMX_EMULATE $(AMXFLAGS) -c $< -o $@
+
+$(BUILD)/test_gemm_amx_emu: tests/test_gemm.cpp $(EMU_LOBJS) $(EMU_OBJS)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< $(EMU_LOBJS) $(EMU_OBJS) -o $@
+
+amx: $(AMX_LIB) $(BUILD)/test_gemm_amx $(BUILD)/bench_amx $(BUILD)/ubench_amx
+
+test_amx: $(BUILD)/test_gemm_amx $(BUILD)/test_gemm_amx_emu
+	./$(BUILD)/test_gemm_amx
+	./$(BUILD)/test_gemm_amx_emu 60
+
+# Both backends in one library, chosen at run time (SME file with the SME flags, the rest portable).
+MULTI_OBJS := $(BUILD)/multi/mtgemm.o $(BUILD)/multi/mtgemm_amx.o $(BUILD)/multi/model.o $(BUILD)/multi/threads.o \
+              $(BUILD)/multi/dispatch.o
+MULTI_LIB  := $(BUILD)/libmtgemm_multi.a
+
+$(BUILD)/multi:
+	mkdir -p $@
+
+$(BUILD)/multi/mtgemm.o: src/mtgemm.cpp include/mtgemm.h src/internal.h | $(BUILD)/multi
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/multi/%.o: src/%.cpp include/mtgemm.h src/internal.h src/amx.h | $(BUILD)/multi
+	$(CXX) $(CPPFLAGS) -DMT_WITH_SME -DMT_WITH_AMX $(AMXFLAGS) -c $< -o $@
+
+$(MULTI_LIB): $(MULTI_OBJS)
+	ar rcs $@ $^
+
+$(BUILD)/test_gemm_multi: tests/test_gemm.cpp $(MULTI_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) $< $(MULTI_LIB) -o $@
+
+$(BUILD)/bench_multi: bench/bench.cpp bench/shapes.h $(MULTI_LIB)
+	$(CXX) $(CPPFLAGS) $(AMXFLAGS) -DACCELERATE_NEW_LAPACK -DMT_BENCH_AMX $< $(MULTI_LIB) $(ACCEL) -o $@
+
+multi: $(MULTI_LIB) $(BUILD)/test_gemm_multi $(BUILD)/bench_multi
+
+test_multi: $(BUILD)/test_gemm_multi
+	./$(BUILD)/test_gemm_multi
+	MTGEMM_BACKEND=amx ./$(BUILD)/test_gemm_multi
+	MTGEMM_BACKEND=ref ./$(BUILD)/test_gemm_multi 100
+
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen
+.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen amx test_amx multi test_multi

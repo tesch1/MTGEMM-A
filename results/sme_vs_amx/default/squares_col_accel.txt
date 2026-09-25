@@ -1,0 +1,9 @@
+# 2026-09-25 09:52:29 load before: { 2.40 2.43 2.46 } VECLIB_MAXIMUM_THREADS=default
+# squares col accel f32 beta=1
+ 0   512   512   512   2531  peak=1999 eff=1.266
+ 0  1000  1000  1000   3431  peak=2009 eff=1.708
+ 0  1024  1024  1024   2859  peak=2004 eff=1.426
+ 0  2048  2048  2048   3017  peak=1998 eff=1.510
+ 0  3000  3000  3000   3121  peak=2003 eff=1.558
+ 0  4096  4096  4096   2747  peak=2005 eff=1.370
+# load after: { 2.45 2.44 2.46 }

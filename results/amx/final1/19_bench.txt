@@ -1,0 +1,7 @@
+# bench irr col mt trials=5 ms=40
+# irr col mt f32 beta=1 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0    80    80 25600    346  err/sqrtK=1.9e-07  peak=1388 eff=0.250
+ 0   110   110 25600    420  err/sqrtK=5.2e-06  peak=1462 eff=0.287
+ 0   140   140 25600    522  err/sqrtK=7.9e-06  peak=1529 eff=0.342
+ 0   170   170 25600    542  err/sqrtK=4.9e-06  peak=1574 eff=0.344
+ 0   200   200 25600    545  err/sqrtK=5.5e-06  peak=1526 eff=0.357

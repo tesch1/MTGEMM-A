@@ -1,0 +1,9 @@
+# ubench overlap
+# overlap: ns per iteration of 16 fma32 (tiles 0-1) and S Z-row ops (tiles 2-3)
+fma only  10.29
+stz S= 4  z only   1.32  both  10.30  (sum  11.61)
+stz S= 8  z only   2.74  both  10.65  (sum  13.04)
+stz S=16  z only   5.29  both  12.61  (sum  15.58)
+ldz S= 4  z only   1.26  both  10.18  (sum  11.55)
+ldz S= 8  z only   2.57  both  10.02  (sum  12.86)
+ldz S=16  z only   5.04  both  10.04  (sum  15.33)

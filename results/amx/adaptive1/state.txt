@@ -1,0 +1,13 @@
+start 0
+done 0 rc=0 sec=0.1
+start 1
+done 1 rc=0 sec=4.9
+start 2
+done 2 rc=0 sec=2.3
+start 3
+done 3 rc=0 sec=2.7
+start 4
+done 4 rc=0 sec=2.8
+start 5
+done 5 rc=0 sec=14.3
+batch-complete fails=0

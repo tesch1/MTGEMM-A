@@ -1,0 +1,27 @@
+# 2026-09-25 09:54:04 load before: { 2.33 2.40 2.44 } VECLIB_MAXIMUM_THREADS=1
+# paper row mt f64 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=amx
+ 1    64  2112  7168    283  err/sqrtK=0.0e+00  peak=502 eff=0.564
+ 2    64 24576  1536    261  err/sqrtK=0.0e+00  peak=499 eff=0.522
+ 3    64 32768   512    259  err/sqrtK=0.0e+00  peak=500 eff=0.517
+ 4    64  7168 16384    263  err/sqrtK=0.0e+00  peak=502 eff=0.525
+ 5    64  4096  7168    270  err/sqrtK=0.0e+00  peak=502 eff=0.539
+ 6    64  7168  2048    265  err/sqrtK=0.0e+00  peak=502 eff=0.528
+ 7   128  2112  7168    351  err/sqrtK=0.0e+00  peak=498 eff=0.705
+ 8   128 24576  1536    338  err/sqrtK=0.0e+00  peak=499 eff=0.677
+ 9   128 32768   512    338  err/sqrtK=0.0e+00  peak=499 eff=0.678
+10   128  7168 16384    338  err/sqrtK=0.0e+00  peak=500 eff=0.677
+11   128  4096  7168    348  err/sqrtK=0.0e+00  peak=500 eff=0.696
+12   128  7168  2048    343  err/sqrtK=0.0e+00  peak=501 eff=0.685
+13  4096  2112  7168    468  err/sqrtK=0.0e+00  peak=502 eff=0.932
+14  4096 24576  1536    476  err/sqrtK=0.0e+00  peak=502 eff=0.949
+15  4096 32768   512    480  err/sqrtK=0.0e+00  peak=501 eff=0.958
+16  4096  7168 16384    472  err/sqrtK=0.0e+00  peak=502 eff=0.939
+17  4096  4096  7168    466  err/sqrtK=0.0e+00  peak=499 eff=0.935
+18  4096  7168  2048    473  err/sqrtK=0.0e+00  peak=500 eff=0.946
+19  4096   256  4096    432  err/sqrtK=0.0e+00  peak=500 eff=0.863
+20 11008   256  4096    416  err/sqrtK=0.0e+00  peak=493 eff=0.843
+21  4096   256 11008    407  err/sqrtK=0.0e+00  peak=492 eff=0.827
+22  5120   256  5120    425  err/sqrtK=0.0e+00  peak=493 eff=0.864
+23 13824   256  5120    422  err/sqrtK=0.0e+00  peak=488 eff=0.866
+24  5120   256 13824    434  err/sqrtK=0.0e+00  peak=501 eff=0.866
+# load after: { 2.69 2.46 2.46 }

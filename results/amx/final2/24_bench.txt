@@ -1,0 +1,8 @@
+# bench squares row mt trials=5 ms=40 f64
+# squares row mt f64 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0   512   512   512    263  err/sqrtK=0.0e+00  peak=366 eff=0.717
+ 0  1000  1000  1000    261  err/sqrtK=0.0e+00  peak=364 eff=0.717
+ 0  1024  1024  1024    260  err/sqrtK=0.0e+00  peak=373 eff=0.698
+ 0  2048  2048  2048    257  err/sqrtK=0.0e+00  peak=371 eff=0.691
+ 0  3000  3000  3000    250  err/sqrtK=0.0e+00  peak=373 eff=0.670
+ 0  4096  4096  4096    254  err/sqrtK=0.0e+00  peak=382 eff=0.665

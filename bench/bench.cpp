@@ -21,6 +21,39 @@
 static int g_argc;
 static char** g_argv;
 
+#ifdef MT_BENCH_AMX
+#include "../src/amx.h"
+// AMX fma peak of this core right now (fma32 x4 or fma64 x8, best of 3 x 5 ms): the clock reference for eff=.
+template <class T>
+static double amx_peak() {
+  using namespace mt::amx;
+  alignas(256) static float z[128] = {};
+  AMX_SET();
+  AMX_LDX(xy(z, 0, kQuad)); AMX_LDX(xy(z, 4, kQuad)); AMX_LDY(xy(z, 0, kQuad)); AMX_LDY(xy(z, 4, kQuad));
+  double best = 0;
+  for (int t = 0; t < 3; ++t) {
+    long n = 0;
+    double s;
+    const auto t0 = std::chrono::steady_clock::now();
+    do {
+      for (int i = 0; i < 256; ++i) {
+        if constexpr (sizeof(T) == 4) {
+          AMX_FMA32(fma_op(0, 0, 0)); AMX_FMA32(fma_op(1, 64, 64)); AMX_FMA32(fma_op(2, 128, 128)); AMX_FMA32(fma_op(3, 192, 192));
+        } else {
+          AMX_FMA64(fma_op(0, 0, 0)); AMX_FMA64(fma_op(1, 64, 64)); AMX_FMA64(fma_op(2, 128, 128)); AMX_FMA64(fma_op(3, 192, 192));
+          AMX_FMA64(fma_op(4, 256, 256)); AMX_FMA64(fma_op(5, 320, 320)); AMX_FMA64(fma_op(6, 384, 384)); AMX_FMA64(fma_op(7, 448, 448));
+        }
+      }
+      n += 256;
+      s = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    } while (s < 5e-3);
+    best = std::max(best, n * (sizeof(T) == 4 ? 4 * 512.0 : 8 * 128.0) / s * 1e-9);
+  }
+  AMX_CLR();
+  return best;
+}
+#endif
+
 template <class T>
 static void accel(bool row, int m, int n, int k, T al, const T* A, int lda, const T* B, int ldb, T be, T* C, int ldc) {
   const auto o = row ? CblasRowMajor : CblasColMajor;
@@ -77,6 +110,10 @@ static void run(const std::vector<Shape>& shapes, bool row, bool use_accel, doub
     }
     std::printf("%2d %5d %5d %5d %6.0f", s.id, m, n, k, 2.0 * m * n * k / best / 1e9);
     if (!use_accel) std::printf("  err/sqrtK=%.1e", err);
+#ifdef MT_BENCH_AMX
+    const double pk = amx_peak<T>();
+    std::printf("  peak=%.0f eff=%.3f", pk, 2.0 * m * n * k / best / 1e9 / pk);
+#endif
     std::printf("\n");
     std::fflush(stdout);
   }
@@ -112,6 +149,9 @@ static void* body(void*) {
     else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
     else if (std::sscanf(a, "ids=%d-%d", &id_lo, &id_hi) == 2) {}
     else if (std::sscanf(a, "online=%d", &v) == 1) o.online = v;
+    else if (!std::strcmp(a, "backend=sme")) o.backend = MtSme;
+    else if (!std::strcmp(a, "backend=amx")) o.backend = MtAmx;
+    else if (!std::strcmp(a, "backend=ref")) o.backend = MtReference;
     else if (std::sscanf(a, "x4=%d", &v) == 1) o.x4 = v;
     else if (std::sscanf(a, "heap=%d", &v) == 1) o.heap = v;
     else if (std::sscanf(a, "model=%d", &v) == 1) o.model = v;
@@ -131,6 +171,7 @@ static void* body(void*) {
   if (!use_accel)
     std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d pf=%d threads=%d", o.online, o.x4, o.heap,
                 o.model, o.shape, o.cdirect, o.pack4, o.prefetch, o.threads);
+  if (!use_accel) std::printf(" backend=%s", mt_backend_name(mt_select_backend(mt_backend(o.backend))));
   std::printf("\n");
   if (f64) run<double>(shapes, row, use_accel, beta, o, ms, trials);
   else run<float>(shapes, row, use_accel, beta, o, ms, trials);
@@ -147,4 +188,5 @@ int main(int argc, char** argv) {
   pthread_t th;
   pthread_create(&th, &at, body, nullptr);
   pthread_join(th, nullptr);
+  return 0;
 }
