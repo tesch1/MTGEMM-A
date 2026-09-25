@@ -17,7 +17,6 @@ for s in squares paper; do
   for o in row col; do
     VECLIB_MAXIMUM_THREADS=default $R "$out/default" "${s}_${o}_accel" $s $o accel
     $R "$out/default" "${s}_${o}_sme" $s $o mt backend=sme threads=0
-    $R "$out/default" "${s}_${o}_amx" $s $o mt backend=amx threads=1
-    $R "$out/default" "${s}_${o}_amx2" $s $o mt backend=amx threads=2
+    $R "$out/default" "${s}_${o}_amx" $s $o mt backend=amx threads=0
   done
 done

@@ -1,9 +1,9 @@
-# 2026-09-25 09:31:19 load before: { 2.18 2.50 2.64 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-25 09:52:24 load before: { 2.35 2.42 2.46 } VECLIB_MAXIMUM_THREADS=1
 # squares row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=0 backend=sme
- 0   512   512   512   3460  err/sqrtK=0.0e+00  peak=2009 eff=1.722
- 0  1000  1000  1000   3675  err/sqrtK=0.0e+00  peak=1992 eff=1.845
- 0  1024  1024  1024   3700  err/sqrtK=0.0e+00  peak=1995 eff=1.855
- 0  2048  2048  2048   3311  err/sqrtK=0.0e+00  peak=1995 eff=1.659
- 0  3000  3000  3000   3208  err/sqrtK=0.0e+00  peak=2000 eff=1.604
- 0  4096  4096  4096   3215  err/sqrtK=0.0e+00  peak=2003 eff=1.605
-# load after: { 2.25 2.51 2.64 }
+ 0   512   512   512   3476  err/sqrtK=0.0e+00  peak=2008 eff=1.731
+ 0  1000  1000  1000   3677  err/sqrtK=0.0e+00  peak=2001 eff=1.838
+ 0  1024  1024  1024   3697  err/sqrtK=0.0e+00  peak=1993 eff=1.855
+ 0  2048  2048  2048   3311  err/sqrtK=0.0e+00  peak=1999 eff=1.656
+ 0  3000  3000  3000   3267  err/sqrtK=0.0e+00  peak=2008 eff=1.627
+ 0  4096  4096  4096   3262  err/sqrtK=0.0e+00  peak=2009 eff=1.624
+# load after: { 2.40 2.43 2.46 }

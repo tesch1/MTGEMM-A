@@ -124,7 +124,9 @@ The loop nest is the Goto algorithm with six loops (paper Fig. 5):
 
 The model searches a grid in steps of 16 (`kc`), `mr` (`mc`) and `nr` (`nc`). Then it balances each block
 size so that the last block is not much smaller than the others. Examples for fp32: 4096^3 gives
-mc = 592, nc = 448, kc = 832; 64 x 2112 x 7168 gives mc = 64, nc = 704, kc = 1200.
+mc = 592, nc = 448, kc = 832; 64 x 2112 x 7168 gives mc = 64, nc = 704, kc = 1200. When A and B together
+take at most 256 KB, the whole problem is one block and the model is not called (added after the SME/AMX
+comparison: 48^3 from 364 to 515 GFLOPS, 64^3 from 1051 to 1179; the tables in [Results](#results) predate it).
 
 ### Packing with on-the-fly transposition (A)
 
@@ -136,7 +138,8 @@ columns (fp32). Predicates mask the tails.
 - Paper design: one x4 load per row, then four `MOVA` instructions (one per tile).
 - MTGEMM-A: four rows at a time. Four x4 loads with strided registers put the four rows of one tile into
   four consecutive Z registers, so that one `MOVA ... vg4` per tile moves four slices (`rows_in4`).
-  Option `pack4`.
+  Option `pack4`. The loads use a counted predicate (`whilelt pn8, ..., vlx4`), so chunks shorter than 64
+  columns (K < 64, or the last chunk) also take this path (added after the SME/AMX comparison).
 
 If alpha is not 1, the packing of A also multiplies by alpha.
 
@@ -851,8 +854,9 @@ So the M2 has one AMX unit that counts: more P-core threads share it, and the ef
   the headset; the SME model (`model = 3`) chose small blocks that re-packed B four times.
 - **Prefetch** by the core into L2: the next C tile (the tile start otherwise waits for `ldz`), the next A
   panel during the first kernel of a row, the A source ahead of the transposition.
-- **Threads.** One thread by default (`threads = 0` means 1). `threads = 2` splits over two P-core threads
-  (no gain on M2, they share the unit).
+- **Threads.** `threads = 0` runs one thread per AMX unit, from 2^22 multiply-adds up. There is one unit per
+  P cluster, `hw.perflevel0.physicalcpu / hw.perflevel0.cpusperl2`: 4 / 4 = 1 on the Vision Pro's M2, 8 / 4 = 2
+  on the M4 Pro. `threads = 2` always splits over two P-core threads; on the M2 they share the unit and gain nothing.
 
 What did not work on the M2 (all measured, see `results/amx/experiments.md`; none of it is in the code): packing the next
 B panel with the core inside the kernel (the core stalls on DRAM and stops issuing AMX instructions: 823
@@ -897,52 +901,53 @@ the size of the variation between batches.
 
 The M4 has both units, so the two backends can run the same shapes on one machine (`build/bench_multi` with
 `backend=sme` or `backend=amx`, `bench/run_sme_amx.sh`, raw files in `results/sme_vs_amx/`, one-minute load
-2.1-3.2). Geometric mean GFLOPS, fp32 unless noted, beta = 0 row-major and beta = 1 column-major. The AMX
-backend keeps its M2 tuning (blocking, B threshold); it was not tuned for the M4.
+2.0-3.5). Geometric mean GFLOPS, fp32 unless noted, beta = 0 row-major and beta = 1 column-major. The SME
+backend includes the two small-problem changes below; the AMX backend keeps its M2 blocking.
 
 One thread (Accelerate with `VECLIB_MAXIMUM_THREADS=1`):
 
 | set | Accelerate | SME | AMX | AMX / SME |
 |---|---|---|---|---|
-| squares 512-4096, row | 1616 | **1670** | 1590 | 0.95 |
-| squares 512-4096, col | 1550 | **1660** | 1554 | 0.94 |
-| paper's 24, row | 1080 | **1328** | 1137 | 0.86 |
-| paper's 24, col | 1133 | **1359** | 1263 | 0.93 |
-| squares 512-4096, fp64 row | 424 | **460** | 455 | 0.99 |
-| paper's 24, fp64 row | 318 | **422** | 370 | 0.88 |
-| irregular (K = 25600), row | 904 | **1220** | 702 | 0.58 |
-| irregular (K = 25600), col | 906 | **1210** | 702 | 0.58 |
-| thin (M or N 1-64), row | 193 | **260** | 141 | 0.54 |
-| thin (M or N 1-64), col | 199 | **260** | 141 | 0.54 |
-| small (4-384), row | **242** | 176 | 157 | 0.89 |
-| small (4-384), col | **253** | 167 | 150 | 0.90 |
+| squares 512-4096, row | 1677 | **1717** | 1633 | 0.95 |
+| squares 512-4096, col | 1607 | **1715** | 1590 | 0.93 |
+| paper's 24, row | 1114 | **1373** | 1159 | 0.84 |
+| paper's 24, col | 1176 | **1395** | 1277 | 0.92 |
+| squares 512-4096, fp64 row | 407 | **458** | 452 | 0.99 |
+| paper's 24, fp64 row | 319 | **421** | 368 | 0.87 |
+| irregular (K = 25600), row | 878 | **1186** | 692 | 0.58 |
+| irregular (K = 25600), col | 877 | **1161** | 695 | 0.60 |
+| thin (M or N 1-64), row | 191 | **247** | 139 | 0.56 |
+| thin (M or N 1-64), col | 193 | **246** | 136 | 0.55 |
+| small (4-384), row | **234** | 212 | 158 | 0.75 |
+| small (4-384), col | **253** | 200 | 150 | 0.75 |
 
-Default threading (Accelerate with its own threads, SME `threads=0`: one thread per P-cluster unit from 2^22
-multiply-adds, AMX `threads=1` and `threads=2`):
+Default threading (Accelerate with its own threads; SME and AMX with `threads=0`: one thread per P-cluster
+unit, two on this M4 Pro, from 2^22 multiply-adds):
 
-| set | Accelerate | SME | AMX, 1 thread | AMX, 2 threads | AMX 2 threads / SME |
-|---|---|---|---|---|---|
-| squares 512-4096, row | 3128 | **3422** | 1627 | 3076 | 0.90 |
-| squares 512-4096, col | 2909 | **3361** | 1567 | 3029 | 0.90 |
-| paper's 24, row | 2366 | **2729** | 1163 | 2330 | 0.85 |
-| paper's 24, col | 2427 | **2734** | 1282 | 2513 | 0.92 |
+| set | Accelerate | SME | AMX | AMX / SME |
+|---|---|---|---|---|
+| squares 512-4096, row | 3190 | **3444** | 3123 | 0.91 |
+| squares 512-4096, col | 2937 | **3399** | 3050 | 0.90 |
+| paper's 24, row | 2294 | **2642** | 2307 | 0.87 |
+| paper's 24, col | 2409 | **2709** | 2511 | 0.93 |
 
-- SME is faster on every set but the small one, so the dispatch picks SME on the M4. Accelerate is still ahead on
-  the small matrices (4-48).
-- On large work AMX reaches 86-99% of SME on one unit. The M4 runs the AMX instructions on the same units (the
-  AMX fma32 peak is 2000 GFLOPS per unit, the same as FMOPA).
-- AMX falls furthest behind on the long-K shapes (irregular set, 0.58). Longer depth blocks do not help (kc from
-  1024 to 8192: within 5%), so C reloads are not the cause. These shapes pack 16-41 MB of A and B for 0.3-2.0
-  GFLOP, so packing speed decides; the SME backend packs B inside its first row of kernels, the AMX backend in
-  a separate pass (probably the difference; not measured separately). On the
-  thin shapes (0.54) AMX pads narrow panels to 32 columns, while the SME backend has narrower edge kernels
-  (not measured separately).
-- AMX wins at 32x32x32 (654 against 254) and is even at 4096x64x4096 (947 against 970). At 32^3 the gain comes
-  from not packing B (AMX with B packed: 324); the SME backend packs B, and its A transposition takes a
-  row-by-row path when a chunk has fewer than 64 depth steps (SME without A packing: 390).
+- SME is faster on every set, so the dispatch picks SME on the M4. The M4 runs the AMX instructions on the same
+  units (the AMX fma32 peak is 2000 GFLOPS per unit, the same as FMOPA); on large work AMX reaches 84-99% of
+  SME.
+- With `threads=0` AMX uses both of the M4's P-cluster units (squares: 3123 against 1633 on one thread). On the
+  Vision Pro's M2 the same setting gives one thread, because it has one unit (`results/amx/adaptive1`).
+- AMX falls furthest behind on the long-K shapes (0.58). Longer depth blocks do not help (kc from 1024 to
+  8192: within 5%), so C reloads are not the cause. These shapes pack 16-41 MB of A and B for 0.3-2.0 GFLOP,
+  so packing speed decides; the SME backend packs B inside its first row of kernels, the AMX backend in a
+  separate pass (probably the difference; not measured separately). On the thin shapes (0.56) AMX pads narrow
+  panels to 32 columns, while the SME backend has narrower edge kernels (not measured separately).
 - Blocking tuned on the M4 changes AMX squares by at most 3-5% (`mc` up to 4096, `kc` 2048).
-- The M4 has two P-cluster AMX units: with `threads=2` AMX nearly doubles (3076 against 1627). On the M2 the
-  second thread gains nothing, because there is only one unit.
+- Small problems: AMX wins at 32^3 (640 against 317) because it does not pack B. This comparison led to two
+  SME changes: one block without the model call when A and B take at most 256 KB, and the 4-row A
+  transposition for chunks shorter than 64 columns. SME small-set geomean went from 176 to 212 (row) and
+  SME now beats Accelerate at 16^3-32^3 and from 64^3 up; Accelerate is still ahead at 48^3 (570 against 514)
+  and below 16. Reading B from the source without packing did not pay in SME (32^3: 263 against 320; slower
+  from 512^3) and is not in the code.
 
 ### Limitations of the AMX backend
 

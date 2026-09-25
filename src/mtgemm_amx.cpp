@@ -2,6 +2,7 @@
 #include "internal.h"
 #include "amx.h"
 #include <arm_neon.h>
+#include <sys/sysctl.h>
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
@@ -398,6 +399,15 @@ void run_job(Job<T>& jb, const mt_options& o) {
   AMX_CLR();
 }
 
+// AMX units: one per performance cluster = P cores / P cores per L2 (1 if the sysctls are missing).
+int amx_units() {
+  int p = 0, per = 0;
+  size_t n = sizeof p, m = sizeof per;
+  if (sysctlbyname("hw.perflevel0.physicalcpu", &p, &n, nullptr, 0) || sysctlbyname("hw.perflevel0.cpusperl2", &per, &m, nullptr, 0) || per <= 0)
+    return 1;
+  return std::max(1, p / per);
+}
+
 template <class T>
 struct Half {
   Job<T> jb;
@@ -425,8 +435,12 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
     return;
   }
   Job<T> jb{M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, {}, 0, 0, 0, 0, nullptr, nullptr};
-  if (o.threads < 2) return run_job(jb, o);  // threads = 0 is 1: the M2's P-cluster cores share one AMX unit
   constexpr int MR = Ak<T>::MR, NR = Ak<T>::NR;
+  // threads = 0: one thread per AMX unit (one per P cluster: M2 1, M4 Pro 2) from 2^22 multiply-adds.
+  static const int units = amx_units();
+  const bool two = o.threads >= 2 || (o.threads == 0 && units >= 2 && double(M) * N * K >= double(1 << 22) &&
+                                      std::max(M, N) >= 4 * MR);
+  if (!two) return run_job(jb, o);
   Half<T> h0{jb, o}, h1{jb, o};
   if (M >= N) {
     const int m0 = std::min(M, round_up((M + 1) / 2, MR));

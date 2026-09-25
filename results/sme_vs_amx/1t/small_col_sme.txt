@@ -1,16 +1,16 @@
-# 2026-09-25 09:30:18 load before: { 2.81 2.64 2.69 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-25 09:51:23 load before: { 2.78 2.50 2.49 } VECLIB_MAXIMUM_THREADS=1
 # small col mt f32 beta=1 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=sme
- 0     4     4     4      1  err/sqrtK=3.0e-08  peak=1999 eff=0.000
- 0     8     8     8      4  err/sqrtK=8.4e-08  peak=1991 eff=0.002
- 0    12    12    12     13  err/sqrtK=6.9e-08  peak=1989 eff=0.007
- 0    16    16    16     32  err/sqrtK=0.0e+00  peak=2005 eff=0.016
- 0    24    24    24     63  err/sqrtK=0.0e+00  peak=2004 eff=0.031
- 0    32    32    32    247  err/sqrtK=0.0e+00  peak=2008 eff=0.123
- 0    48    48    48    318  err/sqrtK=0.0e+00  peak=2000 eff=0.159
- 0    64    64    64    956  err/sqrtK=0.0e+00  peak=2006 eff=0.477
- 0    96    96    96   1253  err/sqrtK=0.0e+00  peak=2003 eff=0.625
- 0   128   128   128   1479  err/sqrtK=0.0e+00  peak=1960 eff=0.755
- 0   192   192   192   1653  err/sqrtK=0.0e+00  peak=2006 eff=0.824
- 0   256   256   256   1726  err/sqrtK=0.0e+00  peak=2004 eff=0.862
- 0   384   384   384   1819  err/sqrtK=0.0e+00  peak=2004 eff=0.908
-# load after: { 2.99 2.68 2.71 }
+ 0     4     4     4      1  err/sqrtK=3.0e-08  peak=1998 eff=0.000
+ 0     8     8     8      6  err/sqrtK=8.4e-08  peak=1982 eff=0.003
+ 0    12    12    12     21  err/sqrtK=6.9e-08  peak=2001 eff=0.011
+ 0    16    16    16     47  err/sqrtK=0.0e+00  peak=1997 eff=0.023
+ 0    24    24    24     91  err/sqrtK=0.0e+00  peak=1991 eff=0.046
+ 0    32    32    32    317  err/sqrtK=0.0e+00  peak=1968 eff=0.161
+ 0    48    48    48    424  err/sqrtK=0.0e+00  peak=1998 eff=0.212
+ 0    64    64    64   1086  err/sqrtK=0.0e+00  peak=1975 eff=0.550
+ 0    96    96    96   1329  err/sqrtK=0.0e+00  peak=2003 eff=0.664
+ 0   128   128   128   1509  err/sqrtK=0.0e+00  peak=1974 eff=0.764
+ 0   192   192   192   1655  err/sqrtK=0.0e+00  peak=2002 eff=0.826
+ 0   256   256   256   1722  err/sqrtK=0.0e+00  peak=1978 eff=0.870
+ 0   384   384   384   1801  err/sqrtK=0.0e+00  peak=1982 eff=0.909
+# load after: { 2.64 2.47 2.48 }

@@ -1,27 +1,27 @@
-# 2026-09-25 09:29:25 load before: { 3.02 2.61 2.69 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-25 09:50:30 load before: { 2.15 2.40 2.46 } VECLIB_MAXIMUM_THREADS=1
 # paper col mt f32 beta=1 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=sme
- 1    64  2112  7168   1038  err/sqrtK=0.0e+00  peak=1989 eff=0.522
- 2    64 24576  1536   1068  err/sqrtK=0.0e+00  peak=2000 eff=0.534
- 3    64 32768   512    997  err/sqrtK=0.0e+00  peak=1972 eff=0.506
- 4    64  7168 16384    954  err/sqrtK=0.0e+00  peak=1986 eff=0.480
- 5    64  4096  7168    976  err/sqrtK=0.0e+00  peak=1966 eff=0.496
- 6    64  7168  2048   1073  err/sqrtK=0.0e+00  peak=1990 eff=0.539
- 7   128  2112  7168   1357  err/sqrtK=0.0e+00  peak=1936 eff=0.701
- 8   128 24576  1536   1425  err/sqrtK=0.0e+00  peak=1951 eff=0.730
- 9   128 32768   512   1295  err/sqrtK=0.0e+00  peak=1729 eff=0.749
-10   128  7168 16384   1231  err/sqrtK=0.0e+00  peak=1979 eff=0.622
-11   128  4096  7168   1355  err/sqrtK=0.0e+00  peak=1981 eff=0.684
-12   128  7168  2048   1387  err/sqrtK=0.0e+00  peak=1989 eff=0.697
-13  4096  2112  7168   1591  err/sqrtK=0.0e+00  peak=1973 eff=0.806
-14  4096 24576  1536   1639  err/sqrtK=0.0e+00  peak=1974 eff=0.831
-15  4096 32768   512   1583  err/sqrtK=0.0e+00  peak=1971 eff=0.803
-16  4096  7168 16384   1653  err/sqrtK=0.0e+00  peak=2000 eff=0.826
-17  4096  4096  7168   1689  err/sqrtK=0.0e+00  peak=2005 eff=0.842
-18  4096  7168  2048   1653  err/sqrtK=0.0e+00  peak=2005 eff=0.825
-19  4096   256  4096   1534  err/sqrtK=0.0e+00  peak=1975 eff=0.777
-20 11008   256  4096   1583  err/sqrtK=0.0e+00  peak=1993 eff=0.794
-21  4096   256 11008   1507  err/sqrtK=0.0e+00  peak=1986 eff=0.759
-22  5120   256  5120   1498  err/sqrtK=0.0e+00  peak=1986 eff=0.755
-23 13824   256  5120   1516  err/sqrtK=0.0e+00  peak=1991 eff=0.761
-24  5120   256 13824   1560  err/sqrtK=0.0e+00  peak=2006 eff=0.778
-# load after: { 3.10 2.65 2.70 }
+ 1    64  2112  7168   1120  err/sqrtK=0.0e+00  peak=2009 eff=0.558
+ 2    64 24576  1536   1112  err/sqrtK=0.0e+00  peak=2006 eff=0.554
+ 3    64 32768   512    979  err/sqrtK=0.0e+00  peak=2001 eff=0.489
+ 4    64  7168 16384   1040  err/sqrtK=0.0e+00  peak=2004 eff=0.519
+ 5    64  4096  7168   1070  err/sqrtK=0.0e+00  peak=2009 eff=0.533
+ 6    64  7168  2048   1160  err/sqrtK=0.0e+00  peak=1993 eff=0.582
+ 7   128  2112  7168   1405  err/sqrtK=0.0e+00  peak=1999 eff=0.703
+ 8   128 24576  1536   1444  err/sqrtK=0.0e+00  peak=1991 eff=0.725
+ 9   128 32768   512   1326  err/sqrtK=0.0e+00  peak=2001 eff=0.663
+10   128  7168 16384   1289  err/sqrtK=0.0e+00  peak=2007 eff=0.642
+11   128  4096  7168   1366  err/sqrtK=0.0e+00  peak=2006 eff=0.681
+12   128  7168  2048   1411  err/sqrtK=0.0e+00  peak=2006 eff=0.703
+13  4096  2112  7168   1662  err/sqrtK=0.0e+00  peak=1965 eff=0.846
+14  4096 24576  1536   1659  err/sqrtK=0.0e+00  peak=2009 eff=0.826
+15  4096 32768   512   1662  err/sqrtK=0.0e+00  peak=2003 eff=0.829
+16  4096  7168 16384   1633  err/sqrtK=0.0e+00  peak=2007 eff=0.813
+17  4096  4096  7168   1639  err/sqrtK=0.0e+00  peak=2008 eff=0.816
+18  4096  7168  2048   1654  err/sqrtK=0.0e+00  peak=2005 eff=0.825
+19  4096   256  4096   1514  err/sqrtK=0.0e+00  peak=2001 eff=0.757
+20 11008   256  4096   1603  err/sqrtK=0.0e+00  peak=2008 eff=0.798
+21  4096   256 11008   1541  err/sqrtK=0.0e+00  peak=2002 eff=0.769
+22  5120   256  5120   1573  err/sqrtK=0.0e+00  peak=2006 eff=0.784
+23 13824   256  5120   1525  err/sqrtK=0.0e+00  peak=2004 eff=0.761
+24  5120   256 13824   1533  err/sqrtK=0.0e+00  peak=1998 eff=0.767
+# load after: { 2.03 2.36 2.44 }

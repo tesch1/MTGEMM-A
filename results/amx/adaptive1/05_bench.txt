@@ -1,0 +1,8 @@
+# bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+# paper row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=0 backend=amx
+13  4096  2112  7168   1078  err/sqrtK=0.0e+00  peak=1618 eff=0.666
+14  4096 24576  1536   1025  err/sqrtK=0.0e+00  peak=1630 eff=0.629
+15  4096 32768   512   1011  err/sqrtK=0.0e+00  peak=1632 eff=0.619
+16  4096  7168 16384   1014  err/sqrtK=0.0e+00  peak=1556 eff=0.652
+17  4096  4096  7168    998  err/sqrtK=0.0e+00  peak=1576 eff=0.633
+18  4096  7168  2048    998  err/sqrtK=0.0e+00  peak=1524 eff=0.655

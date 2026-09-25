@@ -39,7 +39,8 @@ static double now_s(void) {
 int amx_probe_main(FILE *o) {
     sysstr(o, "machdep.cpu.brand_string"); sysstr(o, "hw.machine"); sysstr(o, "hw.model");
     sysstr(o, "kern.osversion"); sysint(o, "hw.ncpu"); sysint(o, "hw.perflevel0.physicalcpu");
-    sysint(o, "hw.perflevel1.physicalcpu"); sysint(o, "hw.perflevel0.l2cachesize");
+    sysint(o, "hw.perflevel1.physicalcpu"); sysint(o, "hw.perflevel0.cpusperl2"); sysint(o, "hw.cpufamily");
+    sysint(o, "hw.perflevel0.l2cachesize");
     sysint(o, "hw.perflevel1.l2cachesize"); sysint(o, "hw.l1dcachesize"); sysint(o, "hw.memsize");
     sysint(o, "hw.optional.arm.FEAT_SME"); sysint(o, "hw.optional.arm.FEAT_BF16"); sysint(o, "hw.optional.arm.FEAT_I8MM");
     fflush(o);

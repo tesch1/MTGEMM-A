@@ -1,0 +1,7 @@
+#batch adaptive1
+probe
+test 60
+bench squares row accel trials=5 ms=40
+bench squares row mt threads=1 trials=5 ms=40
+bench squares row mt threads=0 trials=5 ms=40
+bench paper row mt threads=0 trials=3 ms=30 ids=13-18

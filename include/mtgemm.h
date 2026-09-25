@@ -7,7 +7,7 @@ enum mt_backend { MtAuto = 0, MtSme = 1, MtAmx = 2, MtReference = 3 };
 
 // Switches for the ablation study. Defaults: the paper's design plus our fixes (cdirect=2, pack4=1, prefetch=7);
 // the paper's design as published is cdirect=0, pack4=0, prefetch=0.
-// AMX backend (libmtgemm_amx.a): online 0/1/2 = B packed/auto/read from the source, pack4 = A through Z, threads 0 = 1.
+// AMX backend (libmtgemm_amx.a): online 0/1/2 = B packed/auto/read from the source, pack4 = A through Z, threads 0 = one per AMX unit.
 struct mt_options {
   int online = 1;   // first-round online packing of B
   int x4 = 1;       // four-vector ld1/st1 in packing and micro-kernel (0: one vector per instruction)

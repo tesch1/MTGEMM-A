@@ -1,18 +1,18 @@
-# 2026-09-25 09:30:29 load before: { 2.91 2.67 2.70 } VECLIB_MAXIMUM_THREADS=1
+# 2026-09-25 09:51:34 load before: { 2.46 2.44 2.46 } VECLIB_MAXIMUM_THREADS=1
 # thin row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=sme
- 0     1  4096  4096     24  err/sqrtK=0.0e+00  peak=2004 eff=0.012
- 0     4  4096  4096     91  err/sqrtK=0.0e+00  peak=2009 eff=0.045
- 0     8  4096  4096    192  err/sqrtK=0.0e+00  peak=2000 eff=0.096
- 0    16  4096  4096    382  err/sqrtK=0.0e+00  peak=2000 eff=0.191
- 0    32  4096  4096    725  err/sqrtK=0.0e+00  peak=2009 eff=0.361
- 0    64  4096  4096   1054  err/sqrtK=0.0e+00  peak=2006 eff=0.525
- 0  4096     1  4096     30  err/sqrtK=2.4e-06  peak=1998 eff=0.015
- 0  4096     4  4096    124  err/sqrtK=0.0e+00  peak=2007 eff=0.062
- 0  4096     8  4096    250  err/sqrtK=0.0e+00  peak=2002 eff=0.125
- 0  4096    16  4096    499  err/sqrtK=0.0e+00  peak=2004 eff=0.249
- 0  4096    32  4096    782  err/sqrtK=0.0e+00  peak=1990 eff=0.393
- 0  4096    64  4096    970  err/sqrtK=0.0e+00  peak=1999 eff=0.485
- 0     8     8  4096     95  err/sqrtK=0.0e+00  peak=2005 eff=0.048
- 0    16    16  4096    354  err/sqrtK=0.0e+00  peak=2002 eff=0.177
- 0    32    32  4096   1128  err/sqrtK=0.0e+00  peak=2003 eff=0.563
-# load after: { 2.83 2.66 2.70 }
+ 0     1  4096  4096     22  err/sqrtK=0.0e+00  peak=1980 eff=0.011
+ 0     4  4096  4096     86  err/sqrtK=0.0e+00  peak=1990 eff=0.043
+ 0     8  4096  4096    168  err/sqrtK=0.0e+00  peak=1999 eff=0.084
+ 0    16  4096  4096    349  err/sqrtK=0.0e+00  peak=2002 eff=0.174
+ 0    32  4096  4096    650  err/sqrtK=0.0e+00  peak=1986 eff=0.327
+ 0    64  4096  4096   1017  err/sqrtK=0.0e+00  peak=2005 eff=0.507
+ 0  4096     1  4096     29  err/sqrtK=2.4e-06  peak=1974 eff=0.015
+ 0  4096     4  4096    118  err/sqrtK=0.0e+00  peak=1998 eff=0.059
+ 0  4096     8  4096    239  err/sqrtK=0.0e+00  peak=1983 eff=0.121
+ 0  4096    16  4096    454  err/sqrtK=0.0e+00  peak=1985 eff=0.229
+ 0  4096    32  4096    749  err/sqrtK=0.0e+00  peak=2005 eff=0.374
+ 0  4096    64  4096    965  err/sqrtK=0.0e+00  peak=1984 eff=0.486
+ 0     8     8  4096     98  err/sqrtK=0.0e+00  peak=2003 eff=0.049
+ 0    16    16  4096    353  err/sqrtK=0.0e+00  peak=1985 eff=0.178
+ 0    32    32  4096   1124  err/sqrtK=0.0e+00  peak=1972 eff=0.570
+# load after: { 2.42 2.43 2.46 }
