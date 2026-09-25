@@ -24,8 +24,8 @@ inline int balance(int total, int block, int step) {
   return std::min(round_up(block, step), round_up((total + nblk - 1) / nblk, step));
 }
 
-// Core-side prefetch (prfm pldl2keep) of `bytes` starting at p; the matrix unit reads through L2.
-__attribute__((always_inline)) inline void pf_l2(const void* p, int bytes) MT_STREAMING_COMPAT {
+// Core-side prefetch (prfm pldl2keep) of `bytes` starting at p; static: the attribute differs per backend file.
+__attribute__((always_inline)) static inline void pf_l2(const void* p, int bytes) MT_STREAMING_COMPAT {
   for (int l = 0; l < bytes; l += 128) __builtin_prefetch(static_cast<const char*>(p) + l, 0, 2);
 }
 
@@ -50,5 +50,11 @@ mt_blocking model_blocking(int M, int N, int K, int es, int mr, int nr);
 
 // Runs fn(a1) on the worker thread and fn(a0) on the caller, then waits for both.
 void run_pair(void (*fn)(void*), void* a0, void* a1);
+
+// Backends behind mt_sgemm / mt_dgemm (src/dispatch.cpp): same arguments as the public functions.
+void sme_sgemm(mt_order, int, int, int, float, const float*, int, const float*, int, float, float*, int, const mt_options*);
+void sme_dgemm(mt_order, int, int, int, double, const double*, int, const double*, int, double, double*, int, const mt_options*);
+void amx_sgemm(mt_order, int, int, int, float, const float*, int, const float*, int, float, float*, int, const mt_options*);
+void amx_dgemm(mt_order, int, int, int, double, const double*, int, const double*, int, double, double*, int, const mt_options*);
 
 }  // namespace mt

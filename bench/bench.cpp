@@ -149,6 +149,9 @@ static void* body(void*) {
     else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
     else if (std::sscanf(a, "ids=%d-%d", &id_lo, &id_hi) == 2) {}
     else if (std::sscanf(a, "online=%d", &v) == 1) o.online = v;
+    else if (!std::strcmp(a, "backend=sme")) o.backend = MtSme;
+    else if (!std::strcmp(a, "backend=amx")) o.backend = MtAmx;
+    else if (!std::strcmp(a, "backend=ref")) o.backend = MtReference;
     else if (std::sscanf(a, "x4=%d", &v) == 1) o.x4 = v;
     else if (std::sscanf(a, "heap=%d", &v) == 1) o.heap = v;
     else if (std::sscanf(a, "model=%d", &v) == 1) o.model = v;
@@ -168,6 +171,7 @@ static void* body(void*) {
   if (!use_accel)
     std::printf(" online=%d x4=%d heap=%d model=%d shape=%d cdirect=%d pack4=%d pf=%d threads=%d", o.online, o.x4, o.heap,
                 o.model, o.shape, o.cdirect, o.pack4, o.prefetch, o.threads);
+  if (!use_accel) std::printf(" backend=%s", mt_backend_name(mt_select_backend(mt_backend(o.backend))));
   std::printf("\n");
   if (f64) run<double>(shapes, row, use_accel, beta, o, ms, trials);
   else run<float>(shapes, row, use_accel, beta, o, ms, trials);

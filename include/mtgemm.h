@@ -3,6 +3,7 @@
 #include <cstddef>
 
 enum mt_order { MtRowMajor = 101, MtColMajor = 102 };
+enum mt_backend { MtAuto = 0, MtSme = 1, MtAmx = 2, MtReference = 3 };
 
 // Switches for the ablation study. Defaults: the paper's design plus our fixes (cdirect=2, pack4=1, prefetch=7);
 // the paper's design as published is cdirect=0, pack4=0, prefetch=0.
@@ -19,6 +20,7 @@ struct mt_options {
   int threads = 1;  // 1, 2 (one thread per performance-cluster SME unit), or 0: 2 from 2^22 multiply-adds, else 1
   int mc = 0, nc = 0, kc = 0;  // nonzero: override the blocking
   int prof = 0;     // profiling only, gives wrong results: 1 skips A packing, 2 skips micro-kernels, 4 skips B packing
+  int backend = MtAuto;  // MtAuto: env MTGEMM_BACKEND (sme, amx, ref), else the best one this CPU and build support
 };
 
 void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
@@ -29,3 +31,7 @@ void mt_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A
 struct mt_blocking { int mc, nc, kc; };
 // Blocking chosen by the model for a row-major problem (col-major problems are solved as C^T = B^T A^T).
 mt_blocking mt_model_blocking(int M, int N, int K, int elem_size, int mr, int nr);
+
+// Backend that a call with `requested` runs on this CPU (MtAuto: the automatic choice), and its name.
+mt_backend mt_select_backend(mt_backend requested = MtAuto);
+const char* mt_backend_name(mt_backend b);

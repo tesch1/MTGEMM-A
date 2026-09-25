@@ -1,8 +1,0 @@
-# bench squares row mt threads=1 trials=3 ms=30
-# squares row mt f32 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
- 0   512   512   512   1099  err/sqrtK=0.0e+00
- 0  1000  1000  1000   1002  err/sqrtK=0.0e+00
- 0  1024  1024  1024    984  err/sqrtK=0.0e+00
- 0  2048  2048  2048    925  err/sqrtK=0.0e+00
- 0  3000  3000  3000    912  err/sqrtK=2.4e-06
- 0  4096  4096  4096    783  err/sqrtK=0.0e+00

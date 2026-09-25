@@ -733,11 +733,11 @@ void gemm(mt_order order, int M, int N, int K, T alpha, const T* A, int lda, con
 }  // namespace
 }  // namespace mt
 
-void mt_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
+void mt::sme_sgemm(mt_order order, int M, int N, int K, float alpha, const float* A, int lda, const float* B, int ldb,
               float beta, float* C, int ldc, const mt_options* opt) {
   mt::gemm<float>(order, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, opt);
 }
-void mt_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A, int lda, const double* B, int ldb,
+void mt::sme_dgemm(mt_order order, int M, int N, int K, double alpha, const double* A, int lda, const double* B, int ldb,
               double beta, double* C, int ldc, const mt_options* opt) {
   mt::gemm<double>(order, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, opt);
 }

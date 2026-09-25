@@ -1,3 +1,0 @@
-# bench 2048x2048x2048 row accel trials=5 ms=40
-# 2048x2048x2048 row accel f32 beta=0
- 0  2048  2048  2048   1023  peak=1634 eff=0.626

@@ -106,6 +106,7 @@ static int run(int trials) {
 int main(int argc, char** argv) {
   const int trials = argc > 1 ? std::atoi(argv[1]) : 600;
   int f = 0;
+  std::printf("backend: %s\n", mt_backend_name(mt_select_backend()));
   // Fixed shapes: exact multiples, one-off tails and degenerate sizes.
   const int fixed[][3] = {{16, 64, 4}, {64, 64, 64}, {17, 65, 5}, {1, 1, 1}, {15, 63, 3}, {64, 16, 7}, {80, 200, 25},
                           {200, 80, 131}, {128, 256, 512}, {33, 17, 1}, {5, 300, 2}};

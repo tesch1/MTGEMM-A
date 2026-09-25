@@ -313,7 +313,9 @@ load width, strided reads with prefetch, core stores during SME loads).
 | `tools/` | table scripts, the figure reader |
 | `src/amx.h`, `src/mtgemm_amx.cpp`, `bench/ubench_amx.cpp`, `tests/amx_ver.c` | AMX backend, its microbenchmarks, emulator generation |
 | `visionos/`, `tools/vp_batch.sh`, `tools/vp_table.py` | Vision Pro runner app, queues, batch script, table script |
-| `results/amx/` | Vision Pro results (batches `b*`, `final1`, `final2`) |
+| `src/dispatch.cpp` | `mt_sgemm` / `mt_dgemm`: backend choice (SME, AMX, reference loop) |
+| `bench/run_sme_amx.sh`, `results/sme_vs_amx/` | SME against AMX on the M4 Pro |
+| `results/amx/` | Vision Pro results (`final1`, `final2`, `review1`) and `experiments.md` (the design experiments) |
 
 ### Numbers from the paper
 
@@ -764,6 +766,7 @@ AMX instructions still execute on the M4, so the backend also runs (and is teste
 ```sh
 make amx                 # build/libmtgemm_amx.a, test_gemm_amx, bench_amx, ubench_amx (runs on this Mac too)
 make test_amx            # the same correctness tests on this Mac, then under corsix's emulator with M2 semantics
+make multi test_multi    # build/libmtgemm_multi.a (SME + AMX + reference, chosen at run time), tests on each
 tools/vp_batch.sh visionos/queues/final2.txt   # build, install, wait for an unlocked headset, run, copy back
 python3 tools/vp_table.py build/vp_results/out_final2   # side-by-side tables of one device batch
 ```
@@ -779,6 +782,31 @@ a batch resumes. `tools/vp_batch.sh` signs with automatic provisioning, installs
 lock state (apps can only be launched while the headset is unlocked), launches and copies the results to
 `build/vp_results/`. The app has the increased-memory entitlement for the large fp64 shapes. On the device,
 `bench` also prints `peak=` (the AMX fma peak of that moment) and `eff=`.
+
+### Backends and runtime dispatch
+
+`mt_sgemm` and `mt_dgemm` (`src/dispatch.cpp`) call one of three backends: SME (`src/mtgemm.cpp`), AMX
+(`src/mtgemm_amx.cpp`) or a portable reference loop. Each library contains the backends it was built with:
+
+| library | make target | backends | for |
+|---|---|---|---|
+| `build/libmtgemm.a` | `make` | SME, reference | M4 and other SME machines (as before) |
+| `build/libmtgemm_amx.a` | `make amx` | AMX, reference | M2, M3 (also the Vision Pro app) |
+| `build/libmtgemm_multi.a` | `make multi` | SME, AMX, reference | one binary for M2 to M4 |
+
+The choice, per call: `mt_options::backend` if set and available, else the environment variable
+`MTGEMM_BACKEND` (`sme`, `amx`, `ref`) if available, else SME when `hw.optional.arm.FEAT_SME` is 1, else AMX
+when `hw.cpufamily` is a known family with M2-level AMX (M2/A15, M3, M3 Pro, M3 Max, M4, M4 Pro/Max), else the
+reference loop. `mt_select_backend()` and `mt_backend_name()` report the choice; `test_gemm` and `bench` print it.
+
+There is no register that tells an M1 from an M2 or an M3: macOS traps user-space reads of `MIDR_EL1` and of the
+ID registers (`ID_AA64PFR1_EL1`, `ID_AA64SMFR0_EL1`, even `CTR_EL0`), and AMX has no feature flag. The
+dispatch therefore uses the CPU family from the kernel. M1 (FIRESTORM_ICESTORM) and unknown families get the
+reference loop, so an unknown chip never executes an AMX instruction. A functional probe (run one quad load
+under a SIGILL handler and check which registers it filled) would also tell M1 from M2, but it needs a process-wide
+signal handler, so the library does not use one; `visionos/App/amx_probe.c` shows the idea.
+
+`make test_multi` runs the tests on all three backends in one binary on this M4.
 
 ### M2 measurements
 
@@ -826,36 +854,35 @@ So the M2 has one AMX unit that counts: more P-core threads share it, and the ef
 - **Threads.** One thread by default (`threads = 0` means 1). `threads = 2` splits over two P-core threads
   (no gain on M2, they share the unit).
 
-What did not work on the M2 (all measured, see `results/amx/b*`; none of it is in the code): packing the next
+What did not work on the M2 (all measured, see `results/amx/experiments.md`; none of it is in the code): packing the next
 B panel with the core inside the kernel (the core stalls on DRAM and stops issuing AMX instructions: 823
 against 1106 GFLOPS on squares), AMX reading B from the source in the first row of kernels only and storing
 the packed copy for the other rows, a 64x16 kernel that reads B straight from the source for M <= 64 (282
 against 610 GFLOPS on the thin paper shapes: each 16-column strip walks thousands of rows a page apart), and
-a fixed share of the work (5-12%) for a thread on the efficiency cluster (b14: within noise at 5%, up to 2x
-slower at 8-12%, because the P thread waits for the throttled E thread). The queue files of the early batches
-use the option values of that time (`online=3`, `online=4`, `threads=3`).
+a fixed share of the work (5-12%) for a thread on the efficiency cluster (within noise at 5%, up to 2x
+slower at 8-12%, because the P thread waits for the throttled E thread).
 
 ### Results against Accelerate
 
 Geometric mean GFLOPS on the Vision Pro, MTGEMM-A AMX with its defaults on one thread, Accelerate with its own
 threading, run next to each other (`results/amx/final2`; the same shape sets as in [Results](#results), beta = 0
 row-major, beta = 1 column-major). The device warmed up during this batch (the AMX peak dropped from 1640 to
-1310-1470 GFLOPS at times). The last column is an earlier, cooler batch (`results/amx/b13`, B packed up front),
-for the size of the variation.
+1310-1470 GFLOPS at times). The last column is a later batch with the final code (`results/amx/review1`), for
+the size of the variation between batches.
 
-| set | Accelerate | MTGEMM-A AMX | ratio | b13: Accelerate / AMX |
+| set | Accelerate | MTGEMM-A AMX | ratio | review1: Accelerate / AMX |
 |---|---|---|---|---|
-| squares 512-4096, fp32 row | 1056 | **971** | 0.92 | 1169 / 1179 |
-| squares 512-4096, fp32 col | 937 | **907** | 0.97 | |
-| paper's 24, fp32 row | 567 | **689** | 1.22 | 603 / 738 |
+| squares 512-4096, fp32 row | 1056 | **971** | 0.92 | 1227 / 1176 |
+| squares 512-4096, fp32 col | 937 | **907** | 0.97 | 1054 / 1011 |
+| paper's 24, fp32 row | 567 | **689** | 1.22 | |
 | paper's 24, fp32 col | 585 | **721** | 1.23 | |
 | paper's 24, fp64 row | 186 | **237** | 1.27 | |
-| squares 512-4096, fp64 row | 259 | **257** | 0.99 | |
-| irregular (K = 25600), fp32 row | 459 | **435** | 0.95 | 496 / 477 |
+| squares 512-4096, fp64 row | 259 | **257** | 0.99 | 284 / 280 |
+| irregular (K = 25600), fp32 row | 459 | **435** | 0.95 | |
 | irregular (K = 25600), fp32 col | 456 | **448** | 0.98 | |
-| thin (M or N 1-64), fp32 row | 73 | **73** | 1.00 | 74 / 73 |
+| thin (M or N 1-64), fp32 row | 73 | **73** | 1.00 | |
 | thin (M or N 1-64), fp32 col | 73 | **74** | 1.01 | |
-| small (4-384), fp32 row | 125 | **91** | 0.73 | |
+| small (4-384), fp32 row | 125 | **91** | 0.73 | 140 / 99 |
 | small (4-384), fp32 col | 130 | **82** | 0.63 | |
 
 - The paper's workloads are the strongest set: 1.2-1.3x, mostly from the thin-M shapes with wide N (IDs 2-6
@@ -865,6 +892,51 @@ for the size of the variation.
 - In the thin set the AMX backend is about 2x faster for M from 4 to 64 and 1.1-1.35x for N from 4 to 64. It is
   behind for N = 1 and for M = N = 8, 16, 32 with K = 4096.
 - Small matrices: ahead from 32 to 128 (B is read without packing), behind below 32, at 48 and from 256 to 512.
+
+### SME against AMX on the M4 Pro
+
+The M4 has both units, so the two backends can run the same shapes on one machine (`build/bench_multi` with
+`backend=sme` or `backend=amx`, `bench/run_sme_amx.sh`, raw files in `results/sme_vs_amx/`, one-minute load
+2.1-3.2). Geometric mean GFLOPS, fp32 unless noted, beta = 0 row-major and beta = 1 column-major. The AMX
+backend keeps its M2 tuning (blocking, B threshold); it was not tuned for the M4.
+
+One thread (Accelerate with `VECLIB_MAXIMUM_THREADS=1`):
+
+| set | Accelerate | SME | AMX | AMX / SME |
+|---|---|---|---|---|
+| squares 512-4096, row | 1616 | **1670** | 1590 | 0.95 |
+| squares 512-4096, col | 1550 | **1660** | 1554 | 0.94 |
+| paper's 24, row | 1080 | **1328** | 1137 | 0.86 |
+| paper's 24, col | 1133 | **1359** | 1263 | 0.93 |
+| squares 512-4096, fp64 row | 424 | **460** | 455 | 0.99 |
+| paper's 24, fp64 row | 318 | **422** | 370 | 0.88 |
+| irregular (K = 25600), row | 904 | **1220** | 702 | 0.58 |
+| irregular (K = 25600), col | 906 | **1210** | 702 | 0.58 |
+| thin (M or N 1-64), row | 193 | **260** | 141 | 0.54 |
+| thin (M or N 1-64), col | 199 | **260** | 141 | 0.54 |
+| small (4-384), row | **242** | 176 | 157 | 0.89 |
+| small (4-384), col | **253** | 167 | 150 | 0.90 |
+
+Default threading (Accelerate with its own threads, SME `threads=0`: one thread per P-cluster unit from 2^22
+multiply-adds, AMX `threads=1` and `threads=2`):
+
+| set | Accelerate | SME | AMX, 1 thread | AMX, 2 threads | AMX 2 threads / SME |
+|---|---|---|---|---|---|
+| squares 512-4096, row | 3128 | **3422** | 1627 | 3076 | 0.90 |
+| squares 512-4096, col | 2909 | **3361** | 1567 | 3029 | 0.90 |
+| paper's 24, row | 2366 | **2729** | 1163 | 2330 | 0.85 |
+| paper's 24, col | 2427 | **2734** | 1282 | 2513 | 0.92 |
+
+- SME is faster on every set but the small one, so the dispatch picks SME on the M4. Accelerate is still ahead on
+  the small matrices (4-48).
+- On large work AMX reaches 86-99% of SME on one unit. The M4 runs the AMX instructions on the same units (the
+  AMX fma32 peak is 2000 GFLOPS per unit, the same as FMOPA).
+- AMX falls furthest behind on the long-K shapes (irregular set, 0.58): its blocking, chosen on the M2, reloads C
+  every 1024 depth steps (25 times for K = 25600). On the thin shapes (0.54) it pads narrow panels to 32
+  columns, while the SME backend has narrower edge kernels. AMX wins at 32x32x32 (654 against 254, B not
+  packed) and is even at 4096x64x4096 (947 against 970).
+- The M4 has two P-cluster AMX units: with `threads=2` AMX nearly doubles (3076 against 1627). On the M2 the
+  second thread gains nothing, because there is only one unit.
 
 ### Limitations of the AMX backend
 

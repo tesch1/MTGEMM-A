@@ -11,6 +11,8 @@ targets:
       - path: ../src/mtgemm_amx.cpp
       - path: ../src/model.cpp
       - path: ../src/threads.cpp
+      - path: ../src/dispatch.cpp
+        compilerFlags: "-DMT_WITH_AMX"
       - path: ../tests/test_gemm.cpp
         compilerFlags: "-Dmain=test_main"
       - path: ../bench/bench.cpp
