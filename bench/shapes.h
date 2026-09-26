@@ -34,6 +34,10 @@ inline std::vector<Shape> make_shapes(const std::string& set, int id_lo = 1, int
   if (std::sscanf(set.c_str(), "grid%d", &kg) == 1)  // M, N over powers of two 4-4096 at depth kg
     for (int m = 4; m <= 4096; m *= 2)
       for (int n = 4; n <= 4096; n *= 2) v.push_back({0, m, n, kg});
+  if (set == "cross")  // small results over depths, where a NEON kernel and AMX cross over
+    for (int k : {8, 16, 32, 64, 256, 1024, 4096})
+      for (int m : {4, 8, 12, 16, 20, 24, 32, 48, 64})
+        for (int n : {4, 8, 12, 16, 20, 24, 32, 48, 64}) v.push_back({0, m, n, k});
   int m, n, k;
   if (std::sscanf(set.c_str(), "%dx%dx%d", &m, &n, &k) == 3) v.push_back({0, m, n, k});
   return v;

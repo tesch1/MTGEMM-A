@@ -35,6 +35,7 @@ that carries this work, Eigen<sup>ec85</sup> is Eigen master.
 - [What each design element is worth](#what-each-design-element-is-worth)
 - [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend)
 - [AMX backend (Apple Vision Pro, M2)](#amx-backend-apple-vision-pro-m2)
+- [Eigen with the AMX GEMM](#eigen-with-the-amx-gemm)
 - [Limitations](#limitations)
 - [Future work](#future-work)
 - [References](#references)
@@ -959,6 +960,46 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
 - Small problems (M, N below 48) are 2-4x slower than Accelerate: packing and the scratch tile of the edge
   blocks cost more than the arithmetic. N = 1 (4096x1x4096) is 3x slower.
 - Only one headset and one visionOS build (24N5093f).
+
+## Eigen with the AMX GEMM
+
+The AMX backend is ported into Eigen as an opt-in GEMM, on top of Eigen merge request !3174 (the SME backend's
+one-part-per-unit threading): branch `apple-amx` on the fork (`third_party/build.sh` fetches it as
+`third_party/src/eigen-amx`). Define `EIGEN_ARM64_USE_APPLE_AMX` in a NEON build for Apple arm64. Real `float` and
+`double` products then take `Eigen/src/Core/arch/AppleAMX/GeneralMatrixMatrix.h` (the kernels, packing and blocking
+of this backend, for all four storage orders of the operands). They take it only where `hw.cpufamily` names an M2,
+M3 or M4 family chip, and only past the crossover with the NEON kernel: rows x cols >= 256 and
+rows x cols x depth x sizeof(scalar) >= 2^17. Everything else keeps the NEON kernel. With a thread pool, a product
+runs one disjoint part of the result per AMX unit (one per performance cluster).
+
+```sh
+make bench_eigen_amx     # build/bench_eigen_{neon,amx}[_mt]: the same Eigen tree without and with the opt-in
+tools/vp_batch.sh visionos/queues/eigenamx1.txt   # Eigen test and benchmarks on the headset
+python3 tools/eigen_amx_crossover.py              # scores crossover rules on the stored sweeps
+```
+
+On the headset, the app also runs Eigen's `product_apple_amx`, `product_large`, `product_threaded` and
+`product_extra` tests with the AMX path (`eigen_test*`, each in its own Eigen namespace). All pass
+(`visionos/queues/eigenamx4.txt`).
+
+Vision Pro (M2), column-major C += A B unless noted, geomean GFLOPS (`results/eigen_amx/vp_m2_batch1`):
+
+| set | Accelerate | Eigen NEON | Eigen AMX | AMX / NEON |
+|---|---|---|---|---|
+| squares 512-4096, fp32, one thread | 1092 | 102 | 1113 | 10.9 |
+| squares, fp32 row-major, one thread | | 99 | 942 | 9.5 |
+| squares, fp64, one thread | | 48 | 257 | 5.3 |
+| squares, fp32, thread pool of 8 | | 302 | 934 | 3.1 |
+| small cubes 4-384, fp32 | | 47 | 130 | 2.8 |
+| thin (one side 1-64, rest 4096), fp32 | | 39 | 84 | 2.1 |
+| the paper's 24 shapes, fp32 | | | 712 | (this library's AMX backend: 704) |
+
+The Vision Pro has one AMX unit, so the thread-pool build also runs AMX on one thread. The interleaved runs of
+`vp_m2_batch2` (1125, 1109, 1039 and 959 GFLOPS for one thread, pool, one thread, pool) show a thermal drift, not
+a cost of the pool. The crossover rule is the best shared rule on the four sweeps of 567 small shapes (M2 and
+M4 Pro, fp32 and fp64; `results/eigen_amx`): the mean loss against the faster path per shape is 3.5%. The largest
+losses are results that fill few of the 32-wide AMX blocks, for example 12 x 24 at depth 4096 (0.5 of NEON). The
+two-unit split on the M4 Pro is correct (Eigen tests) but is not yet measured on a quiet machine.
 
 ## Limitations
 

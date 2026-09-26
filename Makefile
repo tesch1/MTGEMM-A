@@ -72,6 +72,19 @@ $(BUILD)/bench_eigen_br_mt: $(EIGEN_BENCH) $(EIGEN_BR_INC)/Eigen/Core | $(BUILD)
 
 bench_eigen: $(BUILD)/bench_eigen $(BUILD)/bench_eigen_mt $(BUILD)/bench_eigen_br $(BUILD)/bench_eigen_br_mt
 
+# Eigen on NEON with and without the Apple AMX GEMM (third_party/src/eigen-amx, branch apple-amx), one thread and a pool.
+EIGEN_AMX_INC := third_party/src/eigen-amx
+NEON_FLAGS := $(filter-out -march=%,$(CXXFLAGS)) -march=armv8.6-a -DBENCH_EIGEN_NEON -DACCELERATE_NEW_LAPACK -I$(EIGEN_AMX_INC)
+$(BUILD)/bench_eigen_neon: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DBENCH_EIGEN_NAME='"eigen-neon"' $< $(ACCEL) -o $@
+$(BUILD)/bench_eigen_neon_mt: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_NAME='"eigen-neon-mt"' $< $(ACCEL) -o $@
+$(BUILD)/bench_eigen_amx: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core $(EIGEN_AMX_INC)/Eigen/src/Core/arch/AppleAMX/GeneralMatrixMatrix.h | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DBENCH_EIGEN_NAME='"eigen-amx"' $< $(ACCEL) -o $@
+$(BUILD)/bench_eigen_amx_mt: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core $(EIGEN_AMX_INC)/Eigen/src/Core/arch/AppleAMX/GeneralMatrixMatrix.h | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_NAME='"eigen-amx-mt"' $< $(ACCEL) -o $@
+bench_eigen_amx: $(BUILD)/bench_eigen_neon $(BUILD)/bench_eigen_neon_mt $(BUILD)/bench_eigen_amx $(BUILD)/bench_eigen_amx_mt
+
 test_ext: $(BUILD)/bench_ext
 	./$(BUILD)/bench_ext all libxsmm check
 	./$(BUILD)/bench_ext irr libxsmm check
@@ -173,4 +186,4 @@ test_multi: $(BUILD)/test_gemm_multi
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen amx test_amx multi test_multi
+.PHONY: all test clean gbench bench_ext test_ext bench_eigen bench_eigen_amx test_eigen amx test_amx multi test_multi

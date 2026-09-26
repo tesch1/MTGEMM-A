@@ -1,5 +1,6 @@
 // Device batch runner: each line of Documents/queue.txt to out_<batch>/NN_<prog>.txt; a crashed line is skipped on relaunch.
 #include <fcntl.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <chrono>
 #include <cstdio>
@@ -15,6 +16,15 @@
 int test_main(int, char**);
 int bench_main(int, char**);
 int ubench_main(int, char**);
+int eigen_neon_main(int, char**);
+int eigen_amx_main(int, char**);
+int eigen_neon_mt_main(int, char**);
+int eigen_amx_mt_main(int, char**);
+int eigen_test_main(int, char**);
+int eigen_amx_all_main(int, char**);
+int eigen_test_large_main(int, char**);
+int eigen_test_threaded_main(int, char**);
+int eigen_test_extra_main(int, char**);
 extern "C" int amx_probe_main(FILE*);
 
 static std::mutex g_mu;
@@ -27,7 +37,29 @@ static void set_status(const std::string& s) {
 
 static int probe_main(int, char**) { return amx_probe_main(stdout); }
 
+static int run_program(const std::string& line);
+
+// Each program runs on a thread with a 64 MB stack: the app's runner thread has 512 KB, too little for Eigen's tests.
 static int run_line(const std::string& line) {
+  struct Call {
+    const std::string* line;
+    int rc;
+  } call{&line, 0};
+  pthread_attr_t at;
+  pthread_attr_init(&at);
+  pthread_attr_setstacksize(&at, 64 << 20);
+  pthread_t t;
+  pthread_create(&t, &at, [](void* p) -> void* {
+    auto* c = static_cast<Call*>(p);
+    c->rc = run_program(*c->line);
+    return nullptr;
+  }, &call);
+  pthread_join(t, nullptr);
+  pthread_attr_destroy(&at);
+  return call.rc;
+}
+
+static int run_program(const std::string& line) {
   std::vector<std::string> words;
   std::istringstream is(line);
   for (std::string w; is >> w;) words.push_back(w);
@@ -41,6 +73,15 @@ static int run_line(const std::string& line) {
   if (p == "bench") return bench_main(argc, argv.data());
   if (p == "ubench") return ubench_main(argc, argv.data());
   if (p == "probe") return probe_main(argc, argv.data());
+  if (p == "eigen_neon") return eigen_neon_main(argc, argv.data());
+  if (p == "eigen_amx") return eigen_amx_main(argc, argv.data());
+  if (p == "eigen_neon_mt") return eigen_neon_mt_main(argc, argv.data());
+  if (p == "eigen_amx_mt") return eigen_amx_mt_main(argc, argv.data());
+  if (p == "eigen_test") return eigen_test_main(argc, argv.data());
+  if (p == "eigen_amx_all") return eigen_amx_all_main(argc, argv.data());
+  if (p == "eigen_test_large") return eigen_test_large_main(argc, argv.data());
+  if (p == "eigen_test_threaded") return eigen_test_threaded_main(argc, argv.data());
+  if (p == "eigen_test_extra") return eigen_test_extra_main(argc, argv.data());
   std::printf("unknown program %s\n", p.c_str());
   return 127;
 }

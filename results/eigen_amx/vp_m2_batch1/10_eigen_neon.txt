@@ -1,0 +1,15 @@
+# eigen_neon small col trials=3 ms=20
+# small col eigen-neon f32 beta=1 threads=1 units=-1
+ 0     4     4     4      4  err/sqrtK=0.0e+00
+ 0     8     8     8     11  err/sqrtK=0.0e+00
+ 0    12    12    12     24  err/sqrtK=0.0e+00
+ 0    16    16    16     33  err/sqrtK=0.0e+00
+ 0    24    24    24     53  err/sqrtK=0.0e+00
+ 0    32    32    32     65  err/sqrtK=8.4e-08
+ 0    48    48    48     79  err/sqrtK=1.0e-07
+ 0    64    64    64     82  err/sqrtK=1.2e-07
+ 0    96    96    96     85  err/sqrtK=9.7e-08
+ 0   128   128   128     88  err/sqrtK=8.4e-08
+ 0   192   192   192     94  err/sqrtK=1.4e-07
+ 0   256   256   256     94  err/sqrtK=1.8e-07
+ 0   384   384   384     97  err/sqrtK=1.9e-07

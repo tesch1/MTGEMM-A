@@ -1,0 +1,17 @@
+# eigen_amx_all thin col trials=3 ms=20
+# thin col eigen-amx-all f32 beta=1 threads=1 units=1
+ 0     1  4096  4096     17  err/sqrtK=9.5e-07
+ 0     4  4096  4096     24  err/sqrtK=3.6e-07
+ 0     8  4096  4096     45  err/sqrtK=2.4e-07
+ 0    16  4096  4096     95  err/sqrtK=2.4e-07
+ 0    32  4096  4096    198  err/sqrtK=0.0e+00
+ 0    64  4096  4096    370  err/sqrtK=0.0e+00
+ 0  4096     1  4096     15  err/sqrtK=2.6e-06
+ 0  4096     4  4096     36  err/sqrtK=0.0e+00
+ 0  4096     8  4096     72  err/sqrtK=0.0e+00
+ 0  4096    16  4096    135  err/sqrtK=0.0e+00
+ 0  4096    32  4096    281  err/sqrtK=0.0e+00
+ 0  4096    64  4096    466  err/sqrtK=0.0e+00
+ 0     8     8  4096     10  err/sqrtK=8.9e-08
+ 0    16    16  4096     41  err/sqrtK=6.0e-08
+ 0    32    32  4096    472  err/sqrtK=0.0e+00

@@ -1,0 +1,8 @@
+# eigen_amx squares col trials=3 ms=40
+# squares col eigen-amx f32 beta=1 threads=1 units=1
+ 0   512   512   512   1042  err/sqrtK=0.0e+00
+ 0  1000  1000  1000   1089  err/sqrtK=1.8e-07
+ 0  1024  1024  1024   1189  err/sqrtK=0.0e+00
+ 0  2048  2048  2048   1187  err/sqrtK=0.0e+00
+ 0  3000  3000  3000   1107  err/sqrtK=2.8e-06
+ 0  4096  4096  4096   1135  err/sqrtK=0.0e+00
