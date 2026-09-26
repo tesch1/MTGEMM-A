@@ -1,0 +1,7 @@
+# squares col eigen-neon-mt f32 beta=1 threads=12 units=-1
+ 0   512   512   512    476  err/sqrtK=1.1e-06
+ 0  1000  1000  1000    498  err/sqrtK=1.9e-06
+ 0  1024  1024  1024    528  err/sqrtK=2.4e-06
+ 0  2048  2048  2048    692  err/sqrtK=3.7e-06
+ 0  3000  3000  3000    743  err/sqrtK=4.5e-06
+ 0  4096  4096  4096    795  err/sqrtK=6.9e-06

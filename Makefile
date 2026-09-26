@@ -83,7 +83,14 @@ $(BUILD)/bench_eigen_amx: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core $(EIGEN_AMX
 	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DBENCH_EIGEN_NAME='"eigen-amx"' $< $(ACCEL) -o $@
 $(BUILD)/bench_eigen_amx_mt: $(EIGEN_BENCH) $(EIGEN_AMX_INC)/Eigen/Core $(EIGEN_AMX_INC)/Eigen/src/Core/arch/AppleAMX/GeneralMatrixMatrix.h | $(BUILD)
 	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_NAME='"eigen-amx-mt"' $< $(ACCEL) -o $@
-bench_eigen_amx: $(BUILD)/bench_eigen_neon $(BUILD)/bench_eigen_neon_mt $(BUILD)/bench_eigen_amx $(BUILD)/bench_eigen_amx_mt
+$(BUILD)/bench_eigen_gemv_neon: bench/bench_eigen_gemv.cpp $(EIGEN_AMX_INC)/Eigen/Core | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DBENCH_EIGEN_NAME='"eigen-neon"' $< -o $@
+$(BUILD)/bench_eigen_gemv_amx: bench/bench_eigen_gemv.cpp $(EIGEN_AMX_INC)/Eigen/Core $(wildcard $(EIGEN_AMX_INC)/Eigen/src/Core/arch/AppleAMX/*.h) | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DBENCH_EIGEN_NAME='"eigen-amx"' $< -o $@
+$(BUILD)/bench_eigen_gemv_amx_all: bench/bench_eigen_gemv.cpp $(EIGEN_AMX_INC)/Eigen/Core $(wildcard $(EIGEN_AMX_INC)/Eigen/src/Core/arch/AppleAMX/*.h) | $(BUILD)
+	$(CXX) $(NEON_FLAGS) -DEIGEN_ARM64_USE_APPLE_AMX -DEIGEN_APPLE_AMX_GEMV_MIN_ROW_BYTES=0 -DEIGEN_APPLE_AMX_GEMV_MIN_BYTES=0 -DBENCH_EIGEN_NAME='"eigen-amx-all"' $< -o $@
+bench_eigen_amx: $(BUILD)/bench_eigen_neon $(BUILD)/bench_eigen_neon_mt $(BUILD)/bench_eigen_amx $(BUILD)/bench_eigen_amx_mt \
+                 $(BUILD)/bench_eigen_gemv_neon $(BUILD)/bench_eigen_gemv_amx $(BUILD)/bench_eigen_gemv_amx_all
 
 test_ext: $(BUILD)/bench_ext
 	./$(BUILD)/bench_ext all libxsmm check
