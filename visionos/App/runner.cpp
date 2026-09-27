@@ -16,19 +16,6 @@
 int test_main(int, char**);
 int bench_main(int, char**);
 int ubench_main(int, char**);
-int eigen_neon_main(int, char**);
-int eigen_amx_main(int, char**);
-int eigen_neon_mt_main(int, char**);
-int eigen_amx_mt_main(int, char**);
-int eigen_test_main(int, char**);
-int eigen_amx_all_main(int, char**);
-int eigen_gemv_neon_main(int, char**);
-int eigen_gemv_amx_all_main(int, char**);
-int eigen_gemv_amx_nopf_main(int, char**);
-int eigen_gemv_amx_main(int, char**);
-int eigen_test_large_main(int, char**);
-int eigen_test_threaded_main(int, char**);
-int eigen_test_extra_main(int, char**);
 extern "C" int amx_probe_main(FILE*);
 
 static std::mutex g_mu;
@@ -43,7 +30,7 @@ static int probe_main(int, char**) { return amx_probe_main(stdout); }
 
 static int run_program(const std::string& line);
 
-// Each program runs on a thread with a 64 MB stack: the app's runner thread has 512 KB, too little for Eigen's tests.
+// Each program runs on a thread with a 64 MB stack: the app's runner thread has 512 KB.
 static int run_line(const std::string& line) {
   struct Call {
     const std::string* line;
@@ -77,19 +64,6 @@ static int run_program(const std::string& line) {
   if (p == "bench") return bench_main(argc, argv.data());
   if (p == "ubench") return ubench_main(argc, argv.data());
   if (p == "probe") return probe_main(argc, argv.data());
-  if (p == "eigen_neon") return eigen_neon_main(argc, argv.data());
-  if (p == "eigen_amx") return eigen_amx_main(argc, argv.data());
-  if (p == "eigen_neon_mt") return eigen_neon_mt_main(argc, argv.data());
-  if (p == "eigen_amx_mt") return eigen_amx_mt_main(argc, argv.data());
-  if (p == "eigen_test") return eigen_test_main(argc, argv.data());
-  if (p == "eigen_amx_all") return eigen_amx_all_main(argc, argv.data());
-  if (p == "eigen_gemv_neon") return eigen_gemv_neon_main(argc, argv.data());
-  if (p == "eigen_gemv_amx_all") return eigen_gemv_amx_all_main(argc, argv.data());
-  if (p == "eigen_gemv_amx_nopf") return eigen_gemv_amx_nopf_main(argc, argv.data());
-  if (p == "eigen_gemv_amx") return eigen_gemv_amx_main(argc, argv.data());
-  if (p == "eigen_test_large") return eigen_test_large_main(argc, argv.data());
-  if (p == "eigen_test_threaded") return eigen_test_threaded_main(argc, argv.data());
-  if (p == "eigen_test_extra") return eigen_test_extra_main(argc, argv.data());
   std::printf("unknown program %s\n", p.c_str());
   return 127;
 }

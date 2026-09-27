@@ -1,7 +1,0 @@
-# squares col eigen-amx-mt f64 beta=1 threads=12 units=2
- 0   512   512   512    893  err/sqrtK=0.0e+00
- 0  1000  1000  1000    838  err/sqrtK=0.0e+00
- 0  1024  1024  1024    878  err/sqrtK=0.0e+00
- 0  2048  2048  2048    904  err/sqrtK=0.0e+00
- 0  3000  3000  3000    827  err/sqrtK=0.0e+00
- 0  4096  4096  4096    915  err/sqrtK=0.0e+00

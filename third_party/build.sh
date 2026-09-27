@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fetches LIBXSMM, KleidiAI, Eigen master and two Eigen branches (header-only) at pinned commits into third_party/src and builds them into third_party/install.
+# Fetches LIBXSMM, KleidiAI, Eigen master and the Eigen SME branch (header-only) at pinned commits into third_party/src and builds them into third_party/install.
 set -euo pipefail
 cd "$(dirname "$0")"
 LIBXSMM_URL=https://github.com/libxsmm/libxsmm.git
@@ -11,8 +11,6 @@ EIGEN_REV=ec8593a7dbbf45d370b8e4feda5de106706b01bc
 # Eigen with the SME backend work of merge requests !3164 and follow-ups (branch sme-phase4 on the fork).
 EIGEN_BRANCH_URL=https://gitlab.com/tesch1/eigen.git
 EIGEN_BRANCH_REV=35683b6d7d8f1173a6064847947fa942c9a7a1ea
-# Branch apple-amx on the fork.
-EIGEN_AMX_REV=908ec3087b87261bf842bb0bec493d7372c14e33
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
@@ -27,7 +25,6 @@ fetch libxsmm "$LIBXSMM_URL" "$LIBXSMM_REV"
 fetch kleidiai "$KLEIDIAI_URL" "$KLEIDIAI_REV"
 fetch eigen "$EIGEN_URL" "$EIGEN_REV"
 fetch eigen-branch "$EIGEN_BRANCH_URL" "$EIGEN_BRANCH_REV"
-fetch eigen-amx "$EIGEN_BRANCH_URL" "$EIGEN_AMX_REV"
 
 if [ ! -f install/libxsmm/lib/libxsmm.a ]; then
   make -C src/libxsmm -j"$JOBS" CC=clang CXX=clang++ STATIC=1 BLAS=0 FORTRAN=0 \

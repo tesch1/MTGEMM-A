@@ -1,3 +1,0 @@
-# eigen_test_threaded
-Initializing random number generator with seed 1285383388
-Repeating each test 10 times

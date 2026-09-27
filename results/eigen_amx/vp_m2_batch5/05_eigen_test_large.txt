@@ -1,3 +1,0 @@
-# eigen_test_large
-Initializing random number generator with seed 3367695938
-Repeating each test 10 times

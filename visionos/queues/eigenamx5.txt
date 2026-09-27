@@ -1,9 +1,0 @@
-#batch eigenamx5
-eigen_test
-eigen_gemv_neon grid
-eigen_gemv_amx_all grid
-eigen_gemv_neon grid f64
-eigen_gemv_amx_all grid f64
-eigen_test_large
-eigen_test_threaded
-eigen_test_extra

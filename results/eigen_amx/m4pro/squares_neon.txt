@@ -1,7 +1,0 @@
-# squares col eigen-neon f32 beta=1 threads=1 units=-1
- 0   512   512   512    124  err/sqrtK=2.5e-07
- 0  1000  1000  1000    125  err/sqrtK=2.4e-07
- 0  1024  1024  1024    125  err/sqrtK=2.4e-07
- 0  2048  2048  2048    125  err/sqrtK=3.3e-06
- 0  3000  3000  3000    126  err/sqrtK=4.7e-06
- 0  4096  4096  4096    126  err/sqrtK=7.0e-06

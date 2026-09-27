@@ -1,5 +1,0 @@
-#batch eigenamx4
-eigen_test_threaded
-eigen_test
-eigen_test_large
-eigen_test_extra

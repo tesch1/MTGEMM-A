@@ -1,8 +1,0 @@
-# eigen_neon squares col f64 trials=3 ms=40
-# squares col eigen-neon f64 beta=1 threads=1 units=-1
- 0   512   512   512     46  err/sqrtK=3.9e-16
- 0  1000  1000  1000     50  err/sqrtK=6.7e-16
- 0  1024  1024  1024     49  err/sqrtK=5.6e-16
- 0  2048  2048  2048     48  err/sqrtK=6.0e-15
- 0  3000  3000  3000     48  err/sqrtK=9.1e-15
- 0  4096  4096  4096     49  err/sqrtK=1.2e-14
