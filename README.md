@@ -965,7 +965,7 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
 
 The AMX backend is ported into Eigen as an opt-in GEMM and column-major GEMV: branch `apple-amx` on the fork, on
 Eigen master (with the SME vector kernels of !3161) and the SME work of !3164 and !3174 (`third_party/build.sh`
-fetches it as `third_party/src/eigen-amx`). Eigen issue [libeigen/eigen#3186](https://gitlab.com/libeigen/eigen/-/work_items/3186) asks for the feature. Define
+fetches it as `third_party/src/eigen-amx`). Eigen issue [libeigen/eigen#3186](https://gitlab.com/libeigen/eigen/-/work_items/3186) asks for the feature; the draft MR is [libeigen/eigen!3203](https://gitlab.com/libeigen/eigen/-/merge_requests/3203). Define
 `EIGEN_ARM64_USE_APPLE_AMX` in a NEON build for Apple arm64. Real `float` and `double` products then run on AMX
 where `hw.cpufamily` names an M2, M3 or M4 family chip, and only past the crossover with the NEON kernels:
 
