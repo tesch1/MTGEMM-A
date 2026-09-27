@@ -1,5 +1,6 @@
 // Device batch runner: each line of Documents/queue.txt to out_<batch>/NN_<prog>.txt; a crashed line is skipped on relaunch.
 #include <fcntl.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <chrono>
 #include <cstdio>
@@ -27,7 +28,29 @@ static void set_status(const std::string& s) {
 
 static int probe_main(int, char**) { return amx_probe_main(stdout); }
 
+static int run_program(const std::string& line);
+
+// Each program runs on a thread with a 64 MB stack: the app's runner thread has 512 KB.
 static int run_line(const std::string& line) {
+  struct Call {
+    const std::string* line;
+    int rc;
+  } call{&line, 0};
+  pthread_attr_t at;
+  pthread_attr_init(&at);
+  pthread_attr_setstacksize(&at, 64 << 20);
+  pthread_t t;
+  pthread_create(&t, &at, [](void* p) -> void* {
+    auto* c = static_cast<Call*>(p);
+    c->rc = run_program(*c->line);
+    return nullptr;
+  }, &call);
+  pthread_join(t, nullptr);
+  pthread_attr_destroy(&at);
+  return call.rc;
+}
+
+static int run_program(const std::string& line) {
   std::vector<std::string> words;
   std::istringstream is(line);
   for (std::string w; is >> w;) words.push_back(w);
