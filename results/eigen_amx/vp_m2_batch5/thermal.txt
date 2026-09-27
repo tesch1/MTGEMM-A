@@ -1,0 +1,1070 @@
+1790313145 0 1/13: ubench fma
+1790313147 0 2/13: ubench kern
+1790313149 0 3/13: ubench overlap
+1790313151 0 4/13: ubench z
+1790313153 0 5/13: test 60
+1790313155 0 5/13: test 60
+1790313157 0 6/13: bench squares row mt threads=1 trials=3 ms=30
+1790313159 0 6/13: bench squares row mt threads=1 trials=3 ms=30
+1790313161 0 8/13: ubench threads
+1790313163 0 8/13: ubench threads
+1790313165 0 8/13: ubench threads
+1790313167 0 8/13: ubench threads
+1790313169 0 8/13: ubench threads
+1790313171 0 8/13: ubench threads
+1790313173 0 9/13: ubench load
+1790313175 0 9/13: ubench load
+1790313177 0 9/13: ubench load
+1790313179 0 9/13: ubench load
+1790313181 0 10/13: bench squares row mt threads=1 trials=3 ms=30 prof=5
+1790313183 0 11/13: bench squares row mt threads=2 trials=3 ms=30
+1790313185 0 12/13: bench squares row accel trials=3 ms=30 f64
+1790313187 0 12/13: bench squares row accel trials=3 ms=30 f64
+1790313189 0 13/13: bench squares row mt threads=1 trials=3 ms=30 f64
+1790313191 0 13/13: bench squares row mt threads=1 trials=3 ms=30 f64
+1790313193 0 13/13: bench squares row mt threads=1 trials=3 ms=30 f64
+1790313238 0 11/13: bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 kc=2048 mc=256 nc=512
+1790313385 0 10/16: bench 2048x2048x2048 row mt threads=1 trials=3 ms=30 online=1 mc=512 nc=256 kc=2048
+1790313387 0 15/16: bench squares row mt threads=1 trials=3 ms=30
+1790313389 0 16/16: bench squares row accel trials=3 ms=30
+1790313439 0 7/30: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=2048 nc=128 kc=1024 prof=3
+1790313441 0 13/30: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=2048 nc=192 kc=1024
+1790313443 0 17/30: bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=4096 nc=128 kc=1024
+1790313445 0 19/30: bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=1024 nc=256 kc=1024
+1790313447 0 25/30: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 f64
+1790313449 0 28/30: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 f64 mc=1024 nc=128 kc=512
+1790313632 0 1/21: test 40
+1790313634 0 1/21: test 40
+1790313636 0 5/21: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=2048 nc=128 kc=1024 online=2
+1790313638 0 11/21: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=2048 nc=128 kc=1024 prof=6
+1790313640 0 17/21: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 f64 mc=2048 nc=128 kc=512 online=0
+1790313642 0 21/21: bench 2048x2048x2048 row accel trials=5 ms=40
+1790313745 0 5/37: bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=0
+1790313747 0 10/37: bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=15 online=1
+1790313749 0 15/37: bench 2048x2048x2048 row accel trials=7 ms=40
+1790313751 0 19/37: bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=128 kc=1024 pf=7 online=0
+1790313753 0 24/37: bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 mc=2048 nc=64 kc=1024 pf=7 online=1
+1790313755 0 27/37: bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=4096 nc=128 kc=1024 online=1
+1790313757 0 29/37: bench 4096x4096x4096 row mt threads=1 trials=3 ms=40 mc=4096 nc=256 kc=1024 online=1
+1790313759 0 33/37: bench 2048x2048x2048 row accel trials=7 ms=40 f64
+1790313761 0 36/37: bench 2048x2048x2048 row mt threads=1 trials=7 ms=40 f64 mc=2048 nc=64 kc=512 online=2
+1790313841 0 6/25: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=1024 nc=128 kc=512
+1790313843 0 12/25: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=1024 nc=128 kc=1024
+1790313845 0 17/25: bench 2048x2048x2048 row mt threads=1 trials=5 ms=40 mc=1024 nc=64 kc=1024
+1790313847 0 21/25: bench paper row accel trials=2 ms=30
+1790313849 0 21/25: bench paper row accel trials=2 ms=30
+1790313851 0 21/25: bench paper row accel trials=2 ms=30
+1790313853 0 21/25: bench paper row accel trials=2 ms=30
+1790313855 0 21/25: bench paper row accel trials=2 ms=30
+1790313857 0 21/25: bench paper row accel trials=2 ms=30
+1790313859 0 21/25: bench paper row accel trials=2 ms=30
+1790313861 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313863 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313865 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313867 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313869 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313871 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313873 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313875 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313877 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313879 0 22/25: bench paper row mt threads=1 trials=2 ms=30
+1790313881 0 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313883 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313885 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313887 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313889 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313891 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313893 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313895 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313897 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313899 1 23/25: bench paper row mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313901 1 24/25: bench paper col accel trials=2 ms=30
+1790313903 1 24/25: bench paper col accel trials=2 ms=30
+1790313905 1 24/25: bench paper col accel trials=2 ms=30
+1790313907 1 24/25: bench paper col accel trials=2 ms=30
+1790313909 1 24/25: bench paper col accel trials=2 ms=30
+1790313911 1 24/25: bench paper col accel trials=2 ms=30
+1790313913 1 24/25: bench paper col accel trials=2 ms=30
+1790313915 1 24/25: bench paper col accel trials=2 ms=30
+1790313917 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313919 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313921 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313923 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313925 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313927 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313929 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313931 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313933 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790313935 1 25/25: bench paper col mt threads=1 trials=2 ms=30 mc=1024 nc=128 kc=1024
+1790314052 1 1/15: test 40
+1790314054 1 1/15: test 40
+1790314056 1 2/15: bench squares row accel trials=3 ms=40
+1790314058 1 3/15: bench squares row mt threads=1 trials=3 ms=40
+1790314060 1 4/15: bench squares row mt threads=1 trials=3 ms=40 online=0
+1790314062 1 5/15: bench squares row mt threads=1 trials=3 ms=40 online=2
+1790314064 1 6/15: bench squares row accel trials=3 ms=40
+1790314066 1 7/15: bench paper row accel trials=2 ms=30
+1790314068 1 7/15: bench paper row accel trials=2 ms=30
+1790314070 1 7/15: bench paper row accel trials=2 ms=30
+1790314072 1 7/15: bench paper row accel trials=2 ms=30
+1790314074 1 7/15: bench paper row accel trials=2 ms=30
+1790314076 1 7/15: bench paper row accel trials=2 ms=30
+1790314078 1 7/15: bench paper row accel trials=2 ms=30
+1790314080 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314082 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314084 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314086 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314088 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314090 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314092 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314094 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314096 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314098 1 8/15: bench paper row mt threads=1 trials=2 ms=30
+1790314100 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314102 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314104 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314106 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314108 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314110 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314112 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314114 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314116 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314118 1 9/15: bench paper row mt threads=1 trials=2 ms=30 online=0
+1790314120 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314122 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314124 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314126 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314128 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314130 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314132 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314134 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314136 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314138 1 10/15: bench paper row mt threads=1 trials=2 ms=30 online=2
+1790314140 1 11/15: bench paper col accel trials=2 ms=30
+1790314142 1 11/15: bench paper col accel trials=2 ms=30
+1790314144 1 11/15: bench paper col accel trials=2 ms=30
+1790314146 1 11/15: bench paper col accel trials=2 ms=30
+1790314148 1 11/15: bench paper col accel trials=2 ms=30
+1790314150 1 11/15: bench paper col accel trials=2 ms=30
+1790314152 1 11/15: bench paper col accel trials=2 ms=30
+1790314154 1 11/15: bench paper col accel trials=2 ms=30
+1790314156 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314158 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314160 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314162 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314164 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314166 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314168 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314170 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314172 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314174 1 12/15: bench paper col mt threads=1 trials=2 ms=30
+1790314176 1 13/15: bench squares row accel trials=3 ms=40 f64
+1790314178 1 13/15: bench squares row accel trials=3 ms=40 f64
+1790314180 1 14/15: bench squares row mt threads=1 trials=3 ms=40 f64
+1790314182 1 14/15: bench squares row mt threads=1 trials=3 ms=40 f64
+1790314184 1 14/15: bench squares row mt threads=1 trials=3 ms=40 f64
+1790314186 1 15/15: bench squares row mt threads=1 trials=3 ms=40 f64 online=2
+1790314188 1 15/15: bench squares row mt threads=1 trials=3 ms=40 f64 online=2
+1790314190 1 15/15: bench squares row mt threads=1 trials=3 ms=40 f64 online=2
+1790314456 0 1/17: test 40
+1790314458 0 1/17: test 40
+1790314460 0 2/17: bench paper row accel trials=3 ms=30 ids=1-12
+1790314462 0 2/17: bench paper row accel trials=3 ms=30 ids=1-12
+1790314464 0 3/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12
+1790314466 0 3/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12
+1790314468 0 4/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1
+1790314470 0 4/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1
+1790314472 0 5/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=0
+1790314474 0 5/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=0
+1790314476 0 6/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=2
+1790314478 0 6/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 shape=1 online=2
+1790314480 0 7/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 pfdist=64
+1790314482 0 7/17: bench paper row mt threads=1 trials=3 ms=30 ids=1-12 pfdist=64
+1790314484 0 8/17: bench thin row accel trials=3 ms=30
+1790314486 0 9/17: bench thin row mt threads=1 trials=3 ms=30
+1790314488 0 10/17: bench thin row mt threads=1 trials=3 ms=30 shape=1
+1790314490 0 10/17: bench thin row mt threads=1 trials=3 ms=30 shape=1
+1790314492 0 12/17: bench squares row mt threads=1 trials=3 ms=30
+1790314494 0 12/17: bench squares row mt threads=1 trials=3 ms=30
+1790314496 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314498 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314500 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314502 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314504 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314506 0 13/17: bench paper row accel trials=3 ms=30 ids=13-24
+1790314508 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314510 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314512 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314514 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314516 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314518 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314520 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314522 0 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314524 1 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314526 1 14/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24
+1790314528 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314530 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314532 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314534 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314536 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314538 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314540 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314542 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314544 1 15/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=0
+1790314546 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314548 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314550 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314552 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314554 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314556 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314558 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314560 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314562 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314564 1 16/17: bench paper row mt threads=1 trials=3 ms=30 ids=13-24 online=2
+1790314566 1 17/17: bench paper row accel trials=3 ms=30 ids=1-12
+1790314678 1 1/26: test 60
+1790314680 1 1/26: test 60
+1790314682 1 2/26: bench squares row accel trials=3 ms=30
+1790314684 1 3/26: bench squares row mt threads=1 trials=3 ms=30
+1790314686 1 4/26: bench squares col accel trials=3 ms=30
+1790314688 1 5/26: bench squares col mt threads=1 trials=3 ms=30
+1790314690 1 6/26: bench paper row accel trials=3 ms=30
+1790314692 1 6/26: bench paper row accel trials=3 ms=30
+1790314694 1 6/26: bench paper row accel trials=3 ms=30
+1790314696 1 6/26: bench paper row accel trials=3 ms=30
+1790314698 1 6/26: bench paper row accel trials=3 ms=30
+1790314700 1 6/26: bench paper row accel trials=3 ms=30
+1790314702 1 6/26: bench paper row accel trials=3 ms=30
+1790314704 1 6/26: bench paper row accel trials=3 ms=30
+1790314706 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314708 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314710 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314712 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314714 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314716 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314718 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314720 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314722 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314724 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314726 1 7/26: bench paper row mt threads=1 trials=3 ms=30
+1790314728 1 8/26: bench paper col accel trials=3 ms=30
+1790314730 1 8/26: bench paper col accel trials=3 ms=30
+1790314732 1 8/26: bench paper col accel trials=3 ms=30
+1790314734 1 8/26: bench paper col accel trials=3 ms=30
+1790314736 1 8/26: bench paper col accel trials=3 ms=30
+1790314738 1 8/26: bench paper col accel trials=3 ms=30
+1790314740 1 8/26: bench paper col accel trials=3 ms=30
+1790314742 1 8/26: bench paper col accel trials=3 ms=30
+1790314744 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314746 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314748 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314750 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314752 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314754 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314756 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314758 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314760 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314762 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314764 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314766 1 9/26: bench paper col mt threads=1 trials=3 ms=30
+1790314768 1 10/26: bench thin row accel trials=3 ms=30
+1790314770 1 11/26: bench thin row mt threads=1 trials=3 ms=30
+1790314772 1 12/26: bench thin col accel trials=3 ms=30
+1790314774 1 13/26: bench thin col mt threads=1 trials=3 ms=30
+1790314776 1 13/26: bench thin col mt threads=1 trials=3 ms=30
+1790314778 1 15/26: bench small row mt threads=1 trials=3 ms=30
+1790314780 1 16/26: bench small col accel trials=3 ms=30
+1790314782 1 18/26: bench irr row accel trials=3 ms=30
+1790314784 1 21/26: bench irr col mt threads=1 trials=3 ms=30
+1790314786 1 22/26: bench squares row mt threads=1 trials=3 ms=30 online=3
+1790314788 1 23/26: bench squares row accel trials=3 ms=30 f64
+1790314790 1 23/26: bench squares row accel trials=3 ms=30 f64
+1790314792 1 24/26: bench squares row mt threads=1 trials=3 ms=30 f64
+1790314794 1 24/26: bench squares row mt threads=1 trials=3 ms=30 f64
+1790314796 1 24/26: bench squares row mt threads=1 trials=3 ms=30 f64
+1790314798 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314800 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314802 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314804 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314806 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314808 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314810 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314812 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314814 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314816 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314818 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314820 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314822 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314824 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314826 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314828 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314830 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314832 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314834 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314836 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314838 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314840 1 25/26: bench paper row accel trials=3 ms=30 f64
+1790314842 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314844 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314846 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314848 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314850 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314852 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314854 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314856 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314858 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314860 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314862 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314864 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314866 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314868 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314870 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314872 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314874 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314876 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314878 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314880 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314882 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314884 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314886 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314888 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314890 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314892 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314894 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790314896 1 26/26: bench paper row mt threads=1 trials=3 ms=30 f64
+1790315099 1 1/21: test 60
+1790315101 1 1/21: test 60
+1790315103 1 2/21: bench small row accel trials=3 ms=30
+1790315105 1 4/21: bench small row mt threads=1 trials=3 ms=30 pack4=1
+1790315107 1 5/21: bench irr row accel trials=3 ms=30
+1790315109 1 8/21: bench thin row accel trials=3 ms=30
+1790315111 1 9/21: bench thin row mt threads=1 trials=3 ms=30 pack4=0
+1790315113 1 9/21: bench thin row mt threads=1 trials=3 ms=30 pack4=0
+1790315115 1 10/21: bench thin row mt threads=1 trials=3 ms=30 pack4=1
+1790315117 1 11/21: bench squares row accel trials=3 ms=30
+1790315119 1 12/21: bench squares row mt threads=1 trials=3 ms=30 pack4=0
+1790315121 1 13/21: bench squares row mt threads=1 trials=3 ms=30 pack4=1
+1790315123 1 14/21: bench paper row accel trials=3 ms=30
+1790315125 1 14/21: bench paper row accel trials=3 ms=30
+1790315127 1 14/21: bench paper row accel trials=3 ms=30
+1790315129 1 14/21: bench paper row accel trials=3 ms=30
+1790315131 1 14/21: bench paper row accel trials=3 ms=30
+1790315133 1 14/21: bench paper row accel trials=3 ms=30
+1790315135 1 14/21: bench paper row accel trials=3 ms=30
+1790315137 1 14/21: bench paper row accel trials=3 ms=30
+1790315139 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315141 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315143 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315145 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315147 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315149 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315151 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315153 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315155 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315157 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315159 1 15/21: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315161 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315163 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315165 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315167 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315169 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315171 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315173 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315175 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315177 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315179 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315181 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315183 1 16/21: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315185 1 17/21: bench squares row accel trials=3 ms=30 f64
+1790315187 1 17/21: bench squares row accel trials=3 ms=30 f64
+1790315189 1 18/21: bench squares row mt threads=1 trials=3 ms=30 f64 pack4=0
+1790315191 1 18/21: bench squares row mt threads=1 trials=3 ms=30 f64 pack4=0
+1790315193 1 18/21: bench squares row mt threads=1 trials=3 ms=30 f64 pack4=0
+1790315195 1 19/21: bench squares row mt threads=1 trials=3 ms=30 f64 pack4=1
+1790315197 1 19/21: bench squares row mt threads=1 trials=3 ms=30 f64 pack4=1
+1790315199 1 20/21: bench small row accel trials=3 ms=30 f64
+1790315201 1 21/21: bench small row mt threads=1 trials=3 ms=30 f64
+1790315258 1 1/19: test 60
+1790315260 1 1/19: test 60
+1790315262 1 2/19: bench thin row accel trials=3 ms=30
+1790315264 1 3/19: bench thin row mt threads=1 trials=3 ms=30 pack4=0
+1790315266 1 4/19: bench thin row mt threads=1 trials=3 ms=30 pack4=1
+1790315268 1 4/19: bench thin row mt threads=1 trials=3 ms=30 pack4=1
+1790315270 1 5/19: bench paper row accel trials=3 ms=30
+1790315272 1 5/19: bench paper row accel trials=3 ms=30
+1790315274 1 5/19: bench paper row accel trials=3 ms=30
+1790315276 1 5/19: bench paper row accel trials=3 ms=30
+1790315278 1 5/19: bench paper row accel trials=3 ms=30
+1790315280 1 5/19: bench paper row accel trials=3 ms=30
+1790315282 1 5/19: bench paper row accel trials=3 ms=30
+1790315284 1 5/19: bench paper row accel trials=3 ms=30
+1790315286 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315288 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315290 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315292 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315294 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315296 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315298 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315300 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315302 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315304 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315306 1 6/19: bench paper row mt threads=1 trials=3 ms=30 pack4=0
+1790315308 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315310 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315312 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315314 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315316 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315318 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315320 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315322 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315324 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315326 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315328 1 7/19: bench paper row mt threads=1 trials=3 ms=30 pack4=1
+1790315330 1 8/19: bench squares row accel trials=3 ms=30
+1790315332 1 9/19: bench squares row mt threads=1 trials=3 ms=30 pack4=0
+1790315334 1 10/19: bench squares row mt threads=1 trials=3 ms=30 pack4=1
+1790315336 1 11/19: bench small row accel trials=3 ms=30
+1790315338 1 13/19: bench small row mt threads=1 trials=3 ms=30 pack4=1
+1790315340 1 14/19: bench squares col accel trials=3 ms=30
+1790315342 1 15/19: bench squares col mt threads=1 trials=3 ms=30
+1790315344 1 16/19: bench paper col accel trials=3 ms=30
+1790315346 1 16/19: bench paper col accel trials=3 ms=30
+1790315348 1 16/19: bench paper col accel trials=3 ms=30
+1790315350 1 16/19: bench paper col accel trials=3 ms=30
+1790315352 1 16/19: bench paper col accel trials=3 ms=30
+1790315354 1 16/19: bench paper col accel trials=3 ms=30
+1790315356 1 16/19: bench paper col accel trials=3 ms=30
+1790315358 1 16/19: bench paper col accel trials=3 ms=30
+1790315360 1 16/19: bench paper col accel trials=3 ms=30
+1790315362 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315364 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315366 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315368 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315370 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315372 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315374 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315376 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315378 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315380 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315382 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315384 1 17/19: bench paper col mt threads=1 trials=3 ms=30
+1790315386 1 18/19: bench squares row accel trials=3 ms=30 f64
+1790315388 1 18/19: bench squares row accel trials=3 ms=30 f64
+1790315390 1 19/19: bench squares row mt threads=1 trials=3 ms=30 f64
+1790315392 1 19/19: bench squares row mt threads=1 trials=3 ms=30 f64
+1790315510 1 2/32: ubench fma
+1790315512 1 3/32: ubench threads
+1790315514 1 3/32: ubench threads
+1790315516 1 3/32: ubench threads
+1790315518 1 3/32: ubench threads
+1790315520 1 3/32: ubench threads
+1790315522 1 3/32: ubench threads
+1790315524 1 4/32: ubench load
+1790315526 1 4/32: ubench load
+1790315528 1 4/32: ubench load
+1790315530 1 5/32: ubench kern
+1790315532 1 6/32: ubench z
+1790315534 1 7/32: ubench overlap
+1790315536 1 8/32: test
+1790315538 1 8/32: test
+1790315540 1 8/32: test
+1790315542 1 8/32: test
+1790315544 1 9/32: bench squares row accel trials=5 ms=40
+1790315546 1 10/32: bench squares row mt trials=5 ms=40
+1790315548 1 10/32: bench squares row mt trials=5 ms=40
+1790315550 1 11/32: bench squares col accel trials=5 ms=40
+1790315552 1 12/32: bench squares col mt trials=5 ms=40
+1790315554 1 13/32: bench paper row accel trials=5 ms=40
+1790315556 1 13/32: bench paper row accel trials=5 ms=40
+1790315558 1 13/32: bench paper row accel trials=5 ms=40
+1790315560 1 13/32: bench paper row accel trials=5 ms=40
+1790315562 1 13/32: bench paper row accel trials=5 ms=40
+1790315564 1 13/32: bench paper row accel trials=5 ms=40
+1790315566 1 13/32: bench paper row accel trials=5 ms=40
+1790315568 1 13/32: bench paper row accel trials=5 ms=40
+1790315570 1 13/32: bench paper row accel trials=5 ms=40
+1790315572 1 13/32: bench paper row accel trials=5 ms=40
+1790315574 1 13/32: bench paper row accel trials=5 ms=40
+1790315576 1 13/32: bench paper row accel trials=5 ms=40
+1790315578 1 14/32: bench paper row mt trials=5 ms=40
+1790315580 1 14/32: bench paper row mt trials=5 ms=40
+1790315582 1 14/32: bench paper row mt trials=5 ms=40
+1790315584 1 14/32: bench paper row mt trials=5 ms=40
+1790315586 1 14/32: bench paper row mt trials=5 ms=40
+1790315588 1 14/32: bench paper row mt trials=5 ms=40
+1790315590 1 14/32: bench paper row mt trials=5 ms=40
+1790315592 1 14/32: bench paper row mt trials=5 ms=40
+1790315594 1 14/32: bench paper row mt trials=5 ms=40
+1790315596 1 14/32: bench paper row mt trials=5 ms=40
+1790315598 1 14/32: bench paper row mt trials=5 ms=40
+1790315600 1 14/32: bench paper row mt trials=5 ms=40
+1790315602 1 14/32: bench paper row mt trials=5 ms=40
+1790315604 1 14/32: bench paper row mt trials=5 ms=40
+1790315606 1 14/32: bench paper row mt trials=5 ms=40
+1790315608 1 15/32: bench paper col accel trials=5 ms=40
+1790315610 1 15/32: bench paper col accel trials=5 ms=40
+1790315612 1 15/32: bench paper col accel trials=5 ms=40
+1790315614 1 15/32: bench paper col accel trials=5 ms=40
+1790315616 1 15/32: bench paper col accel trials=5 ms=40
+1790315618 1 15/32: bench paper col accel trials=5 ms=40
+1790315620 1 15/32: bench paper col accel trials=5 ms=40
+1790315622 1 15/32: bench paper col accel trials=5 ms=40
+1790315624 1 15/32: bench paper col accel trials=5 ms=40
+1790315626 1 15/32: bench paper col accel trials=5 ms=40
+1790315628 1 15/32: bench paper col accel trials=5 ms=40
+1790315630 1 15/32: bench paper col accel trials=5 ms=40
+1790315632 1 16/32: bench paper col mt trials=5 ms=40
+1790315634 1 16/32: bench paper col mt trials=5 ms=40
+1790315636 1 16/32: bench paper col mt trials=5 ms=40
+1790315638 1 16/32: bench paper col mt trials=5 ms=40
+1790315640 1 16/32: bench paper col mt trials=5 ms=40
+1790315642 1 16/32: bench paper col mt trials=5 ms=40
+1790315644 1 16/32: bench paper col mt trials=5 ms=40
+1790315646 1 16/32: bench paper col mt trials=5 ms=40
+1790315648 1 16/32: bench paper col mt trials=5 ms=40
+1790315650 1 16/32: bench paper col mt trials=5 ms=40
+1790315652 1 16/32: bench paper col mt trials=5 ms=40
+1790315654 1 16/32: bench paper col mt trials=5 ms=40
+1790315656 1 16/32: bench paper col mt trials=5 ms=40
+1790315658 1 16/32: bench paper col mt trials=5 ms=40
+1790315660 1 16/32: bench paper col mt trials=5 ms=40
+1790315662 1 17/32: bench irr row accel trials=5 ms=40
+1790315664 1 18/32: bench irr row mt trials=5 ms=40
+1790315666 1 20/32: bench irr col mt trials=5 ms=40
+1790315668 1 21/32: bench thin row accel trials=5 ms=40
+1790315670 1 21/32: bench thin row accel trials=5 ms=40
+1790315672 1 22/32: bench thin row mt trials=5 ms=40
+1790315674 1 22/32: bench thin row mt trials=5 ms=40
+1790315676 1 23/32: bench thin col accel trials=5 ms=40
+1790315678 1 23/32: bench thin col accel trials=5 ms=40
+1790315680 1 24/32: bench thin col mt trials=5 ms=40
+1790315682 1 24/32: bench thin col mt trials=5 ms=40
+1790315684 1 25/32: bench small row accel trials=5 ms=40
+1790315686 1 25/32: bench small row accel trials=5 ms=40
+1790315688 1 26/32: bench small row mt trials=5 ms=40
+1790315690 1 27/32: bench small col accel trials=5 ms=40
+1790315692 1 28/32: bench small col mt trials=5 ms=40
+1790315694 1 28/32: bench small col mt trials=5 ms=40
+1790315696 1 29/32: bench squares row accel trials=5 ms=40 f64
+1790315698 1 29/32: bench squares row accel trials=5 ms=40 f64
+1790315700 1 29/32: bench squares row accel trials=5 ms=40 f64
+1790315702 1 30/32: bench squares row mt trials=5 ms=40 f64
+1790315704 1 30/32: bench squares row mt trials=5 ms=40 f64
+1790315706 1 30/32: bench squares row mt trials=5 ms=40 f64
+1790315708 1 30/32: bench squares row mt trials=5 ms=40 f64
+1790315710 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315712 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315714 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315716 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315718 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315720 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315722 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315724 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315726 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315728 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315730 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315732 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315734 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315736 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315738 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315740 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315742 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315744 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315746 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315748 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315750 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315752 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315754 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315756 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315758 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315760 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315762 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315764 1 31/32: bench paper row accel trials=5 ms=40 f64
+1790315766 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315768 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315770 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315772 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315774 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315776 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315778 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315780 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315782 1 32/32: bench paper row mt trials=5 ms=40 f64
+1790315784 2 32/32: bench paper row mt trials=5 ms=40 f64
+1790315786 2 32/32: bench paper row mt trials=5 ms=40 f64
+1790315788 2 32/32: bench paper row mt trials=5 ms=40 f64
+1790315790 2 32/32: bench paper row mt trials=5 ms=40 f64
+1790315806 2 32/32: bench paper row mt trials=5 ms=40 f64
+1790344157 0 1/20: bench small row accel trials=5 ms=40
+1790344159 0 2/20: bench small row mt trials=5 ms=40 online=0
+1790344161 0 3/20: bench small row mt trials=5 ms=40 online=4
+1790344163 0 3/20: bench small row mt trials=5 ms=40 online=4
+1790344165 0 4/20: bench squares row accel trials=5 ms=40
+1790344167 0 5/20: bench squares row mt trials=5 ms=40 online=0
+1790344169 0 6/20: bench squares row mt trials=5 ms=40 online=4
+1790344171 0 6/20: bench squares row mt trials=5 ms=40 online=4
+1790344173 0 6/20: bench squares row mt trials=5 ms=40 online=4
+1790344175 0 7/20: bench paper row accel trials=5 ms=40
+1790344177 0 7/20: bench paper row accel trials=5 ms=40
+1790344179 0 7/20: bench paper row accel trials=5 ms=40
+1790344181 0 7/20: bench paper row accel trials=5 ms=40
+1790344183 0 7/20: bench paper row accel trials=5 ms=40
+1790344185 0 7/20: bench paper row accel trials=5 ms=40
+1790344187 0 7/20: bench paper row accel trials=5 ms=40
+1790344189 0 7/20: bench paper row accel trials=5 ms=40
+1790344191 0 7/20: bench paper row accel trials=5 ms=40
+1790344193 0 7/20: bench paper row accel trials=5 ms=40
+1790344195 0 7/20: bench paper row accel trials=5 ms=40
+1790344197 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344199 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344201 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344203 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344205 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344207 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344209 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344211 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344213 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344215 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344217 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344219 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344221 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344223 0 8/20: bench paper row mt trials=5 ms=40 online=0
+1790344225 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344227 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344229 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344231 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344233 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344235 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344237 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344239 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344241 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344243 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344245 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344247 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344249 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344251 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344253 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344255 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344257 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344259 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344261 0 9/20: bench paper row mt trials=5 ms=40 online=4
+1790344263 0 10/20: bench thin row accel trials=5 ms=40
+1790344265 0 10/20: bench thin row accel trials=5 ms=40
+1790344267 0 11/20: bench thin row mt trials=5 ms=40 online=0
+1790344269 0 11/20: bench thin row mt trials=5 ms=40 online=0
+1790344271 0 11/20: bench thin row mt trials=5 ms=40 online=0
+1790344273 0 12/20: bench thin row mt trials=5 ms=40 online=4
+1790344275 0 12/20: bench thin row mt trials=5 ms=40 online=4
+1790344277 0 14/20: bench irr row mt trials=5 ms=40 online=0
+1790344279 0 15/20: bench irr row mt trials=5 ms=40 online=4
+1790344281 0 16/20: bench small row accel trials=5 ms=40 f64
+1790344283 0 17/20: bench small row mt trials=5 ms=40 f64 online=0
+1790344285 0 18/20: bench small row mt trials=5 ms=40 f64 online=4
+1790344287 0 18/20: bench small row mt trials=5 ms=40 f64 online=4
+1790344289 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344291 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344293 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344295 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344297 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344299 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344301 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344303 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344305 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344307 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344309 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344311 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344313 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344315 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344317 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344319 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344321 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344323 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344325 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344327 0 19/20: bench paper row accel trials=5 ms=40 f64 ids=15-24
+1790344329 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344331 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344333 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344335 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344337 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344339 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344341 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344343 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344345 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344347 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344349 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344351 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344353 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344355 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344357 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344359 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344361 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344363 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344365 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344367 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344369 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344371 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344373 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344375 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344377 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344379 0 20/20: bench paper row mt trials=5 ms=40 f64 ids=15-24
+1790344459 0 6/29: bench 4096x4096x4096 row accel trials=5 ms=40
+1790344461 0 7/29: bench 4096x4096x4096 row mt trials=5 ms=40 threads=1
+1790344463 0 9/29: bench 4096x4096x4096 row mt trials=5 ms=40 threads=3 eshare=8
+1790344465 0 10/29: bench 4096x4096x4096 row mt trials=5 ms=40 threads=3 eshare=12
+1790344467 0 10/29: bench 4096x4096x4096 row mt trials=5 ms=40 threads=3 eshare=12
+1790344469 0 12/29: bench 4096x2112x7168 row mt trials=5 ms=40 threads=1
+1790344471 0 14/29: bench 4096x2112x7168 row mt trials=5 ms=40 threads=3 eshare=8
+1790344473 0 15/29: bench 4096x2112x7168 row mt trials=5 ms=40 threads=3 eshare=12
+1790344475 0 17/29: bench 64x7168x16384 row mt trials=5 ms=40 threads=1
+1790344477 0 19/29: bench 64x7168x16384 row mt trials=5 ms=40 threads=3 eshare=8
+1790344479 0 22/29: bench 2048x2048x2048 row mt trials=5 ms=40 f64 threads=3 eshare=8
+1790344481 0 23/29: bench small row accel trials=5 ms=40
+1790344483 0 24/29: bench small row mt trials=5 ms=40
+1790344485 0 24/29: bench small row mt trials=5 ms=40
+1790344487 0 25/29: bench small row accel trials=5 ms=40 f64
+1790344489 0 26/29: bench small row mt trials=5 ms=40 f64
+1790344491 0 27/29: bench squares row accel trials=5 ms=40 f64
+1790344493 0 27/29: bench squares row accel trials=5 ms=40 f64
+1790344495 0 27/29: bench squares row accel trials=5 ms=40 f64
+1790344497 0 27/29: bench squares row accel trials=5 ms=40 f64
+1790344499 0 28/29: bench squares row mt trials=5 ms=40 f64
+1790344501 0 28/29: bench squares row mt trials=5 ms=40 f64
+1790344503 0 28/29: bench squares row mt trials=5 ms=40 f64
+1790344505 0 29/29: bench squares row mt trials=5 ms=40 f64 online=4
+1790344507 0 29/29: bench squares row mt trials=5 ms=40 f64 online=4
+1790344509 0 29/29: bench squares row mt trials=5 ms=40 f64 online=4
+1790344511 0 29/29: bench squares row mt trials=5 ms=40 f64 online=4
+1790344539 0 2/27: ubench fma
+1790344541 0 3/27: test
+1790344543 0 3/27: test
+1790344545 0 3/27: test
+1790344547 0 4/27: bench squares row accel trials=5 ms=40
+1790344549 0 5/27: bench squares row mt trials=5 ms=40
+1790344551 0 5/27: bench squares row mt trials=5 ms=40
+1790344553 0 6/27: bench squares col accel trials=5 ms=40
+1790344555 0 7/27: bench squares col mt trials=5 ms=40
+1790344557 0 7/27: bench squares col mt trials=5 ms=40
+1790344559 0 8/27: bench paper row accel trials=5 ms=40
+1790344561 0 8/27: bench paper row accel trials=5 ms=40
+1790344563 0 8/27: bench paper row accel trials=5 ms=40
+1790344565 0 8/27: bench paper row accel trials=5 ms=40
+1790344567 0 8/27: bench paper row accel trials=5 ms=40
+1790344569 0 8/27: bench paper row accel trials=5 ms=40
+1790344571 0 8/27: bench paper row accel trials=5 ms=40
+1790344573 0 8/27: bench paper row accel trials=5 ms=40
+1790344575 0 8/27: bench paper row accel trials=5 ms=40
+1790344577 0 8/27: bench paper row accel trials=5 ms=40
+1790344579 0 8/27: bench paper row accel trials=5 ms=40
+1790344581 0 8/27: bench paper row accel trials=5 ms=40
+1790344583 0 9/27: bench paper row mt trials=5 ms=40
+1790344585 0 9/27: bench paper row mt trials=5 ms=40
+1790344587 0 9/27: bench paper row mt trials=5 ms=40
+1790344589 0 9/27: bench paper row mt trials=5 ms=40
+1790344591 0 9/27: bench paper row mt trials=5 ms=40
+1790344593 0 9/27: bench paper row mt trials=5 ms=40
+1790344595 0 9/27: bench paper row mt trials=5 ms=40
+1790344597 0 9/27: bench paper row mt trials=5 ms=40
+1790344599 0 9/27: bench paper row mt trials=5 ms=40
+1790344601 0 9/27: bench paper row mt trials=5 ms=40
+1790344603 0 9/27: bench paper row mt trials=5 ms=40
+1790344605 0 9/27: bench paper row mt trials=5 ms=40
+1790344607 0 9/27: bench paper row mt trials=5 ms=40
+1790344609 0 9/27: bench paper row mt trials=5 ms=40
+1790344611 0 10/27: bench paper col accel trials=5 ms=40
+1790344613 0 10/27: bench paper col accel trials=5 ms=40
+1790344615 0 10/27: bench paper col accel trials=5 ms=40
+1790344617 0 10/27: bench paper col accel trials=5 ms=40
+1790344619 0 10/27: bench paper col accel trials=5 ms=40
+1790344621 0 10/27: bench paper col accel trials=5 ms=40
+1790344623 0 10/27: bench paper col accel trials=5 ms=40
+1790344625 0 10/27: bench paper col accel trials=5 ms=40
+1790344627 0 10/27: bench paper col accel trials=5 ms=40
+1790344629 1 10/27: bench paper col accel trials=5 ms=40
+1790344631 1 10/27: bench paper col accel trials=5 ms=40
+1790344633 1 10/27: bench paper col accel trials=5 ms=40
+1790344635 1 10/27: bench paper col accel trials=5 ms=40
+1790344637 1 11/27: bench paper col mt trials=5 ms=40
+1790344639 1 11/27: bench paper col mt trials=5 ms=40
+1790344641 1 11/27: bench paper col mt trials=5 ms=40
+1790344643 1 11/27: bench paper col mt trials=5 ms=40
+1790344645 1 11/27: bench paper col mt trials=5 ms=40
+1790344647 1 11/27: bench paper col mt trials=5 ms=40
+1790344649 1 11/27: bench paper col mt trials=5 ms=40
+1790344651 1 11/27: bench paper col mt trials=5 ms=40
+1790344653 1 11/27: bench paper col mt trials=5 ms=40
+1790344655 1 11/27: bench paper col mt trials=5 ms=40
+1790344657 1 11/27: bench paper col mt trials=5 ms=40
+1790344659 1 11/27: bench paper col mt trials=5 ms=40
+1790344661 1 11/27: bench paper col mt trials=5 ms=40
+1790344663 1 11/27: bench paper col mt trials=5 ms=40
+1790344665 1 12/27: bench irr row accel trials=5 ms=40
+1790344667 1 13/27: bench irr row mt trials=5 ms=40
+1790344669 1 15/27: bench irr col mt trials=5 ms=40
+1790344671 1 16/27: bench thin row accel trials=5 ms=40
+1790344673 1 16/27: bench thin row accel trials=5 ms=40
+1790344675 1 17/27: bench thin row mt trials=5 ms=40
+1790344677 1 17/27: bench thin row mt trials=5 ms=40
+1790344679 1 18/27: bench thin col accel trials=5 ms=40
+1790344681 1 18/27: bench thin col accel trials=5 ms=40
+1790344683 1 19/27: bench thin col mt trials=5 ms=40
+1790344685 1 19/27: bench thin col mt trials=5 ms=40
+1790344687 1 20/27: bench small row accel trials=5 ms=40
+1790344689 1 20/27: bench small row accel trials=5 ms=40
+1790344691 1 21/27: bench small row mt trials=5 ms=40
+1790344693 1 22/27: bench small col accel trials=5 ms=40
+1790344695 1 23/27: bench small col mt trials=5 ms=40
+1790344697 1 23/27: bench small col mt trials=5 ms=40
+1790344699 1 24/27: bench squares row accel trials=5 ms=40 f64
+1790344701 1 24/27: bench squares row accel trials=5 ms=40 f64
+1790344703 1 24/27: bench squares row accel trials=5 ms=40 f64
+1790344705 1 25/27: bench squares row mt trials=5 ms=40 f64
+1790344707 1 25/27: bench squares row mt trials=5 ms=40 f64
+1790344709 1 25/27: bench squares row mt trials=5 ms=40 f64
+1790344711 1 25/27: bench squares row mt trials=5 ms=40 f64
+1790344713 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344715 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344717 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344719 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344721 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344723 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344725 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344727 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344729 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344731 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344733 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344735 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344737 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344739 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344741 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344743 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344745 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344747 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344749 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344751 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344753 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344755 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344757 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344759 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344761 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344763 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344765 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344767 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344769 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344771 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344773 1 26/27: bench paper row accel trials=5 ms=40 f64
+1790344775 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344777 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344779 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344781 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344783 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344785 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344787 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344789 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344791 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344793 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344795 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344797 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344799 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344801 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344803 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344805 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344807 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344809 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344811 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344813 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344815 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344817 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344819 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344821 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344823 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344825 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344827 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344829 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344831 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344833 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344835 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344837 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344839 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344841 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790344843 1 27/27: bench paper row mt trials=5 ms=40 f64
+1790345638 0 1/13: test
+1790345640 0 1/13: test
+1790345642 0 1/13: test
+1790345644 0 2/13: bench squares row accel trials=5 ms=40
+1790345646 0 3/13: bench squares row mt trials=5 ms=40
+1790345648 0 4/13: bench squares col accel trials=5 ms=40
+1790345650 0 4/13: bench squares col accel trials=5 ms=40
+1790345652 0 5/13: bench squares col mt trials=5 ms=40
+1790345654 0 6/13: bench small row accel trials=5 ms=40
+1790345656 0 7/13: bench small row mt trials=5 ms=40
+1790345658 0 7/13: bench small row mt trials=5 ms=40
+1790345660 0 8/13: bench squares row mt trials=5 ms=40 beta=0.5
+1790345662 0 9/13: bench squares row mt trials=5 ms=40 beta=1
+1790345664 0 9/13: bench squares row mt trials=5 ms=40 beta=1
+1790345666 0 10/13: bench paper row accel trials=3 ms=30 ids=1-12
+1790345668 0 10/13: bench paper row accel trials=3 ms=30 ids=1-12
+1790345670 0 11/13: bench paper row mt trials=3 ms=30 ids=1-12
+1790345672 0 12/13: bench squares row accel trials=5 ms=40 f64
+1790345674 0 12/13: bench squares row accel trials=5 ms=40 f64
+1790345676 0 12/13: bench squares row accel trials=5 ms=40 f64
+1790345678 0 13/13: bench squares row mt trials=5 ms=40 f64
+1790345680 0 13/13: bench squares row mt trials=5 ms=40 f64
+1790345682 0 13/13: bench squares row mt trials=5 ms=40 f64
+1790345684 0 13/13: bench squares row mt trials=5 ms=40 f64
+1790346428 0 1/2: test 40
+1790346430 0 1/2: test 40
+1790346452 0 1/2: test 40
+1790346454 0 1/2: test 40
+1790347701 0 2/6: test 60
+1790347703 0 2/6: test 60
+1790347705 0 3/6: bench squares row accel trials=5 ms=40
+1790347707 0 4/6: bench squares row mt threads=1 trials=5 ms=40
+1790347709 0 4/6: bench squares row mt threads=1 trials=5 ms=40
+1790347711 0 5/6: bench squares row mt threads=0 trials=5 ms=40
+1790347713 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347715 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347717 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347719 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347721 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347723 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790347725 0 6/6: bench paper row mt threads=0 trials=3 ms=30 ids=13-18
+1790462665 0 2/20: bench squares col accel trials=3 ms=40
+1790462667 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462669 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462671 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462673 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462675 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462677 0 3/20: eigen_neon squares col trials=3 ms=40
+1790462679 0 4/20: eigen_amx squares col trials=3 ms=40
+1790462681 0 5/20: eigen_neon_mt squares col trials=3 ms=40
+1790462683 0 5/20: eigen_neon_mt squares col trials=3 ms=40
+1790462685 0 6/20: eigen_amx_mt squares col trials=3 ms=40
+1790462687 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462689 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462691 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462693 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462695 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462697 0 7/20: eigen_neon squares row trials=3 ms=40
+1790462699 0 8/20: eigen_amx squares row trials=3 ms=40
+1790462701 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462703 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462705 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462707 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462709 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462711 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462713 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462715 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462717 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462719 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462721 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462723 0 9/20: eigen_neon squares col f64 trials=3 ms=40
+1790462725 0 10/20: eigen_amx squares col f64 trials=3 ms=40
+1790462727 0 10/20: eigen_amx squares col f64 trials=3 ms=40
+1790462729 0 10/20: eigen_amx squares col f64 trials=3 ms=40
+1790462731 0 12/20: eigen_amx small col trials=3 ms=20
+1790462733 0 13/20: eigen_neon thin col trials=3 ms=20
+1790462735 0 14/20: eigen_amx thin col trials=3 ms=20
+1790462737 0 15/20: eigen_neon cross col ms=5 trials=3
+1790462739 0 15/20: eigen_neon cross col ms=5 trials=3
+1790462741 0 15/20: eigen_neon cross col ms=5 trials=3
+1790462743 0 15/20: eigen_neon cross col ms=5 trials=3
+1790462745 0 16/20: eigen_amx cross col ms=5 trials=3
+1790462747 0 16/20: eigen_amx cross col ms=5 trials=3
+1790462749 0 16/20: eigen_amx cross col ms=5 trials=3
+1790462751 0 16/20: eigen_amx cross col ms=5 trials=3
+1790462753 0 17/20: eigen_neon cross col ms=5 trials=3 f64
+1790462755 0 17/20: eigen_neon cross col ms=5 trials=3 f64
+1790462757 0 17/20: eigen_neon cross col ms=5 trials=3 f64
+1790462759 0 17/20: eigen_neon cross col ms=5 trials=3 f64
+1790462761 0 17/20: eigen_neon cross col ms=5 trials=3 f64
+1790462763 0 18/20: eigen_amx cross col ms=5 trials=3 f64
+1790462765 0 18/20: eigen_amx cross col ms=5 trials=3 f64
+1790462767 0 18/20: eigen_amx cross col ms=5 trials=3 f64
+1790462769 0 18/20: eigen_amx cross col ms=5 trials=3 f64
+1790462771 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462773 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462775 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462777 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462779 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462781 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462783 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462785 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462787 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462789 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462791 0 19/20: eigen_amx paper col trials=3 ms=30
+1790462793 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462795 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462797 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462799 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462801 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462803 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462805 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462807 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462809 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462811 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462813 0 20/20: bench paper col mt threads=1 trials=3 ms=30
+1790462913 0 1/12: eigen_amx squares col trials=3 ms=40
+1790462915 0 2/12: eigen_amx_mt squares col trials=3 ms=40
+1790462917 0 3/12: eigen_amx squares col trials=3 ms=40
+1790462919 0 4/12: eigen_amx_mt squares col trials=3 ms=40
+1790462921 0 5/12: eigen_neon cross col ms=5 trials=3
+1790462923 0 5/12: eigen_neon cross col ms=5 trials=3
+1790462925 0 5/12: eigen_neon cross col ms=5 trials=3
+1790462927 0 5/12: eigen_neon cross col ms=5 trials=3
+1790462929 0 6/12: eigen_amx_all cross col ms=5 trials=3
+1790462931 0 6/12: eigen_amx_all cross col ms=5 trials=3
+1790462933 0 6/12: eigen_amx_all cross col ms=5 trials=3
+1790462935 0 6/12: eigen_amx_all cross col ms=5 trials=3
+1790462937 0 7/12: eigen_neon cross col ms=5 trials=3 f64
+1790462939 0 7/12: eigen_neon cross col ms=5 trials=3 f64
+1790462941 0 7/12: eigen_neon cross col ms=5 trials=3 f64
+1790462943 0 7/12: eigen_neon cross col ms=5 trials=3 f64
+1790462945 0 7/12: eigen_neon cross col ms=5 trials=3 f64
+1790462947 0 8/12: eigen_amx_all cross col ms=5 trials=3 f64
+1790462949 0 8/12: eigen_amx_all cross col ms=5 trials=3 f64
+1790462951 0 8/12: eigen_amx_all cross col ms=5 trials=3 f64
+1790462953 0 8/12: eigen_amx_all cross col ms=5 trials=3 f64
+1790462955 0 9/12: eigen_neon thin col trials=3 ms=20
+1790462957 0 10/12: eigen_amx_all thin col trials=3 ms=20
+1790462959 0 12/12: eigen_amx_all small col trials=3 ms=20
+1790463239 0 2/6: eigen_test_large
+1790463241 0 2/6: eigen_test_large
+1790463243 0 2/6: eigen_test_large
+1790463245 0 2/6: eigen_test_large
+1790463250 0 5/6: eigen_amx squares col trials=3 ms=40
+1790463310 0 2/4: eigen_test
+1790463312 0 3/4: eigen_test_large
+1790463314 0 3/4: eigen_test_large
+1790463316 0 3/4: eigen_test_large
+1790475777 0 2/8: eigen_gemv_neon grid
+1790475779 0 2/8: eigen_gemv_neon grid
+1790475781 0 2/8: eigen_gemv_neon grid
+1790475783 0 2/8: eigen_gemv_neon grid
+1790475785 0 2/8: eigen_gemv_neon grid
+1790475787 0 2/8: eigen_gemv_neon grid
+1790475789 0 2/8: eigen_gemv_neon grid
+1790475791 0 3/8: eigen_gemv_amx_all grid
+1790475793 0 3/8: eigen_gemv_amx_all grid
+1790475795 0 3/8: eigen_gemv_amx_all grid
+1790475797 0 3/8: eigen_gemv_amx_all grid
+1790475799 0 3/8: eigen_gemv_amx_all grid
+1790475801 0 3/8: eigen_gemv_amx_all grid
+1790475803 0 3/8: eigen_gemv_amx_all grid
+1790475805 0 4/8: eigen_gemv_neon grid f64
+1790475807 0 4/8: eigen_gemv_neon grid f64
+1790475809 0 4/8: eigen_gemv_neon grid f64
+1790475811 0 4/8: eigen_gemv_neon grid f64
+1790475813 0 4/8: eigen_gemv_neon grid f64
+1790475815 0 4/8: eigen_gemv_neon grid f64
+1790475817 0 4/8: eigen_gemv_neon grid f64
+1790475819 0 4/8: eigen_gemv_neon grid f64
+1790475821 0 5/8: eigen_gemv_amx_all grid f64
+1790475823 0 5/8: eigen_gemv_amx_all grid f64
+1790475825 0 5/8: eigen_gemv_amx_all grid f64
+1790475827 0 5/8: eigen_gemv_amx_all grid f64
+1790475829 0 5/8: eigen_gemv_amx_all grid f64
+1790475831 0 5/8: eigen_gemv_amx_all grid f64
+1790475833 0 5/8: eigen_gemv_amx_all grid f64
+1790475835 0 6/8: eigen_test_large
+1790475837 0 6/8: eigen_test_large
+1790475839 0 6/8: eigen_test_large
+1790475841 0 7/8: eigen_test_threaded

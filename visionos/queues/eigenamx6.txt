@@ -1,0 +1,12 @@
+#batch eigenamx6
+eigen_test
+eigen_gemv_neon grid
+eigen_gemv_amx_all grid
+eigen_gemv_amx_nopf grid
+eigen_gemv_amx grid
+eigen_gemv_neon grid f64
+eigen_gemv_amx_all grid f64
+eigen_gemv_amx_nopf grid f64
+eigen_gemv_amx grid f64
+eigen_amx small col trials=3 ms=20
+eigen_neon small col trials=3 ms=20

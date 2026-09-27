@@ -24,6 +24,8 @@ int eigen_test_main(int, char**);
 int eigen_amx_all_main(int, char**);
 int eigen_gemv_neon_main(int, char**);
 int eigen_gemv_amx_all_main(int, char**);
+int eigen_gemv_amx_nopf_main(int, char**);
+int eigen_gemv_amx_main(int, char**);
 int eigen_test_large_main(int, char**);
 int eigen_test_threaded_main(int, char**);
 int eigen_test_extra_main(int, char**);
@@ -83,6 +85,8 @@ static int run_program(const std::string& line) {
   if (p == "eigen_amx_all") return eigen_amx_all_main(argc, argv.data());
   if (p == "eigen_gemv_neon") return eigen_gemv_neon_main(argc, argv.data());
   if (p == "eigen_gemv_amx_all") return eigen_gemv_amx_all_main(argc, argv.data());
+  if (p == "eigen_gemv_amx_nopf") return eigen_gemv_amx_nopf_main(argc, argv.data());
+  if (p == "eigen_gemv_amx") return eigen_gemv_amx_main(argc, argv.data());
   if (p == "eigen_test_large") return eigen_test_large_main(argc, argv.data());
   if (p == "eigen_test_threaded") return eigen_test_threaded_main(argc, argv.data());
   if (p == "eigen_test_extra") return eigen_test_extra_main(argc, argv.data());

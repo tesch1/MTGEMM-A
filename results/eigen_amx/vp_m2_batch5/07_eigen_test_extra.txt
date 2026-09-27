@@ -1,0 +1,3 @@
+# eigen_test_extra
+Initializing random number generator with seed 1843163763
+Repeating each test 10 times
