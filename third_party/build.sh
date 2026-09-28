@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fetches LIBXSMM, KleidiAI, OpenBLAS (also patched with openblas-sme2.patch), Eigen master and the Eigen SME branch (header-only) at pinned commits into third_party/src and builds them into third_party/install.
+# Fetches LIBXSMM, KleidiAI, OpenBLAS (develop and the SME2 port branch), Eigen master and the Eigen SME branch (header-only) at pinned commits into third_party/src and builds them into third_party/install.
 set -euo pipefail
 cd "$(dirname "$0")"
 LIBXSMM_URL=https://github.com/libxsmm/libxsmm.git
@@ -13,6 +13,9 @@ EIGEN_BRANCH_URL=https://gitlab.com/tesch1/eigen.git
 EIGEN_BRANCH_REV=35683b6d7d8f1173a6064847947fa942c9a7a1ea
 OPENBLAS_URL=https://github.com/OpenMathLib/OpenBLAS.git
 OPENBLAS_REV=63d7f22e42577e413c2775d84daaa1da24c8cc46
+# The port of this design into OpenBLAS (branch sme2-gemm, rebased on a later develop than OPENBLAS_REV).
+OPENBLAS_SME2_URL=${OPENBLAS_SME2_URL:-https://github.com/tesch1/OpenBLAS.git}
+OPENBLAS_SME2_REV=a4bc8ec43c64affee997bf33da1576b7b9eac389
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
@@ -51,11 +54,10 @@ if [ ! -f install/openblas/lib/libopenblas.a ]; then
 fi
 echo "openblas built"
 
-# The same OpenBLAS with the SME2 port of this design (openblas-sme2.patch), in a second worktree.
+# OpenBLAS with the port of this design: the pull-request branch sme2-gemm on the fork, at a pinned commit.
+# Until that branch is pushed, OPENBLAS_SME2_URL=<local clone> builds it from a local checkout.
+fetch openblas-sme2 "$OPENBLAS_SME2_URL" "$OPENBLAS_SME2_REV"
 if [ ! -f install/openblas-sme2/lib/libopenblas.a ]; then
-  [ -d src/openblas-sme2 ] || git -C src/openblas worktree add -q --detach ../openblas-sme2 "$OPENBLAS_REV"
-  git -C src/openblas-sme2 -c advice.detachedHead=false checkout -q "$OPENBLAS_REV"
-  git -C src/openblas-sme2 apply --check ../../openblas-sme2.patch 2>/dev/null && git -C src/openblas-sme2 apply ../../openblas-sme2.patch
   { make -C src/openblas-sme2 -j"$JOBS" $OB_OPTS libs && make -C src/openblas-sme2 $OB_OPTS PREFIX="$PWD/install/openblas-sme2" install; } \
     > install/openblas-sme2.log 2>&1 || { tail -30 install/openblas-sme2.log; exit 1; }
 fi

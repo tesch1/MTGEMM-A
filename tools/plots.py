@@ -15,7 +15,7 @@ root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 _pins = open(os.path.join(root, 'third_party', 'build.sh')).read()
 EIGEN_BR = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'EIGEN_BRANCH_REV=(\w{4})', _pins).group(1)
 EIGEN_MASTER = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
-# OpenBLAS charts: develop at the pinned commit, and the same commit with third_party/openblas-sme2.patch.
+# OpenBLAS charts: develop at the pinned commit, and the port (branch sme2-gemm, pinned in third_party/build.sh).
 OB_DEV = 'OpenBLAS develop'
 OB_PORT = 'OpenBLAS + port'
 REF = 'Accelerate (reference)'  # drawn as a dashed line in muted ink, not a categorical series
