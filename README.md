@@ -35,6 +35,7 @@ that carries this work, Eigen<sup>ec85</sup> is Eigen master.
 - [What each design element is worth](#what-each-design-element-is-worth)
 - [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend)
 - [AMX backend (Apple Vision Pro, M2)](#amx-backend-apple-vision-pro-m2)
+- [What this means for OpenBLAS](#what-this-means-for-openblas)
 - [Limitations](#limitations)
 - [Future work](#future-work)
 - [References](#references)
@@ -80,6 +81,11 @@ Against the paper's own numbers (its charts), one SME unit and two, fp32 and fp6
   (column-major), 1.7x faster than KleidiAI and 3.7x faster than OpenBLAS (row-major). LIBXSMM measures within
   2% of the paper's LIBXSMM numbers, so the paper's baselines hold up. See
   [LIBXSMM, KleidiAI and OpenBLAS](#libxsmm-kleidiai-and-openblas).
+- OpenBLAS `develop` has had SME GEMM kernels for all four types since August 2026. On this machine they reach
+  0.50x-0.78x of MTGEMM-A in fp32 on one thread and ignore the thread count. A port of this design into
+  OpenBLAS (`third_party/openblas-sme2.patch`, not yet submitted) reaches 0.99x-1.00x of MTGEMM-A on the paper's workloads and squares: 1.8x-2.0x
+  the current kernels on the paper's workloads on one thread, 3.6x-3.9x at default threading. See
+  [What this means for OpenBLAS](#what-this-means-for-openblas).
 - Eigen<sup>3568</sup>, which carries the elements ported from this project, is ahead of Accelerate on the paper's
   workloads at default threading (1.10x column-major, 1.07x row-major) and on one thread
   (1.12x, 1.18x). Where Accelerate is still faster, and why, is in
@@ -242,6 +248,7 @@ make test       # correctness tests
 make gbench     # optional: Google Benchmark cross-check (downloads benchmark v1.9.1 into build/)
 make test_ext   # optional: fetch and build LIBXSMM and KleidiAI, check them against Accelerate
 make test_eigen # optional: fetch Eigen master and the Eigen SME branch, check them against Accelerate
+make test_openblas # optional: OpenBLAS develop and OpenBLAS with the SME2 port, checked against a reference
 ./tools/plots.py  # charts in docs/ from results/ext (a uv script: needs uv, fetches matplotlib)
 ```
 
@@ -287,6 +294,19 @@ packs both operands with KleidiAI's own packers (`lhs_pack_f32p2vlx1_f32_sme`,
 `rhs_pack_kxn_f32p2vlx1biasf32_f32_f32_sme`) and then runs the kernel. The packed buffers are allocated once,
 outside the timing. This is the only FP32 SME kernel that KleidiAI builds for this platform.
 
+```sh
+# bench_openblas[_sme2] <set> <row|col> [f64] [threads=n] [ids=a-b] [ms=50] [trials=5] [check]
+./build/bench_openblas all row threads=1        # OpenBLAS develop, one thread
+./build/bench_openblas_sme2 all col threads=0   # OpenBLAS with the SME2 port, default thread count
+./build/test_openblas_sme2_gemm                 # all transposes, alpha/beta, odd sizes, padded ld, 1 and 12 threads
+```
+
+`bench_openblas` is a separate binary because OpenBLAS and Accelerate both export `cblas_*`; it checks one
+call per shape against MTGEMM-A instead. Timed runs first wait 12 s: after start-up the idle OpenBLAS pool
+threads spin for 2^28 timer ticks (11 s at Apple's 24 MHz) and slow the first shapes by up to 25%.
+`bench/run_openblas.sh` runs both OpenBLAS builds, MTGEMM-A and Accelerate on all sets into `results/openblas/`,
+and `tools/openblas_summary.py` prints the table of [What this means for OpenBLAS](#what-this-means-for-openblas).
+
 `bench/run_all.sh <outdir> <label> <args>` waits until the one-minute load is below 4, runs one benchmark and
 writes the load before and after into the result file. `BIN=./build/bench_ext` selects the second binary. Run one benchmark at a time: two benchmarks at the
 same time share the SME units and the L2 caches.
@@ -310,6 +330,9 @@ load width, strided reads with prefetch, core stores during SME loads).
 | `results/ext/` | one thread: LIBXSMM, KleidiAI, Eigen, Accelerate and MTGEMM-A, all shape sets |
 | `results/regular/` | default threading: Accelerate, MTGEMM-A (`threads=0`), Eigen on a thread pool (`bench/run_regular.sh`) |
 | `bench/baseline/` | Eigen and OpenBLAS baseline programs and their outputs |
+| `bench/bench_openblas.cpp`, `bench/test_openblas_gemm.c`, `bench/run_openblas.sh` | OpenBLAS benchmark, GEMM check, run script |
+| `third_party/openblas-sme2.patch` | the port of this design into OpenBLAS (three commits on OpenBLAS `develop`) |
+| `results/openblas/` | one session: OpenBLAS develop, OpenBLAS with the port, MTGEMM-A, Accelerate, all sets |
 | `results/final/` | final raw results (2026-09-22) and `tables.md` |
 | `results/r1`-`r3` | earlier rounds, kept for the record |
 | `results/paper_numbers.csv` | numbers of the paper, read from its figures (see below) |
@@ -513,7 +536,9 @@ KleidiAI 564 and OpenBLAS 464 (row).
 - KleidiAI: 840 here against 564 in the paper, 1.5x faster. The version here is from September 2026 and is
   newer than the paper's. The timing here also leaves out the allocation of the packed buffers; the paper does
   not say whether its timing includes it.
-- OpenBLAS: the run from `bench/baseline/` (0.3.34, Homebrew, one thread). OpenBLAS uses SME only in a
+- OpenBLAS: the run from `bench/baseline/` (0.3.34, Homebrew, one thread). OpenBLAS `develop` has since
+  added full SME GEMM kernels; they, and a port of this design, are in
+  [What this means for OpenBLAS](#what-this-means-for-openblas). OpenBLAS uses SME only in a
   direct SME1 kernel for row-major `C = A*B` with contiguous operands, and only for sizes that its heuristic
   accepts. The M = 4096 workloads fall back to NEON here (114 GFLOPS), which the paper's OpenBLAS numbers do
   not show (422-533).
@@ -960,6 +985,103 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
   blocks cost more than the arithmetic. N = 1 (4096x1x4096) is 3x slower.
 - Only one headset and one visionOS build (24N5093f).
 
+## What this means for OpenBLAS
+
+OpenBLAS `develop` (commit 63d7f22, `TARGET=VORTEXM4`) has two SME GEMM paths on Apple M4:
+
+- an SME1 "direct" SGEMM (2025, [#5084](https://github.com/OpenMathLib/OpenBLAS/pull/5084),
+  [#5380](https://github.com/OpenMathLib/OpenBLAS/pull/5380)) for row-major `C = A*B` with contiguous operands and M N K < 3100^3. It is
+  the only SME code in Homebrew's OpenBLAS 0.3.34;
+- since August 2026, `sme_[sdcz]gemm_kernel` ([#5971](https://github.com/OpenMathLib/OpenBLAS/pull/5971)), which
+  `interface/gemm.c` calls for every other GEMM on SME targets. The real kernels use fixed blocks (512 x 1024 x
+  2048 for fp32), pack B with a scalar gather, store ZA one row at a time, keep the packed blocks in `static`
+  arrays, and run on one thread whatever the thread count.
+
+`third_party/openblas-sme2.patch` ports MTGEMM-A into that second path: on SME2 hardware with a 512-bit
+streaming vector length (checked at run time), `sme_sgemm_kernel` and `sme_dgemm_kernel` run the design of this
+project, and the existing code stays as the fallback. The patch is three commits on `develop`:
+
+1. `kernel/arm64/sme2_gemm_impl.h`, included by both kernels: the model blocking, the ZA transposition of A,
+   online packing of B, the 1 x NT tile kernel with the half-width and edge kernels, four-row ZA moves for C,
+   L2 prefetch, all four transpose cases (a transposed operand is packed through ZA), and one thread per SME unit
+   through OpenBLAS's own thread server (`exec_blas`), from 2^22 multiply-adds. It is C with ACLE intrinsics
+   and the few inline-assembly blocks of `src/mtgemm.cpp`; `#pragma clang attribute` enables SME2 for these
+   functions only, so no build flags change. The SME1 direct SGEMM steps aside for the row-major problems where
+   the port is faster.
+2. CPU detection: the M4 Pro/Max (`hw.cpufamily` 0x17d5b93a) was not recognised, so a build without `TARGET`
+   on this machine fell back to generic ARMv8 without SME. Later Apple cores with SME now map to VORTEXM4.
+3. Small problems: compile-time variants of the ZA transposition (a runtime stride and scale cost 50-80 ns per
+   A panel), a stack workspace below 64 KB, NEON below 20^3 multiply-adds, and the SME1 direct SGEMM for
+   row-major problems below 56^3, where it is faster.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/squares_openblas_regular-dark.svg">
+  <img alt="Square sizes at default threading: Accelerate, OpenBLAS develop, OpenBLAS with the port, MTGEMM-A" src="docs/squares_openblas_regular.svg">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/squares_openblas-dark.svg">
+  <img alt="Square sizes on one thread: Accelerate, OpenBLAS develop, OpenBLAS with the port, MTGEMM-A" src="docs/squares_openblas.svg">
+</picture>
+
+| shapes | order | precision, threads | Accelerate | OpenBLAS develop | OpenBLAS + port | MTGEMM-A | port / develop | port / MTGEMM-A |
+|---|---|---|---|---|---|---|---|---|
+| paper's 24 | row | fp32, one thread | 1127 | 707 | **1390** | 1404 | 1.97 | 0.99 |
+| squares 512-4096 | row | fp32, one thread | 1691 | 1129 | **1744** | 1748 | 1.55 | 1.00 |
+| paper's 24 | col | fp32, one thread | 1185 | 766 | **1396** | 1408 | 1.82 | 0.99 |
+| squares 512-4096 | col | fp32, one thread | 1624 | 1342 | **1723** | 1727 | 1.28 | 1.00 |
+| paper's 24 | row | fp32, default | 2364 | 702 | **2704** | 2733 | 3.85 | 0.99 |
+| squares 512-4096 | row | fp32, default | 3176 | 1135 | **3445** | 3460 | 3.03 | 1.00 |
+| paper's 24 | col | fp32, default | 2445 | 766 | **2732** | 2770 | 3.57 | 0.99 |
+| squares 512-4096 | col | fp32, default | 3030 | 1346 | **3404** | 3411 | 2.53 | 1.00 |
+| paper's 24 | row | fp64, one thread | 321 | 275 | **424** | 426 | 1.54 | 1.00 |
+| squares 512-4096 | row | fp64, one thread | 429 | 381 | **463** | 462 | 1.22 | 1.00 |
+| paper's 24 | col | fp64, one thread | 344 | 283 | **407** | 409 | 1.44 | 0.99 |
+| squares 512-4096 | col | fp64, one thread | 410 | 372 | **460** | 459 | 1.24 | 1.00 |
+| squares 4-384 | row | fp32, one thread | 247 | 202 | **208** | 179 | 1.03 | 1.16 |
+| squares 4-384 | col | fp32, one thread | 254 | 70 | **226** | 167 | 3.22 | 1.35 |
+| squares 4-384 | row | fp32, default | 248 | 190 | **228** | 199 | 1.20 | 1.15 |
+| squares 4-384 | col | fp32, default | 256 | 70 | **226** | 185 | 3.23 | 1.22 |
+| squares 4-384 | row | fp64, one thread | 123 | 56 | **104** | 89 | 1.85 | 1.17 |
+| squares 4-384 | col | fp64, one thread | 124 | 51 | **103** | 83 | 2.03 | 1.24 |
+| thin (15) | row | fp32, one thread | 198 | 118 | **260** | 273 | 2.21 | 0.95 |
+| thin (15) | col | fp32, one thread | 197 | 49 | **257** | 270 | 5.22 | 0.95 |
+| thin (15) | row | fp32, default | 298 | 118 | **410** | 422 | 3.46 | 0.97 |
+| thin (15) | col | fp32, default | 298 | 49 | **414** | 427 | 8.53 | 0.97 |
+| thin (15) | row | fp64, one thread | 103 | 40 | **129** | 112 | 3.19 | 1.15 |
+| thin (15) | col | fp64, one thread | 103 | 39 | **128** | 112 | 3.31 | 1.14 |
+
+GFLOPS, geometric means, one session (`results/openblas/`, load below 4). Row-major runs use beta = 0,
+column-major runs beta = 1. "Default" is each library's own thread count: OpenBLAS with its pool of 12 threads,
+MTGEMM-A with `threads=0`, Accelerate unrestricted.
+
+- **Paper's workloads and squares:** the port is 0.99x-1.00x of MTGEMM-A in every configuration, 1.2x-2.0x the
+  current OpenBLAS kernels on one thread and 2.5x-3.9x at default threading. In fp64 it is 1.1x-1.3x
+  Accelerate.
+- **Small squares (4-384):** the port is faster than MTGEMM-A (1.15x-1.35x), because it hands problems below
+  20^3 to NEON and row-major fp32 `C = A*B` below 56^3 to the SME1 direct kernel. It stays 8%-17% below
+  Accelerate, which is ahead from 24^3 to 128^3 in column-major and at single sizes in row-major.
+- **Thin shapes:** 0.95x-0.97x of MTGEMM-A in fp32 over the whole set. The gap is in the shapes where the SME
+  side has 4-16 rows against 4096 x 4096; timed in one process the two are within 2% there, so it is run-to-run
+  variation of a memory-bound case. In fp64 the port is 1.14x MTGEMM-A, all of it from 4096 x N x 4096 with
+  N = 1-16 in row-major (for example N = 4: 64 against 40 GFLOPS); the cause is not known.
+- **Correctness:** `test_openblas_gemm` compares 12,448 calls with a long-double reference: both orders, all
+  four transpose cases, four alpha/beta pairs, sizes 1-1500 with tails, padded leading dimensions, on 1 and 12
+  threads. A Homebrew-style build (Apple clang, `DYNAMIC_ARCH=1`, `USE_OPENMP=1`) passes the same checks and
+  selects the port at run time on this machine (core `vortexm4`), so a Homebrew bottle would carry it.
+
+### What is not ported yet
+
+- The other level-3 routines (SYMM, SYRK, SYR2K, TRMM, TRSM) still use the NEON GEMM kernel through the
+  level-3 driver (VORTEXM4 inherits the Neoverse N1 kernels), apart from the fp32 SME1 direct kernels for some
+  cases of SYMM, SYRK, SYR2K and TRMM. Most of their work
+  is GEMM on blocks, which could call the port.
+- Complex GEMM (`sme_cgemm_kernel`, `sme_zgemm_kernel`) is unchanged.
+- Only SVL 512 is supported; other vector lengths and GCC take the existing code. The thresholds and the model
+  parameters (8 MB L2 budget, 16 KB pages, 160 TLB entries) are M4 Pro measurements.
+- The port has not been submitted. OpenBLAS has no written policy for AI-assisted contributions; its maintainer
+  accepts them case by case ([#6035](https://github.com/OpenMathLib/OpenBLAS/issues/6035)).
+
 ## Limitations
 
 - One machine: one M4 Pro (8 P-cores). The paper used an M4 Pro with 10 P-cores. Both have two P-cluster SME
@@ -980,8 +1102,8 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
 - Default threading depends on how macOS schedules threads: Eigen's pool threads and MTGEMM-A's worker are not
   pinned, and the gain from the second SME unit varied between test harnesses (see the Eigen section).
 - Only the no-transpose case of GEMM. The efficiency-cluster SME unit is not used (it is much slower).
-- OpenBLAS was measured once (Homebrew 0.3.34), not rebuilt from source; LIBXSMM and KleidiAI are built by
-  `third_party/build.sh` at the commits it pins. Only one KleidiAI FP32 SME kernel is available on this platform.
+- OpenBLAS 0.3.34 in the LIBXSMM/KleidiAI comparison is the Homebrew build, measured once. OpenBLAS `develop`
+  and the port are built by `third_party/build.sh` at the commit it pins; LIBXSMM and KleidiAI likewise. Only one KleidiAI FP32 SME kernel is available on this platform.
 - The TLB size in the model is an assumption (160 entries).
 
 ## Future work
@@ -994,6 +1116,8 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
 - AMX backend: a small-matrix path (M, N below 48, where packing and edge tiles cost most of the time),
   mixed precision (bf16/fp16 into fp32, available in AMX on M2), and a check on M1 (not supported now, see
   [AMX backend (Apple Vision Pro, M2)](#amx-backend-apple-vision-pro-m2)).
+- OpenBLAS: submit the port; then the other level-3 routines and complex GEMM (see
+  [What is not ported yet](#what-is-not-ported-yet)).
 
 ## References
 
@@ -1005,7 +1129,11 @@ unit, two on this M4 Pro, from 2^22 multiply-adds):
 - T. Zakharko. M4 SME exploration. [github.com/tzakharko/m4-sme-exploration](https://github.com/tzakharko/m4-sme-exploration).
 - Arm. KleidiAI. [github.com/ARM-software/kleidiai](https://github.com/ARM-software/kleidiai).
 - LIBXSMM. [github.com/libxsmm/libxsmm](https://github.com/libxsmm/libxsmm).
-- OpenBLAS. [github.com/OpenMathLib/OpenBLAS](https://github.com/OpenMathLib/OpenBLAS).
+- OpenBLAS. [github.com/OpenMathLib/OpenBLAS](https://github.com/OpenMathLib/OpenBLAS). SME GEMM kernels in
+  `develop`: pull request [#5971](https://github.com/OpenMathLib/OpenBLAS/pull/5971) (ported from vlovero's
+  ARMv9.2-GEMM project); SME1 direct SGEMM: [#5084](https://github.com/OpenMathLib/OpenBLAS/pull/5084),
+  [#5380](https://github.com/OpenMathLib/OpenBLAS/pull/5380); an earlier SME2 SGEMM inside the level-3 driver:
+  [#5011](https://github.com/OpenMathLib/OpenBLAS/pull/5011) (open, draft).
 - Arm. Arm C Language Extensions (ACLE), SME intrinsics.
   [arm-software.github.io/acle/main/acle.html](https://arm-software.github.io/acle/main/acle.html).
 - Arm. Arm Architecture Reference Manual Supplement, The Scalable Matrix Extension (SME), for Armv9-A

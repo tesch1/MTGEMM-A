@@ -1,0 +1,16 @@
+# 2026-09-27 23:44:05 load before: { 2.49 2.86 3.21 } VECLIB_MAXIMUM_THREADS=1
+# small col mt f64 beta=1 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1
+ 0     4     4     4      1  err/sqrtK=0.0e+00
+ 0     8     8     8      5  err/sqrtK=0.0e+00
+ 0    12    12    12     10  err/sqrtK=0.0e+00
+ 0    16    16    16     24  err/sqrtK=0.0e+00
+ 0    24    24    24     52  err/sqrtK=0.0e+00
+ 0    32    32    32    135  err/sqrtK=0.0e+00
+ 0    48    48    48    175  err/sqrtK=0.0e+00
+ 0    64    64    64    358  err/sqrtK=0.0e+00
+ 0    96    96    96    379  err/sqrtK=0.0e+00
+ 0   128   128   128    436  err/sqrtK=0.0e+00
+ 0   192   192   192    458  err/sqrtK=0.0e+00
+ 0   256   256   256    466  err/sqrtK=0.0e+00
+ 0   384   384   384    479  err/sqrtK=0.0e+00
+# load after: { 2.37 2.83 3.19 }

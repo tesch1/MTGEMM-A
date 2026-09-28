@@ -72,6 +72,36 @@ $(BUILD)/bench_eigen_br_mt: $(EIGEN_BENCH) $(EIGEN_BR_INC)/Eigen/Core | $(BUILD)
 
 bench_eigen: $(BUILD)/bench_eigen $(BUILD)/bench_eigen_mt $(BUILD)/bench_eigen_br $(BUILD)/bench_eigen_br_mt
 
+# OpenBLAS develop with its SME kernels (TARGET=VORTEXM4); fetched and built by third_party/build.sh.
+OB := $(TP)/openblas
+$(OB)/lib/libopenblas.a:
+	./third_party/build.sh
+
+$(BUILD)/bench_openblas: bench/bench_openblas.cpp bench/shapes.h $(LIB) $(OB)/lib/libopenblas.a | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB)/include $< $(LIB) $(OB)/lib/libopenblas.a -o $@
+
+# The same benchmark on OpenBLAS with the SME2 port of this design (third_party/openblas-sme2.patch).
+OB2 := $(TP)/openblas-sme2
+$(OB2)/lib/libopenblas.a:
+	./third_party/build.sh
+
+$(BUILD)/bench_openblas_sme2: bench/bench_openblas.cpp bench/shapes.h $(LIB) $(OB2)/lib/libopenblas.a | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB2)/include $< $(LIB) $(OB2)/lib/libopenblas.a -o $@
+
+$(BUILD)/test_openblas_gemm: bench/test_openblas_gemm.c $(OB)/lib/libopenblas.a | $(BUILD)
+	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
+
+$(BUILD)/test_openblas_sme2_gemm: bench/test_openblas_gemm.c $(OB2)/lib/libopenblas.a | $(BUILD)
+	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
+
+bench_openblas: $(BUILD)/bench_openblas $(BUILD)/bench_openblas_sme2 $(BUILD)/test_openblas_gemm $(BUILD)/test_openblas_sme2_gemm
+
+test_openblas: bench_openblas
+	./$(BUILD)/test_openblas_gemm
+	./$(BUILD)/test_openblas_sme2_gemm
+	for b in bench_openblas bench_openblas_sme2; do for o in row col; do for set in all small thin; do \
+	  ./$(BUILD)/$$b $$set $$o check || exit 1; ./$(BUILD)/$$b $$set $$o f64 check || exit 1; done; done; done
+
 test_ext: $(BUILD)/bench_ext
 	./$(BUILD)/bench_ext all libxsmm check
 	./$(BUILD)/bench_ext irr libxsmm check
@@ -173,4 +203,4 @@ test_multi: $(BUILD)/test_gemm_multi
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen amx test_amx multi test_multi
+.PHONY: all test clean gbench bench_ext test_ext bench_eigen test_eigen amx test_amx multi test_multi bench_openblas test_openblas
