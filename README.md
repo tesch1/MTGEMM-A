@@ -1010,7 +1010,7 @@ OpenBLAS `develop` (commit 63d7f22, `TARGET=VORTEXM4`) has two SME GEMM paths on
 
 The branch `sme2-gemm` on [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS) ports MTGEMM-A into that second
 path: on SME2 hardware with a 512-bit streaming vector length (checked at run time), `sme_sgemm_kernel` and
-`sme_dgemm_kernel` run the design of this project, and the existing code stays as the fallback. It is six commits
+`sme_dgemm_kernel` run the design of this project, and the existing code stays as the fallback. It is seven commits
 on `develop` (e11d785), intended as one pull request:
 
 1. `kernel/arm64/sme2_gemm_impl.h`, included by both kernels: the model blocking, the ZA transposition of A,
@@ -1035,6 +1035,8 @@ on `develop` (e11d785), intended as one pull request:
    for partial-width C, and refined thresholds: row-major fp32 below 64^3 stays on the SME1 direct SGEMM, fp64
    below 4000 multiply-adds takes NEON, and fp64 below 5000 with M and N multiples of 16 keeps the existing SME
    kernel. An `__arm_preserves("za")` attribute added in commit 4 cost 160 ns per call and is removed.
+7. TRSM with the triangle on the right: its base solve read and wrote B column by column in the inner loop; it
+   now solves 16 rows of B in a local tile (fp32, n = 1024: 239-247 -> 666-672 GFLOPS).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/squares_openblas_regular-dark.svg">
@@ -1124,34 +1126,35 @@ every side, uplo, trans and diag, from 2 x 10^5 multiply-adds (at 48^3 the NEON 
 
 | n = 1024 | one thread: Accelerate | OpenBLAS develop | OpenBLAS + port | default: Accelerate | OpenBLAS develop | OpenBLAS + port |
 |---|---|---|---|---|---|---|
-| fp32 GEMM | 1583 | 1377 | **1793** | 2885 | 1125 | **3680** |
-| fp32 SYMM | 1559 | 115 | **1345** | 2732 | 376 | **2353** |
-| fp32 SYRK | 1758 | 108 | **1335** | 2845 | 327 | **2014** |
-| fp32 SYR2K | 1384 | 110 | **1351** | 2811 | 224 | **2001** |
-| fp32 TRMM | 1537 | 112 | **1123** | 2643 | 203 | **1684** |
-| fp32 TRSM | 791 | 99 | **498** | 1589 | 171 | **688** |
-| fp64 GEMM | 386 | 385 | **470** | 791 | 294 | **943** |
-| fp64 SYMM | 410 | 58 | **405** | 657 | 123 | **807** |
-| fp64 SYRK | 403 | 55 | **390** | 696 | 130 | **782** |
-| fp64 SYR2K | 391 | 55 | **377** | 681 | 172 | **675** |
-| fp64 TRMM | 433 | 57 | **363** | 820 | 132 | **638** |
-| fp64 TRSM | 265 | 53 | **241** | 561 | 127 | **333** |
+| fp32 GEMM | 1583 | 1377 | **1767** | 2885 | 1125 | **3599** |
+| fp32 SYMM | 1559 | 115 | **1329** | 2732 | 376 | **2366** |
+| fp32 SYRK | 1758 | 108 | **1320** | 2845 | 327 | **2017** |
+| fp32 SYR2K | 1384 | 110 | **1317** | 2811 | 224 | **2030** |
+| fp32 TRMM | 1537 | 112 | **1100** | 2643 | 203 | **1665** |
+| fp32 TRSM | 791 | 99 | **491** | 1589 | 171 | **641** |
+| fp64 GEMM | 386 | 385 | **460** | 791 | 294 | **932** |
+| fp64 SYMM | 410 | 58 | **396** | 657 | 123 | **803** |
+| fp64 SYRK | 403 | 55 | **383** | 696 | 130 | **757** |
+| fp64 SYR2K | 391 | 55 | **369** | 681 | 172 | **676** |
+| fp64 TRMM | 433 | 57 | **357** | 820 | 132 | **630** |
+| fp64 TRSM | 265 | 53 | **240** | 561 | 127 | **340** |
 
 GFLOPS, column-major, lower and left where they apply, beta = 1 (`results/openblas/l3_*.txt`,
 `bench/run_openblas_l3.sh`; flops 2 n^3 for GEMM, SYMM, SYR2K and n^3 for SYRK, TRMM, TRSM).
 
 - At n = 1024, SYMM, SYRK, SYR2K and TRMM are 10x-12x faster than before on one thread in fp32 and 6x-7x in
-  fp64, at 0.73x-0.98x of Accelerate in fp32 and 0.84x-0.99x in fp64; at default threading 0.64x-1.23x of
-  Accelerate. From n = 2048 they are 0.75x-1.14x of Accelerate (1.67x for fp32 SYRK at 2048 at
+  fp64, at 0.72x-0.95x of Accelerate in fp32 and 0.82x-0.97x in fp64; at default threading 0.63x-1.22x of
+  Accelerate. From n = 2048 they are 0.74x-1.13x of Accelerate (1.66x for fp32 SYRK at 2048 at
   default threads, where Accelerate drops to 1261 GFLOPS). None is slower than develop at any size from 64
   to 4096 (below the threshold both take the same path).
-- TRSM is 4.5x-5x faster on one thread but at 0.63x of Accelerate (fp32, n = 1024) and 0.43x at default
-  threading: the base solves (3% of the work) still take about half of the time, and they run on one thread.
-  With the triangle on the right it is at about half the speed of the left side (fp32, n = 1024: 239-247 against
-  524-566 GFLOPS over the variants; Accelerate 840-949), still 2.2x-2.3x develop.
+- TRSM is 4.5x-5x faster on one thread but at 0.62x of Accelerate (fp32, n = 1024, triangle on the left) and
+  0.40x at default threading: the base solves (3% of the work) still take about half of the time, and they run on
+  one thread. With the triangle on the right (commit 7) it is faster than on the left: fp32 n = 1024 666-672
+  GFLOPS over the 8 right-side variants against 489-494 on the left (Accelerate 840-949 and 791-879), fp64
+  273-276 against 233-237 (Accelerate 207-252 and 263-290).
 - Over every variant at n = 1024 (4 for SYMM, SYRK and SYR2K, 16 for TRMM and TRSM, `results/openblas/l3v_*.txt`),
-  fp32 one thread: SYMM 1341-1584 GFLOPS, SYRK 1292-1440, SYR2K 1315-1412, TRMM 1099-1337 (develop: 85-120,
-  Accelerate: 1358-1704).
+  fp32 one thread: SYMM 1324-1479 GFLOPS, SYRK 1216-1313, SYR2K 1266-1337, TRMM 1078-1229 (develop: 85-120,
+  Accelerate: 1358-1704); sessions differ by up to 6% for these.
 - `test_openblas_l3` checks 2,816 calls against long-double references: both orders, every side, uplo, trans
   and diag, four alpha/beta pairs, sizes around the recursion thresholds, padded leading dimensions, 1 and 12
   threads. The unused triangle of A (and a unit diagonal) holds NaN, and every element of B or C outside the
@@ -1159,8 +1162,8 @@ GFLOPS, column-major, lower and left where they apply, beta = 1 (`results/openbl
 
 ### What is not ported yet
 
-- TRSM: the base solve limits it, in particular with the triangle on the right (see above). An SME base solve,
-  or wider use of the SME units by the base solves, is the next step.
+- TRSM: the base solve on one thread limits it, most with the triangle on the left (see above). An SME base
+  solve, or wider use of the SME units by the base solves, is the next step.
 - Complex GEMM (`sme_cgemm_kernel`, `sme_zgemm_kernel`) and the complex level-3 routines are unchanged.
 - Only SVL 512 is supported; other vector lengths and GCC take the existing code. The SME2 path needs Apple
   clang 17 (Xcode 16.3) or LLVM 18. The thresholds and the model parameters (8 MB L2 budget, 16 KB pages, 160

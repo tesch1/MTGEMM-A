@@ -15,7 +15,7 @@ OPENBLAS_URL=https://github.com/OpenMathLib/OpenBLAS.git
 OPENBLAS_REV=63d7f22e42577e413c2775d84daaa1da24c8cc46
 # The port of this design into OpenBLAS (branch sme2-gemm, rebased on a later develop than OPENBLAS_REV).
 OPENBLAS_SME2_URL=${OPENBLAS_SME2_URL:-https://github.com/tesch1/OpenBLAS.git}
-OPENBLAS_SME2_REV=592aaa86f0d7ac3d12527b1556d3c88ebab6ecf5
+OPENBLAS_SME2_REV=df34659bc9892cc78e273f9841a52e62f1f10358
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
