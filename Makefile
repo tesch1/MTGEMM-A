@@ -101,14 +101,30 @@ $(BUILD)/bench_openblas_sme2_l3: bench/bench_openblas_l3.c $(OB2)/lib/libopenbla
 	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 $(BUILD)/bench_accel_l3: bench/bench_openblas_l3.c | $(BUILD)
 	$(CC) -O2 -DUSE_ACCEL $< $(ACCEL) -o $@
+$(BUILD)/bench_openblas_l3v: bench/bench_openblas_l3v.c $(OB)/lib/libopenblas.a | $(BUILD)
+	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
+$(BUILD)/bench_openblas_sme2_l3v: bench/bench_openblas_l3v.c $(OB2)/lib/libopenblas.a | $(BUILD)
+	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
+$(BUILD)/bench_accel_l3v: bench/bench_openblas_l3v.c | $(BUILD)
+	$(CC) -O2 -DUSE_ACCEL $< $(ACCEL) -o $@
 $(BUILD)/test_openblas_l3: bench/test_openblas_l3.c $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
 $(BUILD)/test_openblas_sme2_l3: bench/test_openblas_l3.c $(OB2)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 
+# Small GEMMs per call: OpenBLAS develop, the port, MTGEMM-A.
+$(BUILD)/bench_small_ob: bench/bench_small.cpp $(OB)/lib/libopenblas.a | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
+$(BUILD)/bench_small_obs2: bench/bench_small.cpp $(OB2)/lib/libopenblas.a | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
+$(BUILD)/bench_small_mt: bench/bench_small.cpp $(LIB) | $(BUILD)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DUSE_MT $< $(LIB) -o $@
+
 bench_openblas: $(BUILD)/bench_openblas $(BUILD)/bench_openblas_sme2 $(BUILD)/test_openblas_gemm $(BUILD)/test_openblas_sme2_gemm \
                 $(BUILD)/bench_openblas_l3 $(BUILD)/bench_openblas_sme2_l3 $(BUILD)/bench_accel_l3 \
-                $(BUILD)/test_openblas_l3 $(BUILD)/test_openblas_sme2_l3
+                $(BUILD)/test_openblas_l3 $(BUILD)/test_openblas_sme2_l3 \
+                $(BUILD)/bench_openblas_l3v $(BUILD)/bench_openblas_sme2_l3v $(BUILD)/bench_accel_l3v \
+                $(BUILD)/bench_small_ob $(BUILD)/bench_small_obs2 $(BUILD)/bench_small_mt
 
 test_openblas: bench_openblas
 	./$(BUILD)/test_openblas_gemm

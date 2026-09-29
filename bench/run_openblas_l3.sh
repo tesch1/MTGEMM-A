@@ -12,3 +12,7 @@ for t in 1 0; do
   if [ $t = 1 ]; then BIN=./build/bench_accel_l3 bench/run_all.sh $O l3_accel_$s 1 $N
   else VECLIB_MAXIMUM_THREADS=default BIN=./build/bench_accel_l3 bench/run_all.sh $O l3_accel_$s 0 $N; fi
 done
+# every variant at n = 1024, one thread
+BIN=./build/bench_openblas_l3v bench/run_all.sh $O l3v_ob_1t 1 1024
+BIN=./build/bench_openblas_sme2_l3v bench/run_all.sh $O l3v_obs2_1t 1 1024
+BIN=./build/bench_accel_l3v bench/run_all.sh $O l3v_accel_1t 1 1024
