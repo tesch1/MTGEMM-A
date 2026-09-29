@@ -13,9 +13,9 @@ EIGEN_BRANCH_URL=https://gitlab.com/tesch1/eigen.git
 EIGEN_BRANCH_REV=35683b6d7d8f1173a6064847947fa942c9a7a1ea
 OPENBLAS_URL=https://github.com/OpenMathLib/OpenBLAS.git
 OPENBLAS_REV=63d7f22e42577e413c2775d84daaa1da24c8cc46
-# The port of this design into OpenBLAS (branch sme2-gemm, rebased on a later develop than OPENBLAS_REV).
+# The port of this design into OpenBLAS (branch sme2-gemm, on a later develop than OPENBLAS_REV).
 OPENBLAS_SME2_URL=${OPENBLAS_SME2_URL:-https://github.com/tesch1/OpenBLAS.git}
-OPENBLAS_SME2_REV=df34659bc9892cc78e273f9841a52e62f1f10358
+OPENBLAS_SME2_REV=897a5ce57acfde9982b7eccc89a7ecd9428675ae
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
