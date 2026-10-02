@@ -51,26 +51,19 @@ $(BUILD)/bench_ext: bench/bench_ext.cpp bench/shapes.h $(TP)/libxsmm/lib/libxsmm
 
 bench_ext: $(BUILD)/bench_ext
 
-# Eigen master and the Eigen SME branch, one thread and on a thread pool; header-only, fetched by third_party/build.sh.
+# Eigen master (with its SME backend), one thread and on a thread pool; header-only, fetched by third_party/build.sh.
 EIGEN_INC := third_party/src/eigen
-EIGEN_BR_INC := third_party/src/eigen-branch
 EIGEN_BENCH := bench/bench_eigen.cpp bench/shapes.h
-$(EIGEN_INC)/Eigen/Core $(EIGEN_BR_INC)/Eigen/Core:
+$(EIGEN_INC)/Eigen/Core:
 	./third_party/build.sh
 
 $(BUILD)/bench_eigen: $(EIGEN_BENCH) $(EIGEN_INC)/Eigen/Core | $(BUILD)
-	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -I$(EIGEN_INC) $< $(ACCEL) -o $@
+	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -DBENCH_EIGEN_HAS_SME_UNITS -I$(EIGEN_INC) $< $(ACCEL) -o $@
 
 $(BUILD)/bench_eigen_mt: $(EIGEN_BENCH) $(EIGEN_INC)/Eigen/Core | $(BUILD)
-	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_NAME='"eigen-mt"' -I$(EIGEN_INC) $< $(ACCEL) -o $@
+	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_HAS_SME_UNITS -DBENCH_EIGEN_NAME='"eigen-mt"' -I$(EIGEN_INC) $< $(ACCEL) -o $@
 
-$(BUILD)/bench_eigen_br: $(EIGEN_BENCH) $(EIGEN_BR_INC)/Eigen/Core | $(BUILD)
-	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -DBENCH_EIGEN_HAS_SME_UNITS -DBENCH_EIGEN_NAME='"eigen-branch"' -I$(EIGEN_BR_INC) $< $(ACCEL) -o $@
-
-$(BUILD)/bench_eigen_br_mt: $(EIGEN_BENCH) $(EIGEN_BR_INC)/Eigen/Core | $(BUILD)
-	$(CXX) $(CXXFLAGS) -DACCELERATE_NEW_LAPACK -DEIGEN_GEMM_THREADPOOL -DBENCH_EIGEN_HAS_SME_UNITS -DBENCH_EIGEN_NAME='"eigen-branch-mt"' -I$(EIGEN_BR_INC) $< $(ACCEL) -o $@
-
-bench_eigen: $(BUILD)/bench_eigen $(BUILD)/bench_eigen_mt $(BUILD)/bench_eigen_br $(BUILD)/bench_eigen_br_mt
+bench_eigen: $(BUILD)/bench_eigen $(BUILD)/bench_eigen_mt
 
 # OpenBLAS develop with its SME kernels (TARGET=VORTEXM4); fetched and built by third_party/build.sh.
 OB := $(TP)/openblas
@@ -80,7 +73,7 @@ $(OB)/lib/libopenblas.a:
 $(BUILD)/bench_openblas: bench/bench_openblas.cpp bench/shapes.h $(LIB) $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB)/include $< $(LIB) $(OB)/lib/libopenblas.a -o $@
 
-# The same benchmark on OpenBLAS with the SME2 port of this design (branch sme2-gemm, see third_party/build.sh).
+# The same benchmark on OpenBLAS with the SME2 port of this design (pull request #6074, see third_party/build.sh).
 OB2 := $(TP)/openblas-sme2
 $(OB2)/lib/libopenblas.a:
 	./third_party/build.sh
@@ -145,7 +138,7 @@ test_ext: $(BUILD)/bench_ext
 	./$(BUILD)/bench_ext thin kleidiai check
 
 test_eigen: bench_eigen
-	for b in bench_eigen bench_eigen_mt bench_eigen_br bench_eigen_br_mt; do for o in row col; do for set in all small thin; do \
+	for b in bench_eigen bench_eigen_mt; do for o in row col; do for set in all small thin; do \
 	  ./$(BUILD)/$$b $$set $$o check || exit 1; done; done; done
 
 test: $(BUILD)/test_gemm

@@ -1,5 +1,5 @@
 #!/bin/bash
-# OpenBLAS develop, OpenBLAS with the SME2 port (branch sme2-gemm, third_party/build.sh), MTGEMM-A and Accelerate in one session.
+# OpenBLAS develop, OpenBLAS with the SME2 port (pull request #6074, third_party/build.sh), MTGEMM-A and Accelerate in one session.
 # usage: bench/run_openblas.sh [outdir]   (default results/openblas)
 set -e
 cd "$(dirname "$0")/.."

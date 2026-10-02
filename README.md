@@ -21,8 +21,8 @@ its target is the M2 in the Apple Vision Pro (see [AMX backend (Apple Vision Pro
 
 It also serves as a demonstration platform for Eigen's SME GEMM backend: a design element is measured here first
 and then ported to Eigen (see [What this means for the Eigen SME backend](#what-this-means-for-the-eigen-sme-backend)).
-Eigen builds are labelled with the first four hex digits of their commit: Eigen<sup>3568</sup> is the SME branch
-that carries this work, Eigen<sup>ec85</sup> is Eigen master.
+Eigen is labelled with the first four hex digits of its commit: Eigen<sup>cd1a</sup> is Eigen master, which
+contains the SME backend with the elements ported from this project.
 
 ## Contents
 
@@ -47,16 +47,16 @@ own thread count, MTGEMM-A in its automatic mode (`threads=0`: two threads, one 
 multiply-adds), Eigen on a thread pool of one thread per core. "One thread" compares the libraries on a single SME
 unit, as the paper does.
 
-| threading | workloads | Accelerate | MTGEMM-A | Eigen<sup>3568</sup> | Eigen<sup>ec85</sup> | MTGEMM-A / Accelerate | Eigen<sup>3568</sup> / Accelerate |
-|---|---|---|---|---|---|---|---|
-| default | paper's 24, column-major | 2363 | **2777** | 2607 | 1044 | 1.18 | 1.10 |
-| default | paper's 24, row-major | 2366 | **2760** | 2536 | 1000 | 1.17 | 1.07 |
-| default | squares 512-4096, column-major | 2878 | **3406** | 3310 | 980 | 1.18 | 1.15 |
-| default | squares 512-4096, row-major | 3193 | **3473** | 3241 | 960 | 1.09 | 1.02 |
-| one thread | paper's 24, column-major | 1196 | **1421** | 1343 | 933 | 1.19 | 1.12 |
-| one thread | paper's 24, row-major | 1124 | **1416** | 1324 | 940 | 1.26 | 1.18 |
-| one thread | squares 512-4096, column-major | 1633 | **1735** | 1709 | 1588 | 1.06 | 1.05 |
-| one thread | squares 512-4096, row-major | 1687 | **1759** | 1693 | 1573 | 1.04 | 1.00 |
+| threading | workloads | Accelerate | MTGEMM-A | Eigen<sup>cd1a</sup> | MTGEMM-A / Accelerate | Eigen<sup>cd1a</sup> / Accelerate |
+|---|---|---|---|---|---|---|
+| default | paper's 24, column-major | 2437 | **2755** | 2533 | 1.13 | 1.04 |
+| default | paper's 24, row-major | 2372 | **2721** | 2499 | 1.15 | 1.05 |
+| default | squares 512-4096, column-major | 2962 | **3406** | 3293 | 1.15 | 1.11 |
+| default | squares 512-4096, row-major | 3161 | **3461** | 3209 | 1.09 | 1.02 |
+| one thread | paper's 24, column-major | 1176 | **1404** | 1319 | 1.19 | 1.12 |
+| one thread | paper's 24, row-major | 1125 | **1391** | 1312 | 1.24 | 1.17 |
+| one thread | squares 512-4096, column-major | 1622 | **1719** | 1712 | 1.06 | 1.06 |
+| one thread | squares 512-4096, row-major | 1702 | **1742** | 1694 | 1.02 | 1.00 |
 
 Against the paper's own numbers (its charts), one SME unit and two, fp32 and fp64:
 
@@ -83,15 +83,15 @@ Against the paper's own numbers (its charts), one SME unit and two, fp32 and fp6
   [LIBXSMM, KleidiAI and OpenBLAS](#libxsmm-kleidiai-and-openblas).
 - OpenBLAS `develop` has had SME GEMM kernels for all four types since August 2026. On this machine they reach
   0.50x-0.78x of MTGEMM-A in fp32 on one thread and ignore the thread count; SYMM, SYRK, SYR2K, TRMM and TRSM
-  still run on NEON at about 110 GFLOPS. A port of this design into OpenBLAS (branch `sme2-gemm` on
-  [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS), not yet submitted) reaches 0.99x-1.00x of MTGEMM-A on
-  the paper's workloads and squares, 1.8x-2.0x the current kernels on one thread and 3.6x-3.9x at default
-  threading, is no slower than develop on any measured small size, and puts the other level-3 routines on it (SYMM, SYRK, SYR2K, TRMM: 10x-12x in fp32 and 6x-7x in
-  fp64; TRSM: 4.8x-5.9x). See
+  still run on NEON at about 110 GFLOPS. A port of this design into OpenBLAS, pull request
+  [OpenMathLib/OpenBLAS#6074](https://github.com/OpenMathLib/OpenBLAS/pull/6074), reaches 0.99x-1.01x of
+  MTGEMM-A on the paper's workloads and squares, 1.8x-2.0x the current kernels on one thread and 3.6x-3.9x at
+  default threading, is no slower than develop at any measured size, and gives the level-3 driver SME2 kernels
+  (SYMM, SYRK, SYR2K, TRMM, TRSM at n = 1024: 7x-13x develop in fp32, 5x-7x in fp64). See
   [What this means for OpenBLAS](#what-this-means-for-openblas).
-- Eigen<sup>3568</sup>, which carries the elements ported from this project, is ahead of Accelerate on the paper's
-  workloads at default threading (1.10x column-major, 1.07x row-major) and on one thread
-  (1.12x, 1.18x). Where Accelerate is still faster, and why, is in
+- Eigen<sup>cd1a</sup> (Eigen master), which carries the elements ported from this project, is ahead of
+  Accelerate on the paper's workloads at default threading (1.04x column-major, 1.05x row-major) and on one
+  thread (1.12x, 1.17x), at 0.92x-0.94x of MTGEMM-A. Where Accelerate is still faster, and why, is in
   [Where Accelerate is still faster](#where-accelerate-is-still-faster).
 
 ## Design as built
@@ -250,7 +250,7 @@ make            # build/libmtgemm.a, build/test_gemm, build/bench, build/ubench
 make test       # correctness tests
 make gbench     # optional: Google Benchmark cross-check (downloads benchmark v1.9.1 into build/)
 make test_ext   # optional: fetch and build LIBXSMM and KleidiAI, check them against Accelerate
-make test_eigen # optional: fetch Eigen master and the Eigen SME branch, check them against Accelerate
+make test_eigen # optional: fetch Eigen master (with its SME backend), check it against Accelerate
 make test_openblas # optional: OpenBLAS develop and OpenBLAS with the SME2 port, checked against a reference
 ./tools/plots.py  # charts in docs/ from results/ext (a uv script: needs uv, fetches matplotlib)
 ```
@@ -283,7 +283,7 @@ MTGEMM-A run also checks one result against Accelerate (`err/sqrtK` column).
 
 ```sh
 # bench_ext <set> <libxsmm|kleidiai> [ids=a-b] [ms=50] [trials=5] [check]
-# bench_eigen[_mt] (Eigen master), bench_eigen_br[_mt] (Eigen SME branch); _mt: thread pool of one thread per core
+# bench_eigen[_mt] (Eigen master); _mt: thread pool of one thread per core
 # bench_eigen <set> <row|col> [ids=a-b] [ms=50] [trials=5] [check]
 # set: squares, paper, all, irr, small (squares 4-384), thin (M or N 1-64), grid512, grid4096, MxNxK
 VECLIB_MAXIMUM_THREADS=1 ./build/bench_ext all libxsmm          # column-major, C += A*B
@@ -314,7 +314,8 @@ threads spin for 2^28 timer ticks (11 s at Apple's 24 MHz) and slow the first sh
 `bench/run_openblas_l3.sh` the level-3 routines, `bench/run_openblas_small.sh` the small GEMMs per call
 (`bench_small`), and `tools/openblas_summary.py` prints the tables of
 [What this means for OpenBLAS](#what-this-means-for-openblas). `third_party/build.sh` builds the port from the
-branch `sme2-gemm` of [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS) at a pinned commit;
+branch `sme2-kernels` of [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS) (pull request #6074) at a pinned
+commit;
 `OPENBLAS_SME2_URL=<local clone>` builds it from a local checkout instead.
 
 `bench/run_all.sh <outdir> <label> <args>` waits until the one-minute load is below 4, runs one benchmark and
@@ -338,7 +339,7 @@ load width, strided reads with prefetch, core stores during SME loads).
 | `bench/shapes.h` | shape sets shared by all benchmarks |
 | `docs/` | charts (light and dark SVG), drawn by `tools/plots.py` |
 | `results/ext/` | one thread: LIBXSMM, KleidiAI, Eigen, Accelerate and MTGEMM-A, all shape sets |
-| `results/regular/` | default threading: Accelerate, MTGEMM-A (`threads=0`), Eigen on a thread pool (`bench/run_regular.sh`) |
+| `results/regular/` | default threading: Accelerate, MTGEMM-A (`threads=0`), Eigen on a thread pool (`bench/run_compare.sh`) |
 | `bench/baseline/` | Eigen and OpenBLAS baseline programs and their outputs |
 | `bench/bench_openblas.cpp`, `bench/test_openblas_gemm.c`, `bench/run_openblas.sh` | OpenBLAS GEMM benchmark, GEMM checks, run script |
 | `bench/bench_openblas_l3.c`, `bench/bench_openblas_l3v.c`, `bench/test_openblas_l3.c`, `bench/run_openblas_l3.sh` | SYMM, SYRK, SYR2K, TRMM, TRSM: benchmark, all variants, checks, run script |
@@ -385,13 +386,12 @@ of each run. LIBXSMM and KleidiAI have no multi-threaded SME path and appear onl
   <img alt="GFLOPS and speedup over Accelerate for square sizes 4 to 4096, default threading" src="docs/squares_regular.svg">
 </picture>
 
-- MTGEMM-A is 1.2x-2.0x faster than Accelerate from 192^3 to 512^3: it uses both SME units from 2^22
-  multiply-adds, Accelerate only from about 512^3. Below 64^3 it is slower (0.17x-0.9x).
-- Eigen<sup>3568</sup> is at 0.7x-0.9x of Accelerate from 24^3 to 128^3 in column-major order and 1.05x-1.6x from
-  192^3 up, where it splits a product over both SME units earlier than Accelerate does. Row-major is lower up to
-  128^3 (0.4x-0.75x): those runs are `C = A * B`, which Eigen computes by zeroing C first (see
-  [Where Accelerate is still faster](#where-accelerate-is-still-faster)).
-- Eigen<sup>ec85</sup> splits even small products over 12 threads and runs at 0.1x-0.4x.
+- MTGEMM-A is 1.2x-1.9x faster than Accelerate from 192^3 to 512^3: it uses both SME units from 2^22
+  multiply-adds, Accelerate only from about 512^3. Below 64^3 it is mostly slower (0.2x-0.9x).
+- Eigen<sup>cd1a</sup> is 1.0x-1.2x of Accelerate from 4^3 to 16^3 (1.0x-1.6x row-major), 0.69x-0.85x from 24^3
+  to 128^3 in column-major order, and 1.0x-1.5x from 192^3 up, where it splits a product over both SME units
+  earlier than Accelerate does. Row-major is lower from 24^3 to 128^3 (0.41x-0.70x): those runs are `C = A * B`,
+  which Eigen computes by zeroing C first (see [Where Accelerate is still faster](#where-accelerate-is-still-faster)).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/thin_regular-dark.svg">
@@ -403,11 +403,14 @@ of each run. LIBXSMM and KleidiAI have no multi-threaded SME path and appear onl
   <img alt="Heatmaps of MTGEMM-A speedup over Accelerate at default threading" src="docs/grid_mtgemm_regular.svg">
 </picture>
 
-- MTGEMM-A is slower than Accelerate (below 0.9x) on 10 of 484 grid cells: K = 512 with one side of 32 or less
-  and the other of 512 or more, and the 4 x 4 corner. Eigen<sup>3568</sup> is slower on 29 of 484, all but one of them at K = 512: 14
-  where one side is 16 or less and the other 128-1024, 6 row-major cells where both sides are 64 or less, and 8
-  with one side of 2048 or more (0.82x-0.89x); at the 4 x 4 corner it is 1.0x-1.25x. Its grid is in
-  [Where Accelerate is still faster](#where-accelerate-is-still-faster).
+- MTGEMM-A is slower than Accelerate (below 0.9x) on 11 of 484 grid cells: K = 512 with one side of 16 or less
+  and the other of 256 or more (0.64x-0.88x), and the 4 x 4 corner (0.65x-0.67x). Eigen<sup>cd1a</sup> is slower
+  on 59: 40 at K = 512, 31 of them row-major (`C = A * B`, see
+  [Where Accelerate is still faster](#where-accelerate-is-still-faster)) with one side of 4-32, and 512 x 8 and
+  1024 x 4 row-major at 0.42x-0.45x; 19 at K = 4096, most at 0.85x-0.90x, but row-major 2048 x 32-128 at
+  0.74x-0.78x. At the 4 x 4 corner it is 3.0x Accelerate at K = 512 and 8.7x-9.3x at K = 4096. The branch that was
+  merged (35683b6) had at most one cell below 0.9x at K = 4096 at default threading, so those are new in master; its
+  grid is in [Where Accelerate is still faster](#where-accelerate-is-still-faster).
 
 ### Across sizes and shapes, one thread
 
@@ -421,12 +424,12 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-4). `t
   <img alt="GFLOPS and speedup over Accelerate for square sizes 4 to 4096" src="docs/squares.svg">
 </picture>
 
-- MTGEMM-A is slower than Accelerate for squares below 64^3 (0.16x-0.9x). From 64^3 up it is level or up to
-  1.1x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup, packing)
+- MTGEMM-A is slower than Accelerate for squares below 64^3 (0.2x-0.99x). From 64^3 up it is level or up to
+  1.2x faster. At the small sizes the fixed cost of the SME path (streaming mode, ZA setup, packing)
   dominates.
 - LIBXSMM is the fastest library from 16^3 to 48^3 (up to 2x Accelerate) and falls to 0.3x-0.6x from 2048^3 up.
-- Eigen<sup>3568</sup> is faster than Accelerate at 8^3-16^3 (1.07x-1.62x, its NEON paths for small results), at
-  0.69x-0.93x from 24^3 to 384^3 in column-major order (0.29x-0.9x row-major), and level from 512^3 up.
+- Eigen<sup>cd1a</sup> is faster than Accelerate at 8^3-16^3 (1.07x-1.56x, its NEON paths for small results), at
+  0.68x-0.92x from 24^3 to 384^3 in column-major order (0.37x-0.87x row-major), and at 0.93x-1.15x from 512^3 up.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/thin-dark.svg">
@@ -441,18 +444,20 @@ five trials, the same harness for every library (`results/ext/`, load 1.7-4). `t
   <img alt="Heatmaps of MTGEMM-A speedup over Accelerate over M and N from 4 to 4096 at K 512 and 4096" src="docs/grid_mtgemm.svg">
 </picture>
 
-- On one thread, MTGEMM-A is slower than Accelerate (below 0.9x) on 44 of 484 grid cells and Eigen<sup>3568</sup>
-  on 34. Both lose only at K = 512; MTGEMM-A where one side is 512 or more and the other 16 or less,
-  Eigen<sup>3568</sup> where one side is 4-16 and the other 128-512, in row-major order at 4 x 32 to 32 x 64, and
-  with one side of 64-128 against the other of 1024 or more (0.69x-0.89x). At the 4 x 4 corner Eigen<sup>3568</sup>
-  runs at 99-113 GFLOPS, Accelerate at 12-36 and MTGEMM-A at 19-24.
+- On one thread, MTGEMM-A is slower than Accelerate (below 0.9x) on 47 of 484 grid cells and Eigen<sup>cd1a</sup>
+  on 62. MTGEMM-A loses at K = 512 where one side is 512 or more and the other 64 or less (0.57x-0.89x), and at
+  K = 4096 where one side is 512 and the other 4-64 (0.69x-0.89x). Eigen<sup>cd1a</sup> loses 53 cells at
+  K = 512, 38 of them row-major with one side of 4-128 (0.54x-0.90x), and 9 at K = 4096 (0.87x-0.90x; none for
+  the merged branch). At the 4 x 4 corner Eigen<sup>cd1a</sup> runs at 101-113 GFLOPS, Accelerate at 13-32 and
+  MTGEMM-A at 21-24.
 
-- K = 4096: MTGEMM-A is faster almost everywhere, up to 3.0x where one side is small. The exceptions are a few
-  cells at 0.8x-0.9x: M = 512 with N <= 32 (column-major) and M <= 32 with N = 512 (row-major).
+- K = 4096: MTGEMM-A is faster almost everywhere, up to 2.9x where one side is small. The exceptions are a few
+  cells at 0.7x-0.9x: M = 512 with N <= 64 (column-major) and M <= 32 with N = 512 (row-major).
 - K = 512: MTGEMM-A is at 0.6x-0.9x where one side is small (up to 32) and the other is large (512 and up):
   column-major with small N, row-major with small M. That is the same shape in both orders, because
-  column-major is solved as the transposed row-major problem. The large-by-large region is at 1.0x-1.5x.
-- The 4 x 4 corner is at 0.5x in both orders: a 4 x 4 result does not repay entering streaming mode.
+  column-major is solved as the transposed row-major problem. The large-by-large region is at 1.0x-1.7x.
+- The 4 x 4 corner is at 0.66x in both orders at K = 512: a 4 x 4 result does not repay entering streaming
+  mode (at K = 4096 it is 1.85x).
 
 ### fp32, one thread, row-major (beta = 0)
 
@@ -650,40 +655,41 @@ The blocking, the kernel shape and the x4 loads carry the paper design. The thre
 ## What this means for the Eigen SME backend
 
 This project serves as a demonstration platform for Eigen's SME GEMM backend (`Eigen/src/Core/arch/SME/`): a
-design element is measured here first, then ported. Two Eigen builds appear in the results, labelled with the
-first four hex digits of their commit:
+design element is measured here first, then ported. The elements were ported on the branch
+[`sme-phase4`](https://gitlab.com/tesch1/eigen/-/tree/sme-phase4) and merged into Eigen master with merge request
+[!3164](https://gitlab.com/libeigen/eigen/-/merge_requests/3164) on 2026-09-27. The results use Eigen master at
+commit cd1a734f (**Eigen<sup>cd1a</sup>**), which `third_party/build.sh` pins. The default-threading Eigen build
+runs on a thread pool of one thread per core, as an application would create; Eigen caps a product at the two
+SME units.
 
-- **Eigen<sup>3568</sup>**: the branch [`sme-phase4`](https://gitlab.com/tesch1/eigen/-/tree/sme-phase4) at
-  commit 35683b6, which is merge request [!3164](https://gitlab.com/libeigen/eigen/-/merge_requests/3164) plus
-  the elements ported from this project. It is the Eigen that the comparison is about.
-- **Eigen<sup>ec85</sup>**: Eigen master at commit ec8593a, which contains
-  [!3160](https://gitlab.com/libeigen/eigen/-/merge_requests/3160) but not !3164.
+| threading | workloads (column-major) | Accelerate | MTGEMM-A | Eigen<sup>cd1a</sup> | Eigen<sup>cd1a</sup> / Accelerate | Eigen<sup>cd1a</sup> / MTGEMM-A |
+|---|---|---|---|---|---|---|
+| default threading | M = 64 (IDs 1-6) | 1877 | 2120 | 1785 | 0.95 | 0.84 |
+| default threading | M = 128 (IDs 7-12) | 2506 | 2702 | 2384 | 0.95 | 0.88 |
+| default threading | M = 4096 (IDs 13-18) | 3027 | 3283 | 3332 | 1.10 | 1.02 |
+| default threading | N = 256 (IDs 19-24) | 2475 | 3065 | 2903 | 1.17 | 0.95 |
+| default threading | all 24 | 2437 | 2755 | 2533 | 1.04 | 0.92 |
+| default threading | squares 512-4096 | 2962 | 3406 | 3293 | 1.11 | 0.97 |
+| one thread | M = 64 (IDs 1-6) | 910 | 1094 | 949 | 1.04 | 0.87 |
+| one thread | M = 128 (IDs 7-12) | 1176 | 1381 | 1230 | 1.05 | 0.89 |
+| one thread | M = 4096 (IDs 13-18) | 1449 | 1659 | 1705 | 1.18 | 1.03 |
+| one thread | N = 256 (IDs 19-24) | 1235 | 1550 | 1521 | 1.23 | 0.98 |
+| one thread | all 24 | 1176 | 1404 | 1319 | 1.12 | 0.94 |
+| one thread | squares 512-4096 | 1622 | 1719 | 1712 | 1.06 | 1.00 |
 
-`third_party/build.sh` pins both. Every Eigen number in this README and in the charts comes from one of these two
-commits. The default-threading Eigen builds run on a thread pool of one thread per core, as an application would
-create; Eigen<sup>3568</sup> caps a product at the two SME units, Eigen<sup>ec85</sup> does not.
+GFLOPS, geometric means, fp32, column-major `C.noalias() += A * B`, one session with Accelerate and MTGEMM-A
+(`bench/run_compare.sh`). Default threading: `results/regular/`; one thread: `results/ext/`.
+`tools/eigen_summary.py` prints these tables, the row-major ones and the counts below.
 
-| threading | workloads (column-major) | Accelerate | MTGEMM-A | Eigen<sup>3568</sup> | Eigen<sup>ec85</sup> | Eigen<sup>3568</sup> / Accelerate | Eigen<sup>3568</sup> / MTGEMM-A |
-|---|---|---|---|---|---|---|---|
-| default threading | M = 64 (IDs 1-6) | 1836 | 2153 | 1877 | 746 | 1.02 | 0.87 |
-| default threading | M = 128 (IDs 7-12) | 2368 | 2715 | 2471 | 920 | 1.04 | 0.91 |
-| default threading | M = 4096 (IDs 13-18) | 2903 | 3285 | 3384 | 1582 | 1.17 | 1.03 |
-| default threading | N = 256 (IDs 19-24) | 2472 | 3097 | 2942 | 1093 | 1.19 | 0.95 |
-| default threading | all 24 | 2363 | 2777 | 2607 | 1044 | 1.10 | 0.94 |
-| default threading | squares 512-4096 | 2878 | 3406 | 3310 | 980 | 1.15 | 0.97 |
-| one thread | M = 64 (IDs 1-6) | 935 | 1108 | 982 | 526 | 1.05 | 0.89 |
-| one thread | M = 128 (IDs 7-12) | 1192 | 1388 | 1267 | 825 | 1.06 | 0.91 |
-| one thread | M = 4096 (IDs 13-18) | 1473 | 1684 | 1706 | 1538 | 1.16 | 1.01 |
-| one thread | N = 256 (IDs 19-24) | 1245 | 1576 | 1530 | 1137 | 1.23 | 0.97 |
-| one thread | all 24 | 1196 | 1421 | 1343 | 933 | 1.12 | 0.94 |
-| one thread | squares 512-4096 | 1633 | 1735 | 1709 | 1588 | 1.05 | 0.98 |
-
-GFLOPS, geometric means, fp32, column-major `C.noalias() += A * B`. Default threading: `results/regular/`; one
-thread: `results/ext/`.
-
-- **Default threading:** Eigen<sup>3568</sup> is 1.10x Accelerate on the paper's workloads and 1.15x on
-  squares, at 0.94x of MTGEMM-A. Eigen<sup>ec85</sup> runs 12 threads on two SME units and reaches 0.3x-0.45x.
-- **One thread:** Eigen<sup>3568</sup> is 1.12x Accelerate on the paper's workloads and 1.05x on squares.
+- **Default threading:** Eigen<sup>cd1a</sup> is 1.04x Accelerate on the paper's workloads and 1.11x on
+  squares, at 0.92x-0.97x of MTGEMM-A; at M = 64 and 128 it is 0.95x of Accelerate.
+- **One thread:** Eigen<sup>cd1a</sup> is 1.12x Accelerate on the paper's workloads and 1.06x on squares, at
+  0.94x-1.00x of MTGEMM-A.
+- **Row-major** (`C = A * B`): 1.05x (default) and 1.17x (one thread) of Accelerate on the paper's workloads,
+  1.02x and 0.99x on squares.
+- Eigen master before the merge (ec8593a) split even small products over all 12 threads and reached 0.3x-0.45x
+  of Accelerate at default threading; the branch measured 1.10x on the paper's workloads at default threading,
+  within 3% of master now.
 
 ### What was ported
 
@@ -714,7 +720,7 @@ Each element below came from this project's ablation and was measured in Eigen b
    8 x 8 (float) with the whole result in registers, instead of Eigen's coeff-based product, which runs one
    dependent FMA chain per result (4 x 4 x 4096: 9 -> 113 GFLOPS).
 
-Starting from !3164, the first five moved the paper's workloads from 968 to 1352 GFLOPS on one thread (1.40x);
+Measured on the branch while porting, starting from the first version of !3164: the first five moved the paper's workloads from 968 to 1352 GFLOPS on one thread (1.40x);
 6-8 took default threading from 0.94x to 1.09x of Accelerate. 9-11 took the one-thread grid cells below 0.9x
 of Accelerate from 94 to 34 of 484 (85 to 29 at default threading), and made M, N = 8 and 16 1.4x-3.2x faster
 than Accelerate at K = 4096.
@@ -725,51 +731,52 @@ than Accelerate at K = 4096.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/grid_eigen-dark.svg">
-  <img alt="Heatmaps of Eigen 3568 speedup over Accelerate on one thread" src="docs/grid_eigen.svg">
+  <img alt="Heatmaps of Eigen cd1a speedup over Accelerate on one thread" src="docs/grid_eigen.svg">
 </picture>
 
 </td></tr><tr><td>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/grid_eigen_regular-dark.svg">
-  <img alt="Heatmaps of Eigen 3568 speedup over Accelerate at default threading" src="docs/grid_eigen_regular.svg">
+  <img alt="Heatmaps of Eigen cd1a speedup over Accelerate at default threading" src="docs/grid_eigen_regular.svg">
 </picture>
 
 </td></tr></table>
 
 Gain from the second SME unit over one thread, squares, column-major:
 
-  | size | Accelerate | MTGEMM-A | Eigen<sup>3568</sup> |
+  | size | Accelerate | MTGEMM-A | Eigen<sup>cd1a</sup> |
   |---|---|---|---|
-  | 256^3 | 1.00 | 1.70 | 1.65 |
-  | 384^3 | 1.01 | 1.88 | 1.74 |
-  | 512^3 | 1.42 | 1.91 | 1.79 |
-  | 1024^3 | 1.74 | 2.01 | 1.95 |
-  | 4096^3 | 1.79 | 1.93 | 1.97 |
+  | 256^3 | 1.00 | 1.68 | 1.42 |
+  | 384^3 | 1.00 | 1.90 | 1.61 |
+  | 512^3 | 1.46 | 1.92 | 1.86 |
+  | 1024^3 | 1.77 | 2.03 | 1.93 |
+  | 4096^3 | 1.80 | 1.94 | 1.94 |
 
 - **`C = A * B` on small and short products.** Eigen evaluates `C = A * B` by zeroing C with core stores and then
   accumulating into it; the SME unit reads the freshly written lines slowly (about 40 ns per KB on the M4). The
-  storage order does not matter. One thread, float, GFLOPS:
+  storage order does not matter. Eigen<sup>cd1a</sup>, one thread, float, GFLOPS (row-major runs for
+  `C = A*B` and beta = 0, column-major for `C += A*B` and beta = 1):
 
   | n | Eigen `C = A*B` | Eigen `C += A*B` | Accelerate beta = 0 | Accelerate beta = 1 |
   |---|---|---|---|---|
-  | 32 | 173 | 258 | 279 | 300 |
-  | 64 | 421 | 790 | 1011 | 930 |
-  | 128 | 919 | 1255 | 1549 | 1430 |
-  | 192 | 1215 | 1282 | 1681 | 1596 |
+  | 32 | 114 | 247 | 296 | 303 |
+  | 64 | 432 | 786 | 1005 | 920 |
+  | 128 | 920 | 1257 | 1547 | 1429 |
+  | 192 | 1183 | 1263 | 1671 | 1590 |
 
   Accelerate is faster with beta = 0, since it does not read C at all. The row-major runs in this README use
   `C = A * B` (as the paper does) and the column-major runs `C += A * B`, which is why Eigen looked weaker in
   row-major order. The fix is an overwrite mode in which the first depth block stores C without reading it;
   that changes Eigen's generic product evaluation, so it has not been ported yet.
-- **Small products.** Below 192^3 Eigen<sup>3568</sup> is at 0.7x-0.9x of Accelerate even with `C += A * B`: the
+- **Small products.** From 24^3 to 192^3 Eigen<sup>cd1a</sup> is at 0.68x-0.88x of Accelerate even with `C += A * B`: the
   SME path pays a fixed cost for streaming mode and ZA setup (Eigen's NEON path for small blocks keeps it level at
   12^3-16^3).
-- **A side of 4 against a mid-size other side, K = 512.** With one side of 4-16 and the other of 128-512, Eigen is
-  at 0.66x-0.9x (0.66x-0.77x at 4 columns, which the NEON packer and one predicated tile handle). At K = 4096 the
-  same shapes are at 0.92x-1.32x of Accelerate.
+- **Four columns against a mid-size M, K = 512.** In column-major order with N = 4 and M = 128-512, Eigen is at
+  0.63x-0.77x of Accelerate (four columns go to the NEON packer and one predicated tile); with N = 8-16 the same
+  M is at 0.9x-1.3x. At K = 4096 these shapes are at 0.87x-1.27x of Accelerate.
 - **Transposing a single deep panel.** At 32 x 32 x 4096 (column-major) packing the right-hand side takes 62% of
-  the product: Eigen reaches 686 GFLOPS, MTGEMM-A 1126, Accelerate 736. The ZA transposer slows from 245 to 158 GB/s
+  the product: Eigen reaches 600 GFLOPS, MTGEMM-A 1115, Accelerate 737. The ZA transposer slows from 245 to 158 GB/s
   at source strides of 16 KB or more. MTGEMM-A packs while it computes (online packing), so it hides this cost;
   Eigen packs in a separate pass.
 
@@ -1008,38 +1015,28 @@ OpenBLAS `develop` (commit 63d7f22, `TARGET=VORTEXM4`) has two SME GEMM paths on
   2048 for fp32), pack B with a scalar gather, store ZA one row at a time, keep the packed blocks in `static`
   arrays, and run on one thread whatever the thread count.
 
-The branch `sme2-gemm` on [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS) ports MTGEMM-A into that second
-path: on SME2 hardware with a 512-bit streaming vector length (checked at run time), `sme_sgemm_kernel` and
-`sme_dgemm_kernel` run the design of this project, and the existing code stays as the fallback. It is eight commits
-on `develop` (539ca18), intended as one pull request:
+Pull request [OpenMathLib/OpenBLAS#6074](https://github.com/OpenMathLib/OpenBLAS/pull/6074) (branch
+`sme2-kernels` on [tesch1/OpenBLAS](https://github.com/tesch1/OpenBLAS), one commit on `develop` 539ca18) ports
+MTGEMM-A into that second path and puts the other level-3 routines on SME2 the usual OpenBLAS way. It replaces
+[#6072](https://github.com/OpenMathLib/OpenBLAS/pull/6072), which ran them through hooks in the interface files.
 
-1. `kernel/arm64/sme2_gemm_impl.h`, included by both kernels: the model blocking, the ZA transposition of A,
-   online packing of B, the 1 x NT tile kernel with the half-width and edge kernels, four-row ZA moves for C,
-   L2 prefetch, all four transpose cases (a transposed operand is packed through ZA), and one thread per SME unit
-   through OpenBLAS's own thread server (`exec_blas`), from 2^22 multiply-adds. It is C with ACLE intrinsics
-   and the few inline-assembly blocks of `src/mtgemm.cpp`; `#pragma clang attribute` enables SME2 for these
-   functions only, so no build flags change. The SME1 direct SGEMM steps aside for the row-major problems where
-   the port is faster.
-2. CPU detection: the M4 Pro/Max (`hw.cpufamily` 0x17d5b93a) was not recognised, so a build without `TARGET`
-   on this machine fell back to generic ARMv8 without SME. Later Apple cores with SME now map to VORTEXM4.
-3. Small problems: compile-time variants of the ZA transposition (a runtime stride and scale cost 50-80 ns per
-   A panel), a stack workspace below 64 KB, NEON below 20^3 multiply-adds, and the SME1 direct SGEMM for
-   row-major problems below 56^3, where it is faster.
-4. Transposed operands: an A with contiguous columns (`op(B) = B^T` in column-major) was copied one dependent
-   load per depth step, at the SME unit's load latency (NT 64 x 64 x 1024: 83 GFLOPS, now 1463); alpha != 1 now
-   takes the four-row ZA transposition too.
-5. `interface/sme_level3.h`: SYMM, SYRK, SYR2K, TRMM and TRSM on the SME GEMM kernel (see below).
-6. Small problems, measured per call from 4^3 to 256^3 against develop and MTGEMM-A (see below): a per-thread
-   packing buffer instead of the stack (SME stores next to the core's own stack lines cost up to 230 ns per
-   call), the half-width kernel with predicates for every column tail wider than one vector, four-row ZA moves
-   for partial-width C, and refined thresholds: row-major fp32 below 64^3 stays on the SME1 direct SGEMM, fp64
-   below 4000 multiply-adds takes NEON, and fp64 below 5000 with M and N multiples of 16 keeps the existing SME
-   kernel. An `__arm_preserves("za")` attribute added in commit 4 cost 160 ns per call and is removed.
-7. TRSM with the triangle on the right: its base solve read and wrote B column by column in the inner loop; it
-   now solves 16 rows of B in a local tile (fp32, n = 1024: 239-247 -> 666-672 GFLOPS).
-8. TRSM with the triangle on the left: its base solve gathered each row of a 16-column tile with one strided
-   scalar per element; blocks of 4 x 4 (fp32) or 2 x 2 (fp64) now move with NEON transposes (fp32, n = 1024:
-   489-494 -> 575-581 GFLOPS; 4096: 643 -> 1033).
+1. **SME2 GEMM:** on SME2 hardware with a 512-bit streaming vector length (checked at run time),
+   `sme_sgemm_kernel` and `sme_dgemm_kernel` run the design of this project (`kernel/arm64/sme2_gemm_impl.h`):
+   the model blocking, the ZA transposition of A, online packing of B, the 1 x NT tile kernel with the
+   half-width and edge kernels, four-row ZA moves for C, L2 prefetch, all four transpose cases, and one thread per
+   SME unit through OpenBLAS's own thread server (`exec_blas`) from 2^22 multiply-adds. It is C with ACLE
+   intrinsics and the few inline-assembly blocks of `src/mtgemm.cpp`; `#pragma clang attribute` enables SME2 for
+   these functions only, so no build flags change. Problems below 3000 multiply-adds run in plain loops inside
+   the kernel, so `interface/gemm.c` is unchanged. The existing SME kernels stay as the fallback.
+2. **Level-3 driver kernels:** `KERNEL.VORTEXM4` and `param.h` give the level-3 driver SME2 kernels
+   (`GEMM_UNROLL_M` 64, one row of ZA tiles; `GEMM_UNROLL_N` one streaming vector): a GEMM/TRMM kernel that
+   accumulates C in ZA, a TRSM kernel (LN, LT, RN, RT) that solves each block in ZA after its update, and M-side
+   copies for GEMM, SYMM, TRMM and TRSM. SYMM, SYRK, SYR2K, TRMM and TRSM, and the LAPACK routines on the
+   driver (GETRF, POTRF, TRTRI, ...), run on them with no change to the interface files.
+3. **Threads:** the cores of a performance cluster share its SME unit, so `num_cpu_avail()` caps level-3 BLAS
+   and LAPACK at the number of SME units (real precision on VORTEXM4 only).
+4. **Detection:** the M4 Pro (`hw.cpufamily` 0x17d5b93a) was not recognised, so a build without `TARGET` on this
+   machine fell back to generic ARMv8 without SME; later Apple cores with SME now map to VORTEXM4.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/squares_openblas_regular-dark.svg">
@@ -1053,47 +1050,48 @@ on `develop` (539ca18), intended as one pull request:
 
 | shapes | order | precision, threads | Accelerate | OpenBLAS develop | OpenBLAS + port | MTGEMM-A | port / develop | port / MTGEMM-A |
 |---|---|---|---|---|---|---|---|---|
-| paper's 24 | row | fp32, one thread | 1127 | 707 | **1389** | 1404 | 1.97 | 0.99 |
-| squares 512-4096 | row | fp32, one thread | 1691 | 1129 | **1747** | 1748 | 1.55 | 1.00 |
-| paper's 24 | col | fp32, one thread | 1185 | 766 | **1391** | 1408 | 1.82 | 0.99 |
-| squares 512-4096 | col | fp32, one thread | 1624 | 1342 | **1721** | 1727 | 1.28 | 1.00 |
-| paper's 24 | row | fp32, default | 2364 | 702 | **2709** | 2733 | 3.86 | 0.99 |
-| squares 512-4096 | row | fp32, default | 3176 | 1135 | **3444** | 3460 | 3.03 | 1.00 |
-| paper's 24 | col | fp32, default | 2445 | 766 | **2731** | 2770 | 3.56 | 0.99 |
-| squares 512-4096 | col | fp32, default | 3030 | 1346 | **3403** | 3411 | 2.53 | 1.00 |
-| paper's 24 | row | fp64, one thread | 321 | 275 | **423** | 426 | 1.54 | 0.99 |
-| squares 512-4096 | row | fp64, one thread | 429 | 381 | **462** | 462 | 1.21 | 1.00 |
-| paper's 24 | col | fp64, one thread | 344 | 283 | **406** | 409 | 1.44 | 0.99 |
-| squares 512-4096 | col | fp64, one thread | 410 | 372 | **460** | 459 | 1.24 | 1.00 |
-| squares 4-384 | row | fp32, one thread | 247 | 202 | **210** | 179 | 1.04 | 1.17 |
-| squares 4-384 | col | fp32, one thread | 254 | 70 | **225** | 167 | 3.21 | 1.35 |
-| squares 4-384 | row | fp32, default | 248 | 190 | **230** | 199 | 1.21 | 1.16 |
-| squares 4-384 | col | fp32, default | 256 | 70 | **243** | 185 | 3.47 | 1.31 |
-| squares 4-384 | row | fp64, one thread | 123 | 56 | **112** | 89 | 2.00 | 1.26 |
-| squares 4-384 | col | fp64, one thread | 124 | 51 | **111** | 83 | 2.18 | 1.33 |
-| thin (15) | row | fp32, one thread | 198 | 118 | **268** | 273 | 2.27 | 0.98 |
-| thin (15) | col | fp32, one thread | 197 | 49 | **263** | 270 | 5.33 | 0.97 |
-| thin (15) | row | fp32, default | 298 | 118 | **412** | 422 | 3.48 | 0.98 |
-| thin (15) | col | fp32, default | 298 | 49 | **421** | 427 | 8.66 | 0.98 |
-| thin (15) | row | fp64, one thread | 103 | 40 | **125** | 112 | 3.11 | 1.12 |
-| thin (15) | col | fp64, one thread | 103 | 39 | **126** | 112 | 3.24 | 1.12 |
+| paper's 24 | row | fp32, one thread | 1122 | 706 | **1391** | 1405 | 1.97 | 0.99 |
+| squares 512-4096 | row | fp32, one thread | 1692 | 1117 | **1742** | 1747 | 1.56 | 1.00 |
+| paper's 24 | col | fp32, one thread | 1178 | 765 | **1392** | 1412 | 1.82 | 0.99 |
+| squares 512-4096 | col | fp32, one thread | 1605 | 1336 | **1717** | 1722 | 1.29 | 1.00 |
+| paper's 24 | row | fp32, default | 2370 | 700 | **2725** | 2754 | 3.89 | 0.99 |
+| squares 512-4096 | row | fp32, default | 3088 | 1135 | **3463** | 3460 | 3.05 | 1.00 |
+| paper's 24 | col | fp32, default | 2442 | 767 | **2739** | 2776 | 3.57 | 0.99 |
+| squares 512-4096 | col | fp32, default | 2922 | 1329 | **3404** | 3408 | 2.56 | 1.00 |
+| paper's 24 | row | fp64, one thread | 319 | 275 | **425** | 425 | 1.55 | 1.00 |
+| squares 512-4096 | row | fp64, one thread | 422 | 377 | **463** | 462 | 1.23 | 1.00 |
+| paper's 24 | col | fp64, one thread | 344 | 281 | **407** | 411 | 1.45 | 0.99 |
+| squares 512-4096 | col | fp64, one thread | 390 | 371 | **462** | 458 | 1.25 | 1.01 |
+| squares 4-384 | row | fp32, one thread | 253 | 193 | **213** | 203 | 1.10 | 1.05 |
+| squares 4-384 | col | fp32, one thread | 258 | 70 | **208** | 185 | 2.97 | 1.13 |
+| squares 4-384 | row | fp32, default | 252 | 196 | **218** | 221 | 1.11 | 0.99 |
+| squares 4-384 | col | fp32, default | 259 | 70 | **226** | 203 | 3.25 | 1.12 |
+| squares 4-384 | row | fp64, one thread | 125 | 55 | **108** | 101 | 1.98 | 1.07 |
+| squares 4-384 | col | fp64, one thread | 124 | 51 | **101** | 90 | 1.97 | 1.12 |
+| thin (15) | row | fp32, one thread | 195 | 116 | **265** | 269 | 2.29 | 0.99 |
+| thin (15) | col | fp32, one thread | 198 | 49 | **263** | 270 | 5.40 | 0.97 |
+| thin (15) | row | fp32, default | 293 | 118 | **420** | 421 | 3.58 | 1.00 |
+| thin (15) | col | fp32, default | 300 | 48 | **416** | 428 | 8.61 | 0.97 |
+| thin (15) | row | fp64, one thread | 103 | 40 | **124** | 112 | 3.09 | 1.10 |
+| thin (15) | col | fp64, one thread | 103 | 39 | **124** | 112 | 3.16 | 1.11 |
 
 GFLOPS, geometric means, one session (`results/openblas/`, load below 4). Row-major runs use beta = 0,
 column-major runs beta = 1. "Default" is each library's own thread count: OpenBLAS with its pool of 12 threads,
 MTGEMM-A with `threads=0`, Accelerate unrestricted.
 
-- **Paper's workloads and squares:** the port is 0.99x-1.00x of MTGEMM-A in every configuration, 1.2x-2.0x the
-  current OpenBLAS kernels on one thread and 2.5x-3.9x at default threading. In fp64 it is 1.0x-1.3x Accelerate.
-- **Small squares (4-384, geometric means):** 1.16x-1.35x MTGEMM-A and 1.04x-3.47x develop; 5%-15% below
+- **Paper's workloads and squares:** the port is 0.99x-1.01x of MTGEMM-A in every configuration, 1.2x-2.0x
+  the current OpenBLAS kernels on one thread and 2.6x-3.9x at default threading. In fp64 it is 1.1x-1.3x
+  Accelerate.
+- **Small squares (4-384, geometric means):** 0.99x-1.13x MTGEMM-A and 1.10x-3.25x develop; 13%-19% below
   Accelerate. Per call see below.
-- **Thin shapes:** 0.97x-0.98x of MTGEMM-A in fp32 over the whole set (sessions vary between 0.95x and 1.05x:
-  the shapes where the SME side has 4-16 rows against 4096 x 4096 are memory-bound; timed in one process the two
-  are within 2%). In fp64 the port is 1.12x MTGEMM-A, from 4096 x N x 4096 with N = 1-16 (for example N = 4: 64
-  against 40 GFLOPS); the cause is not known.
+- **Thin shapes:** 0.97x-1.00x of MTGEMM-A in fp32 (the shapes where the SME side has 4-16 rows against
+  4096 x 4096 are memory-bound, and sessions vary by a few percent there). In fp64 the port is 1.10x-1.11x
+  MTGEMM-A, from 4096 x N x 4096 with N = 1-16; the cause is not known.
 - **Correctness:** `test_openblas_gemm` compares 12,448 calls with a long-double reference: both orders, all
   four transpose cases, four alpha/beta pairs, sizes 1-1500 with tails, padded leading dimensions, on 1 and 12
-  threads. A Homebrew-style build (Apple clang, `DYNAMIC_ARCH=1`, `USE_OPENMP=1`) passes the same checks and
-  selects the port at run time on this machine (core `vortexm4`), so a Homebrew bottle would carry it.
+  threads. The port passes all of them. A Homebrew-style build (Apple clang, `DYNAMIC_ARCH=1`, `USE_OPENMP=1`)
+  passes the same checks and selects the port at run time on this machine (core `vortexm4`), so a Homebrew
+  bottle would carry it.
 
 ### Small GEMMs per call
 
@@ -1104,76 +1102,82 @@ column-major beta = 1 (`results/openblas/small_*.txt`, `bench/run_openblas_small
 
 | order, precision | develop / port | MTGEMM-A / port | sizes where the port is faster than MTGEMM-A |
 |---|---|---|---|
-| row-major fp32 | 0.95x-1.40x | 0.95x-2.14x | 47 of 54 |
-| row-major fp64 | 0.98x-4.08x | 0.93x-5.63x | 48 of 54 |
-| column-major fp32 | 1.76x-14.6x | 0.95x-7.77x | 45 of 54 |
-| column-major fp64 | 0.99x-7.61x | 0.93x-7.03x | 45 of 54 |
+| row-major fp32 | 0.97x-1.43x | 0.87x-1.72x | 41 of 54 |
+| row-major fp64 | 0.99x-5.34x | 0.54x-4.66x | 43 of 54 |
+| column-major fp32 | 1.76x-15.6x | 0.61x-4.82x | 31 of 54 |
+| column-major fp64 | 1.00x-9.00x | 0.60x-5.79x | 41 of 54 |
 
-(A ratio above 1 means the port is faster.) The ratios below 1.0 against develop are sizes where both libraries
-run the same code: row-major fp32 below 64^3 runs develop's SME1 direct SGEMM in both, and fp64 16^3 its
-existing SME kernel. That direct kernel allocates a scratch copy on every call, and its speed depends on where
-the allocation lands: in `bench_openblas` develop itself gives 82-137 GFLOPS at 24^3 and 230-400 at 32^3 from
-process to process. Against MTGEMM-A the port is within 7% at every size and faster at most small ones, because
-it hands the smallest problems to NEON and the older kernels.
+(A ratio above 1 means the port is faster.) Against develop the port is at 0.97x or better at every size; the
+lowest ratios are sizes where both run the same code (row-major fp32 below 64^3 runs develop's SME1 direct SGEMM
+in both). Against MTGEMM-A the port is faster at most small sizes, because below 3000 multiply-adds its kernel
+runs plain loops instead of entering streaming mode, but slower at some sizes from 14^3 to 96^3: fp64 14^3
+(0.54x row-major, 0.60x column-major) and 15^3 (0.72x column-major), fp32 column-major 14^3-17^3
+(0.61x-0.78x), and 0.80x-0.90x at 13 sizes from 17^3 to 96^3. #6072 sent problems below 20^3 to NEON in `interface/gemm.c` and was
+faster there ([its comparison](https://github.com/OpenMathLib/OpenBLAS/pull/6074)).
 
 ### SYMM, SYRK, SYR2K, TRMM and TRSM
 
 On SME targets these routines ran on the NEON kernels of the level-3 driver (VORTEXM4 inherits the Neoverse N1
-kernels), at about 110 GFLOPS in fp32, apart from fp32 SME1 direct kernels for some row-major cases. Commit 5
-splits the symmetric or triangular dimension recursively, as recursive BLAS formulations do: the off-diagonal
-blocks are GEMM calls on the SME kernel, so they get the model blocking and both SME units. Diagonal blocks of at
-most 64 run as one GEMM on a full copy of the block (SYMM, SYRK, SYR2K, TRMM). TRSM solves blocks of at most 32
-by substitution, in C that the compiler vectorizes, so that every solve keeps the arithmetic of substitution; the
-generic TRSM kernel of these targets runs at 10-16 GFLOPS on such thin blocks. Real single and double precision,
-every side, uplo, trans and diag, from 2 x 10^5 multiply-adds (at 48^3 the NEON path is still faster for TRMM).
+kernels), at about 110 GFLOPS in fp32, apart from fp32 SME1 direct kernels for some row-major cases. #6074 gives
+the driver SME2 kernels (GEMM/TRMM with C in ZA, TRSM solving each block in ZA, SME2 copies for the M side) and
+caps level-3 threads at the number of SME units, so these routines, and the LAPACK routines built on the driver,
+use the SME units for real single and double precision.
 
-| n = 1024 | one thread: Accelerate | OpenBLAS develop | OpenBLAS + port | default: Accelerate | OpenBLAS develop | OpenBLAS + port |
-|---|---|---|---|---|---|---|
-| fp32 GEMM | 1583 | 1377 | **1763** | 2885 | 1125 | **3600** |
-| fp32 SYMM | 1559 | 115 | **1318** | 2732 | 376 | **2350** |
-| fp32 SYRK | 1758 | 108 | **1317** | 2845 | 327 | **2003** |
-| fp32 SYR2K | 1384 | 110 | **1329** | 2811 | 224 | **1966** |
-| fp32 TRMM | 1537 | 112 | **1107** | 2643 | 203 | **1648** |
-| fp32 TRSM | 791 | 99 | **584** | 1589 | 171 | **742** |
-| fp64 GEMM | 386 | 385 | **460** | 791 | 294 | **930** |
-| fp64 SYMM | 410 | 58 | **398** | 657 | 123 | **790** |
-| fp64 SYRK | 403 | 55 | **387** | 696 | 130 | **749** |
-| fp64 SYR2K | 391 | 55 | **374** | 681 | 172 | **666** |
-| fp64 TRMM | 433 | 57 | **358** | 820 | 132 | **626** |
-| fp64 TRSM | 265 | 53 | **257** | 561 | 127 | **373** |
+| n = 1024 | one thread: Accelerate | develop | #6074 | #6072 | default: Accelerate | develop | #6074 | #6072 |
+|---|---|---|---|---|---|---|---|---|
+| fp32 GEMM | 1619 | 1418 | **1785** | 1763 | 2979 | 1338 | **3656** | 3600 |
+| fp32 SYMM | 1571 | 113 | **1485** | 1318 | 2764 | 395 | **2781** | 2350 |
+| fp32 SYRK | 1764 | 107 | **1327** | 1317 | 2801 | 315 | **1738** | 2003 |
+| fp32 SYR2K | 1718 | 108 | **1415** | 1329 | 2873 | 287 | **2345** | 1966 |
+| fp32 TRMM | 1564 | 110 | **820** | 1107 | 2645 | 295 | **1638** | 1648 |
+| fp32 TRSM | 802 | 97 | **700** | 584 | 1612 | 279 | **1336** | 742 |
+| fp64 GEMM | 302 | 386 | **468** | 460 | 813 | 313 | **944** | 930 |
+| fp64 SYMM | 411 | 57 | **375** | 398 | 750 | 202 | **764** | 790 |
+| fp64 SYRK | 415 | 54 | **359** | 387 | 600 | 201 | **567** | 749 |
+| fp64 SYR2K | 401 | 54 | **370** | 374 | 621 | 188 | **713** | 666 |
+| fp64 TRMM | 441 | 56 | **269** | 358 | 870 | 184 | **570** | 626 |
+| fp64 TRSM | 269 | 52 | **258** | 257 | 572 | 179 | **523** | 373 |
 
 GFLOPS, column-major, lower and left where they apply, beta = 1 (`results/openblas/l3_*.txt`,
-`bench/run_openblas_l3.sh`; flops 2 n^3 for GEMM, SYMM, SYR2K and n^3 for SYRK, TRMM, TRSM).
+`bench/run_openblas_l3.sh`; flops 2 n^3 for GEMM, SYMM, SYR2K and n^3 for SYRK, TRMM, TRSM). The #6072 columns
+are from an earlier session (the previous version of this README); its level-3 routines ran on the SME GEMM
+kernel through recursive blocking in the interface files.
 
-- At n = 1024, SYMM, SYRK, SYR2K and TRMM are 10x-12x faster than before on one thread in fp32 and 6x-7x in
-  fp64, at 0.72x-0.96x of Accelerate in fp32 and 0.83x-0.97x in fp64; at default threading 0.62x-1.20x of
-  Accelerate. From n = 2048 they are 0.74x-1.13x of Accelerate (1.61x for fp32 SYRK at 2048 at
-  default threads, where Accelerate drops to 1261 GFLOPS). None is slower than develop at any size from 64
-  to 4096 (below the threshold both take the same path).
-- TRSM is 5.9x (fp32) and 4.8x (fp64) faster than before on one thread at n = 1024, at 0.74x and 0.97x of
-  Accelerate; from n = 1024 it is 0.74x-1.14x of Accelerate on one thread and 0.47x-1.10x at default threading,
-  where its base solves still run on one thread. Commits 7 and 8 made the base solves work on local tiles
-  (right side: 16 rows of B; left side: 16 columns, moved with NEON transposes): over the variants at n = 1024,
-  fp32 673-696 GFLOPS with the triangle on the right and 577-591 on the left (Accelerate 840-949 and 791-879),
-  fp64 273-275 and 253-258 (Accelerate 207-252 and 263-290).
+- At n = 1024 on one thread, SYMM, SYRK, SYR2K, TRMM and TRSM are 7x-13x faster than develop in fp32 and 5x-7x in
+  fp64. Against Accelerate, SYMM, SYRK, SYR2K and TRSM are at 0.75x-0.96x; TRMM is at 0.52x (fp32) and 0.61x
+  (fp64). From n = 2048 they are 0.65x-1.18x of Accelerate. At default threading the range at n = 1024 is
+  0.62x-1.15x (fp32 SYRK 1.66x at 2048, where Accelerate drops). The port is faster than develop at every size from
+  64 to 4096, in every routine (1.17x at worst, fp64 SYR2K at 64 at default threading). On one thread below
+  n = 512 it is at 0.12x-0.62x of Accelerate.
+- Against #6072 at n = 1024: TRSM is faster (fp32 1.2x on one thread, 1.8x at default threading, where its
+  solves now run on the driver's threads; fp64 equal and 1.4x). fp32 SYMM and SYR2K are faster (1.07x-1.19x).
+  TRMM is slower on one thread (fp32 820 against 1107, fp64 269 against 358) and about equal at default
+  threading in fp32. SYRK is equal on one thread in fp32 and slower in fp64 and at default threading (fp32 1738
+  against 2003); fp64 SYMM is 0.94x-0.97x.
 - Over every variant at n = 1024 (4 for SYMM, SYRK and SYR2K, 16 for TRMM and TRSM, `results/openblas/l3v_*.txt`),
-  fp32 one thread: SYMM 1323-1554 GFLOPS, SYRK 1280-1419, SYR2K 1298-1398, TRMM 1056-1320 (develop: 85-120,
-  Accelerate: 1358-1704); sessions differ by up to 6% for these.
+  fp32 one thread: SYMM 1499-1526 GFLOPS, SYRK 1051-1383, SYR2K 1123-1409, TRMM 779-889, TRSM 656-884 (develop:
+  94-113, Accelerate: 793-1789); fp64: SYMM 392-408, SYRK 325-370, SYR2K 332-376, TRMM 270-315, TRSM 242-300
+  (develop: 51-56, Accelerate: 239-447).
+- Accelerate's one-thread DGEMM at n = 1024 gives 302 GFLOPS in this sequence of runs (361-400 when run alone),
+  so the 1.55x of the port there is partly Accelerate's dip.
 - `test_openblas_l3` checks 2,816 calls against long-double references: both orders, every side, uplo, trans
-  and diag, four alpha/beta pairs, sizes around the recursion thresholds, padded leading dimensions, 1 and 12
-  threads. The unused triangle of A (and a unit diagonal) holds NaN, and every element of B or C outside the
-  result must come back bit for bit.
+  and diag, four alpha/beta pairs, padded leading dimensions, 1 and 12 threads. The unused triangle of A (and a
+  unit diagonal) holds NaN, and every element of B or C outside the result must come back bit for bit. The port
+  passes all of them.
 
 ### What is not ported yet
 
-- TRSM at default threading: the base solves run on one thread (see above). Running them in parallel over the
-  columns (left side) or rows (right side) of B is the next step.
+- Small GEMMs: #6074 trails MTGEMM-A at some sizes from 14^3 to 96^3 (see above); #6072 handled them better.
+- TRMM: 0.52x-0.61x of Accelerate on one thread at n = 1024, and slower than #6072 there.
 - Complex GEMM (`sme_cgemm_kernel`, `sme_zgemm_kernel`) and the complex level-3 routines are unchanged.
-- Only SVL 512 is supported; other vector lengths and GCC take the existing code. The SME2 path needs Apple
-  clang 17 (Xcode 16.3) or LLVM 18. The thresholds and the model parameters (8 MB L2 budget, 16 KB pages, 160
-  TLB entries) are M4 Pro measurements; M4 and M5 have the same SME2 unit and vector length but were not tested.
-- The pull request has not been opened. OpenBLAS has no written policy for AI-assisted contributions; its
-  maintainer accepts them case by case ([#6035](https://github.com/OpenMathLib/OpenBLAS/issues/6035)).
+- Only SVL 512 is supported; other vector lengths and GCC builds keep the existing kernels. The SME2 path needs
+  Apple clang 17 (Xcode 16.3) or LLVM 18. The thresholds, blocking and thread cap are M4 Pro measurements; M4,
+  M5, M5 Pro/Max, M6 and non-Apple SME2 hardware were not tested (M5 and later have a different SME arrangement
+  and need their own measurements). On them the SME2 path runs only if the core reports SME2 and a 512-bit
+  vector length.
+- The pull request says that AI coding tools helped to prepare it. OpenBLAS has no written policy for
+  AI-assisted contributions; its maintainer accepts them case by case
+  ([#6035](https://github.com/OpenMathLib/OpenBLAS/issues/6035)).
 
 ## Limitations
 
@@ -1209,8 +1213,8 @@ GFLOPS, column-major, lower and left where they apply, beta = 1 (`results/openbl
 - AMX backend: a small-matrix path (M, N below 48, where packing and edge tiles cost most of the time),
   mixed precision (bf16/fp16 into fp32, available in AMX on M2), and a check on M1 (not supported now, see
   [AMX backend (Apple Vision Pro, M2)](#amx-backend-apple-vision-pro-m2)).
-- OpenBLAS: submit the port; then TRSM (a faster base solve), complex GEMM and other vector lengths (see
-  [What is not ported yet](#what-is-not-ported-yet)).
+- OpenBLAS: the review of #6074; then the small sizes where it trails MTGEMM-A, TRMM, complex GEMM and other
+  vector lengths (see [What is not ported yet](#what-is-not-ported-yet)).
 
 ## References
 

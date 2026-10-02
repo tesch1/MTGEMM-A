@@ -1,18 +1,18 @@
-# 2026-09-28 00:03:48 load before: { 2.41 2.57 2.74 } VECLIB_MAXIMUM_THREADS=1
+# 2026-10-01 21:23:46 load before: { 2.28 2.30 2.33 } VECLIB_MAXIMUM_THREADS=1
 # thin col openblas f32 beta=1 core=VORTEXM4 threads=12 config=OpenBLAS 0.3.34.dev NO_LAPACK NO_LAPACKE NO_AFFINITY VORTEXM4 MAX_THREADS=12
  0     1  4096  4096      6  err/sqrtK=0.0e+00
  0     4  4096  4096     22  err/sqrtK=0.0e+00
  0     8  4096  4096     44  err/sqrtK=0.0e+00
- 0    16  4096  4096     88  err/sqrtK=0.0e+00
- 0    32  4096  4096    186  err/sqrtK=0.0e+00
- 0    64  4096  4096    335  err/sqrtK=0.0e+00
+ 0    16  4096  4096     87  err/sqrtK=0.0e+00
+ 0    32  4096  4096    185  err/sqrtK=0.0e+00
+ 0    64  4096  4096    332  err/sqrtK=0.0e+00
  0  4096     1  4096      6  err/sqrtK=0.0e+00
  0  4096     4  4096     24  err/sqrtK=0.0e+00
- 0  4096     8  4096     48  err/sqrtK=0.0e+00
+ 0  4096     8  4096     47  err/sqrtK=0.0e+00
  0  4096    16  4096     92  err/sqrtK=0.0e+00
- 0  4096    32  4096    192  err/sqrtK=0.0e+00
+ 0  4096    32  4096    191  err/sqrtK=0.0e+00
  0  4096    64  4096    346  err/sqrtK=0.0e+00
  0     8     8  4096      5  err/sqrtK=0.0e+00
  0    16    16  4096     22  err/sqrtK=0.0e+00
- 0    32    32  4096    133  err/sqrtK=0.0e+00
-# load after: { 2.62 2.61 2.75 }
+ 0    32    32  4096    130  err/sqrtK=0.0e+00
+# load after: { 2.44 2.33 2.34 } other benchmarks seen: 0

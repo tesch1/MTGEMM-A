@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fetches LIBXSMM, KleidiAI, OpenBLAS (develop and the SME2 port branch), Eigen master and the Eigen SME branch (header-only) at pinned commits into third_party/src and builds them into third_party/install.
+# Fetches LIBXSMM, KleidiAI, OpenBLAS (develop and the SME2 port branch) and Eigen master (header-only) at pinned commits into third_party/src and builds them into third_party/install.
 set -euo pipefail
 cd "$(dirname "$0")"
 LIBXSMM_URL=https://github.com/libxsmm/libxsmm.git
@@ -7,15 +7,13 @@ LIBXSMM_REV=55a8fa6a1e479dec1f5ddbe20684c1cdc0ff7eb1
 KLEIDIAI_URL=https://github.com/ARM-software/kleidiai.git
 KLEIDIAI_REV=64270e8f8926aa47f764ffbfe6f2785e00e93c2a
 EIGEN_URL=https://gitlab.com/libeigen/eigen.git
-EIGEN_REV=ec8593a7dbbf45d370b8e4feda5de106706b01bc
-# Eigen with the SME backend work of merge requests !3164 and follow-ups (branch sme-phase4 on the fork).
-EIGEN_BRANCH_URL=https://gitlab.com/tesch1/eigen.git
-EIGEN_BRANCH_REV=35683b6d7d8f1173a6064847947fa942c9a7a1ea
+# Eigen master with the SME backend (merge request !3164, merged 2026-09-27).
+EIGEN_REV=cd1a734f201417342996634a44968db4ac3d2cef
 OPENBLAS_URL=https://github.com/OpenMathLib/OpenBLAS.git
 OPENBLAS_REV=63d7f22e42577e413c2775d84daaa1da24c8cc46
-# The port of this design into OpenBLAS (branch sme2-gemm, on a later develop than OPENBLAS_REV).
+# The port of this design into OpenBLAS: pull request OpenMathLib/OpenBLAS#6074 (branch sme2-kernels on the fork).
 OPENBLAS_SME2_URL=${OPENBLAS_SME2_URL:-https://github.com/tesch1/OpenBLAS.git}
-OPENBLAS_SME2_REV=897a5ce57acfde9982b7eccc89a7ecd9428675ae
+OPENBLAS_SME2_REV=1be9d733fc653e6cf9fe872116d64fe8b5dc48d0
 JOBS=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 mkdir -p src install
 
@@ -30,7 +28,6 @@ fetch libxsmm "$LIBXSMM_URL" "$LIBXSMM_REV"
 fetch kleidiai "$KLEIDIAI_URL" "$KLEIDIAI_REV"
 fetch openblas "$OPENBLAS_URL" "$OPENBLAS_REV"
 fetch eigen "$EIGEN_URL" "$EIGEN_REV"
-fetch eigen-branch "$EIGEN_BRANCH_URL" "$EIGEN_BRANCH_REV"
 
 if [ ! -f install/libxsmm/lib/libxsmm.a ]; then
   make -C src/libxsmm -j"$JOBS" CC=clang CXX=clang++ STATIC=1 BLAS=0 FORTRAN=0 \
@@ -54,11 +51,13 @@ if [ ! -f install/openblas/lib/libopenblas.a ]; then
 fi
 echo "openblas built"
 
-# OpenBLAS with the port of this design: the pull-request branch sme2-gemm on the fork, at a pinned commit.
-# Until that branch is pushed, OPENBLAS_SME2_URL=<local clone> builds it from a local checkout.
+# OpenBLAS with the port of this design (pull request #6074), rebuilt when the pin moves.
 fetch openblas-sme2 "$OPENBLAS_SME2_URL" "$OPENBLAS_SME2_REV"
-if [ ! -f install/openblas-sme2/lib/libopenblas.a ]; then
-  { make -C src/openblas-sme2 -j"$JOBS" $OB_OPTS libs && make -C src/openblas-sme2 $OB_OPTS PREFIX="$PWD/install/openblas-sme2" install; } \
+if [ "$(cat install/openblas-sme2/REV 2>/dev/null)" != "$OPENBLAS_SME2_REV" ]; then
+  rm -rf install/openblas-sme2
+  { make -C src/openblas-sme2 clean && make -C src/openblas-sme2 -j"$JOBS" $OB_OPTS libs &&
+    make -C src/openblas-sme2 $OB_OPTS PREFIX="$PWD/install/openblas-sme2" install; } \
     > install/openblas-sme2.log 2>&1 || { tail -30 install/openblas-sme2.log; exit 1; }
+  echo "$OPENBLAS_SME2_REV" > install/openblas-sme2/REV
 fi
 echo "openblas-sme2 built"

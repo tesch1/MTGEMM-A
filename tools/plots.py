@@ -11,11 +11,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-# Eigen builds are labelled with the first four hex digits of the commit third_party/build.sh pins.
+# Eigen is labelled with the first four hex digits of the commit third_party/build.sh pins.
 _pins = open(os.path.join(root, 'third_party', 'build.sh')).read()
-EIGEN_BR = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'EIGEN_BRANCH_REV=(\w{4})', _pins).group(1)
-EIGEN_MASTER = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
-# OpenBLAS charts: develop at the pinned commit, and the port (branch sme2-gemm, pinned in third_party/build.sh).
+EIGEN = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
+# OpenBLAS charts: develop at the pinned commit, and the port (pull request #6074, pinned in third_party/build.sh).
 OB_DEV = 'OpenBLAS develop'
 OB_PORT = 'OpenBLAS + port'
 REF = 'Accelerate (reference)'  # drawn as a dashed line in muted ink, not a categorical series
@@ -26,14 +25,14 @@ OUT = os.path.join(root, 'docs')
 THEMES = {
     '': dict(surface='#fcfcfb', ink='#0b0b0b', ink2='#52514e', muted='#898781', grid='#e1e0d9', axis='#c3c2b7',
              mid='#f0efec', blue='#184f95', red='#b23232',
-             series={'Accelerate': '#2a78d6', 'MTGEMM-A': '#eb6834', EIGEN_BR: '#1baf7a', 'LIBXSMM': '#eda100',
-                     'KleidiAI': '#eda100', EIGEN_MASTER: '#e87ba4', OB_DEV: '#4a3aa7', OB_PORT: '#1baf7a'}),
+             series={'Accelerate': '#2a78d6', 'MTGEMM-A': '#eb6834', EIGEN: '#1baf7a', 'LIBXSMM': '#eda100',
+                     'KleidiAI': '#eda100', OB_DEV: '#4a3aa7', OB_PORT: '#1baf7a'}),
     '-dark': dict(surface='#1a1a19', ink='#ffffff', ink2='#c3c2b7', muted='#898781', grid='#2c2c2a', axis='#383835',
                   mid='#383835', blue='#3987e5', red='#e66767',
-                  series={'Accelerate': '#3987e5', 'MTGEMM-A': '#d95926', EIGEN_BR: '#199e70', 'LIBXSMM': '#c98500',
-                          'KleidiAI': '#c98500', EIGEN_MASTER: '#d55181', OB_DEV: '#9085e9', OB_PORT: '#199e70'}),
+                  series={'Accelerate': '#3987e5', 'MTGEMM-A': '#d95926', EIGEN: '#199e70', 'LIBXSMM': '#c98500',
+                          'KleidiAI': '#c98500', OB_DEV: '#9085e9', OB_PORT: '#199e70'}),
 }
-MARKERS = {'Accelerate': 'o', 'MTGEMM-A': 's', EIGEN_BR: '^', 'LIBXSMM': 'D', 'KleidiAI': 'D', EIGEN_MASTER: 'v',
+MARKERS = {'Accelerate': 'o', 'MTGEMM-A': 's', EIGEN: '^', 'LIBXSMM': 'D', 'KleidiAI': 'D',
            OB_DEV: 'P', OB_PORT: 'X', REF: 'o'}
 
 def load(name):
@@ -237,23 +236,23 @@ if __name__ == '__main__':
         E = 'ext/'
         squares_chart(t, suffix, 'squares', {
             'col': [('Accelerate', [E + 'accel_col', E + 'accel_small_col']), ('MTGEMM-A', [E + 'mt_col', E + 'mt_small_col']),
-                    (EIGEN_BR, [E + 'eigenbr_all_col', E + 'eigenbr_small_col']), ('LIBXSMM', [E + 'libxsmm_col', E + 'libxsmm_small_col'])],
+                    (EIGEN, [E + 'eigen_col', E + 'eigen_small_col']), ('LIBXSMM', [E + 'libxsmm_col', E + 'libxsmm_small_col'])],
             'row': [('Accelerate', [E + 'accel_row', E + 'accel_small_row']), ('MTGEMM-A', [E + 'mt_row', E + 'mt_small_row']),
-                    (EIGEN_BR, [E + 'eigenbr_all_row', E + 'eigenbr_small_row']), ('KleidiAI', [E + 'kleidiai_row', E + 'kleidiai_small_row'])]}, one)
+                    (EIGEN, [E + 'eigen_row', E + 'eigen_small_row']), ('KleidiAI', [E + 'kleidiai_row', E + 'kleidiai_small_row'])]}, one)
         thin_chart(t, suffix, 'thin', [('Accelerate', E + 'accel_thin_col'), ('MTGEMM-A', E + 'mt_thin_col'),
-                                       (EIGEN_BR, E + 'eigenbr_thin_col'), ('LIBXSMM', E + 'libxsmm_thin_col')], one)
+                                       (EIGEN, E + 'eigen_thin_col'), ('LIBXSMM', E + 'libxsmm_thin_col')], one)
         grid_chart(t, suffix, 'grid_mtgemm', 'mt', 'MTGEMM-A', ('col', 'row'), 'ext', one)
-        grid_chart(t, suffix, 'grid_eigen', 'eigenbr', EIGEN_BR, ('col', 'row'), 'ext', one)
+        grid_chart(t, suffix, 'grid_eigen', 'eigen', EIGEN, ('col', 'row'), 'ext', one)
         G = 'regular/'
         if have(G + 'eigen_grid4096_row'):
             spec = {o: [('Accelerate', [G + 'accel_all_' + o, G + 'accel_small_' + o]), ('MTGEMM-A', [G + 'mt_all_' + o, G + 'mt_small_' + o]),
-                        (EIGEN_BR, [G + 'eigenbr_all_' + o, G + 'eigenbr_small_' + o]), (EIGEN_MASTER, [G + 'eigen_all_' + o, G + 'eigen_small_' + o])]
+                        (EIGEN, [G + 'eigen_all_' + o, G + 'eigen_small_' + o])]
                     for o in ('col', 'row')}
             squares_chart(t, suffix, 'squares_regular', spec, reg)
             thin_chart(t, suffix, 'thin_regular', [('Accelerate', G + 'accel_thin_col'), ('MTGEMM-A', G + 'mt_thin_col'),
-                                                   (EIGEN_BR, G + 'eigenbr_thin_col'), (EIGEN_MASTER, G + 'eigen_thin_col')], reg)
+                                                   (EIGEN, G + 'eigen_thin_col')], reg)
             grid_chart(t, suffix, 'grid_mtgemm_regular', 'mt', 'MTGEMM-A', ('col', 'row'), 'regular', reg)
-            grid_chart(t, suffix, 'grid_eigen_regular', 'eigenbr', EIGEN_BR, ('col', 'row'), 'regular', reg)
+            grid_chart(t, suffix, 'grid_eigen_regular', 'eigen', EIGEN, ('col', 'row'), 'regular', reg)
         O = 'openblas/'
         if have(O + 'obs2_all_row', O + 'accel_all_row'):
             for fname, sfx, what in (('squares_openblas', ('', '', '', ''), one), ('squares_openblas_regular', ('_t0', '_mt', '_mt', '_t0'), reg)):
