@@ -1,6 +1,6 @@
-// Eigen (master or the SME branch, from third_party/) on the same shapes: column-major C += A*B, row-major C = A*B;
-// one thread, or a thread pool of one thread per core when built with EIGEN_GEMM_THREADPOOL.
-// usage: bench_eigen <squares|paper|irr|all|small|thin|MxNxK> <row|col> [ids=a-b] [ms=50] [trials=5] [check]
+// Eigen master (from third_party/) on the same shapes: column-major C += A*B, row-major C = A*B; one thread, or a
+// thread pool of one thread per core when built with EIGEN_GEMM_THREADPOOL.
+// usage: bench_eigen <squares|paper|irr|all|small|thin|MxNxK> <row|col> [f64] [ids=a-b] [ms=50] [trials=5] [check]
 #include <Accelerate/Accelerate.h>
 #include <Eigen/Core>
 #ifdef EIGEN_GEMM_THREADPOOL
@@ -30,34 +30,26 @@ static const char* kBackend = BENCH_EIGEN_NAME;
 static int g_argc;
 static char** g_argv;
 
-template <int Order>
-static void product(int m, int n, int k, const float* A, const float* B, float* C, bool accumulate) {
-  using Mat = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Order>;
+template <int Order, class T>
+static void product(int m, int n, int k, const T* A, const T* B, T* C, bool accumulate) {
+  using Mat = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Order>;
   Eigen::Map<const Mat> a(A, m, k), b(B, k, n);
   Eigen::Map<Mat> c(C, m, n);
   if (accumulate) c.noalias() += a * b;
   else c.noalias() = a * b;
 }
 
-static void* body(void*) {
-  pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
-  if (g_argc < 3) { std::fprintf(stderr, "usage: bench_eigen <set> <row|col> [opts]\n"); std::exit(2); }
-  const std::string set = g_argv[1];
-  const bool row = !std::strcmp(g_argv[2], "row");
-  double ms = 50;
-  int trials = 5, id_lo = 1, id_hi = 1000;
-  bool check_only = false;
-  for (int i = 3; i < g_argc; ++i) {
-    const char* a = g_argv[i];
-    double x;
-    int v;
-    if (std::sscanf(a, "ms=%lf", &x) == 1) ms = x;
-    else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
-    else if (std::sscanf(a, "ids=%d-%d", &id_lo, &id_hi) == 2) {}
-    else if (!std::strcmp(a, "check")) check_only = true;
-    else { std::fprintf(stderr, "bad option %s\n", a); std::exit(2); }
-  }
-  const std::vector<Shape> shapes = make_shapes(set, id_lo, id_hi);
+static void gemm_ref(bool row, int m, int n, int k, const float* A, int lda, const float* B, int ldb, float beta, float* C,
+                     int ldc) {
+  cblas_sgemm(row ? CblasRowMajor : CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1.f, A, lda, B, ldb, beta, C, ldc);
+}
+static void gemm_ref(bool row, int m, int n, int k, const double* A, int lda, const double* B, int ldb, double beta,
+                     double* C, int ldc) {
+  cblas_dgemm(row ? CblasRowMajor : CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1.0, A, lda, B, ldb, beta, C, ldc);
+}
+
+template <class T>
+static int run(const std::string& set, bool row, const std::vector<Shape>& shapes, double ms, int trials, bool check_only) {
   const double beta = row ? 0.0 : 1.0;
 #ifdef EIGEN_GEMM_THREADPOOL
   // A pool of one thread per core, as an application would create; the SME branch caps products at its unit count.
@@ -72,25 +64,24 @@ static void* body(void*) {
 #else
   const int units = -1;
 #endif
-  std::printf("# %s %s %s f32 beta=%g threads=%d sme_units=%d\n", set.c_str(), row ? "row" : "col", kBackend, beta, threads,
-              units);
+  std::printf("# %s %s %s %s beta=%g threads=%d sme_units=%d\n", set.c_str(), row ? "row" : "col", kBackend,
+              sizeof(T) == 4 ? "f32" : "f64", beta, threads, units);
   std::mt19937 rng(1);
-  std::uniform_real_distribution<float> d(-1, 1);
+  std::uniform_real_distribution<T> d(-1, 1);
   int failures = 0;
   for (const Shape& s : shapes) {
     const int m = s.m, n = s.n, k = s.k;
     const int lda = row ? k : m, ldb = row ? n : k, ldc = row ? n : m;
-    std::vector<float> A(size_t(m) * k), B(size_t(k) * n), C(size_t(m) * n);
+    std::vector<T> A(size_t(m) * k), B(size_t(k) * n), C(size_t(m) * n);
     for (auto& x : A) x = d(rng);
     for (auto& x : B) x = d(rng);
-    for (auto& x : C) x = d(rng) * 0.01f;
+    for (auto& x : C) x = d(rng) * T(0.01);
     auto call = [&] {
       if (row) product<Eigen::RowMajor>(m, n, k, A.data(), B.data(), C.data(), false);
       else product<Eigen::ColMajor>(m, n, k, A.data(), B.data(), C.data(), true);
     };
-    std::vector<float> C0 = C, R = C;
-    cblas_sgemm(row ? CblasRowMajor : CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1.f, A.data(), lda, B.data(),
-                ldb, float(beta), R.data(), ldc);
+    std::vector<T> C0 = C, R = C;
+    gemm_ref(row, m, n, k, A.data(), lda, B.data(), ldb, T(beta), R.data(), ldc);
     call();
     double err = 0, moved = 0;
     for (size_t i = 0; i < C.size(); ++i) {
@@ -99,7 +90,7 @@ static void* body(void*) {
     }
     err /= std::sqrt(double(k));
     // Eigen's summation order differs from Accelerate's, so this bound is looser than bench_ext's.
-    const bool ok = err < 1e-4 && moved > 0;
+    const bool ok = err < (sizeof(T) == 4 ? 1e-4 : 1e-12) && moved > 0;
     if (!ok) ++failures;
     C = C0;
     if (check_only) { std::printf("%2d %5d %5d %5d  err/sqrtK=%.1e %s\n", s.id, m, n, k, err, ok ? "ok" : "FAIL"); continue; }
@@ -120,6 +111,31 @@ static void* body(void*) {
     std::fflush(stdout);
   }
   if (failures) std::printf("# %d shape(s) FAILED the check against Accelerate\n", failures);
+  return failures;
+}
+
+static void* body(void*) {
+  pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+  if (g_argc < 3) { std::fprintf(stderr, "usage: bench_eigen <set> <row|col> [opts]\n"); std::exit(2); }
+  const std::string set = g_argv[1];
+  const bool row = !std::strcmp(g_argv[2], "row");
+  double ms = 50;
+  int trials = 5, id_lo = 1, id_hi = 1000;
+  bool check_only = false, f64 = false;
+  for (int i = 3; i < g_argc; ++i) {
+    const char* a = g_argv[i];
+    double x;
+    int v;
+    if (std::sscanf(a, "ms=%lf", &x) == 1) ms = x;
+    else if (std::sscanf(a, "trials=%d", &v) == 1) trials = v;
+    else if (std::sscanf(a, "ids=%d-%d", &id_lo, &id_hi) == 2) {}
+    else if (!std::strcmp(a, "check")) check_only = true;
+    else if (!std::strcmp(a, "f64")) f64 = true;
+    else { std::fprintf(stderr, "bad option %s\n", a); std::exit(2); }
+  }
+  const std::vector<Shape> shapes = make_shapes(set, id_lo, id_hi);
+  const int failures = f64 ? run<double>(set, row, shapes, ms, trials, check_only)
+                           : run<float>(set, row, shapes, ms, trials, check_only);
   std::exit(failures ? 1 : 0);
 }
 

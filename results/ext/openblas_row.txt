@@ -1,0 +1,33 @@
+# 2026-10-20 01:11:17 load before: { 2.59 2.42 2.07 } VECLIB_MAXIMUM_THREADS=1
+# all row openblas f32 beta=0 core=VORTEXM4 threads=1 config=OpenBLAS 0.3.34.dev NO_LAPACK NO_LAPACKE NO_AFFINITY VORTEXM4 MAX_THREADS=12
+ 0   512   512   512   1796  err/sqrtK=0.0e+00
+ 0  1000  1000  1000   1805  err/sqrtK=0.0e+00
+ 0  1024  1024  1024   1810  err/sqrtK=0.0e+00
+ 0  2048  2048  2048   1687  err/sqrtK=0.0e+00
+ 0  3000  3000  3000   1685  err/sqrtK=0.0e+00
+ 0  4096  4096  4096   1679  err/sqrtK=0.0e+00
+ 1    64  2112  7168   1305  err/sqrtK=0.0e+00
+ 2    64 24576  1536    971  err/sqrtK=0.0e+00
+ 3    64 32768   512    942  err/sqrtK=0.0e+00
+ 4    64  7168 16384   1032  err/sqrtK=0.0e+00
+ 5    64  4096  7168   1056  err/sqrtK=0.0e+00
+ 6    64  7168  2048   1025  err/sqrtK=0.0e+00
+ 7   128  2112  7168   1552  err/sqrtK=0.0e+00
+ 8   128 24576  1536   1250  err/sqrtK=0.0e+00
+ 9   128 32768   512   1212  err/sqrtK=0.0e+00
+10   128  7168 16384   1305  err/sqrtK=0.0e+00
+11   128  4096  7168   1352  err/sqrtK=0.0e+00
+12   128  7168  2048   1307  err/sqrtK=0.0e+00
+13  4096  2112  7168   1795  err/sqrtK=0.0e+00
+14  4096 24576  1536   1648  err/sqrtK=0.0e+00
+15  4096 32768   512   1618  err/sqrtK=0.0e+00
+16  4096  7168 16384   1650  err/sqrtK=0.0e+00
+17  4096  4096  7168   1632  err/sqrtK=0.0e+00
+18  4096  7168  2048   1643  err/sqrtK=0.0e+00
+19  4096   256  4096   1525  err/sqrtK=0.0e+00
+20 11008   256  4096   1521  err/sqrtK=0.0e+00
+21  4096   256 11008   1562  err/sqrtK=0.0e+00
+22  5120   256  5120   1570  err/sqrtK=0.0e+00
+23 13824   256  5120   1566  err/sqrtK=0.0e+00
+24  5120   256 13824   1550  err/sqrtK=0.0e+00
+# load after: { 2.40 2.38 2.06 } other benchmarks seen: 0

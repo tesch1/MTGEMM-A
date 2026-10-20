@@ -1,0 +1,16 @@
+# 2026-10-20 01:25:50 load before: { 2.90 2.64 2.41 } VECLIB_MAXIMUM_THREADS=1
+# small col eigen-mt f64 beta=1 threads=12 sme_units=2
+ 0     4     4     4      5  err/sqrtK=5.6e-17
+ 0     8     8     8     18  err/sqrtK=1.6e-16
+ 0    12    12    12     31  err/sqrtK=1.9e-16
+ 0    16    16    16     40  err/sqrtK=1.1e-16
+ 0    24    24    24     70  err/sqrtK=2.7e-16
+ 0    32    32    32    127  err/sqrtK=1.6e-16
+ 0    48    48    48    226  err/sqrtK=2.6e-16
+ 0    64    64    64    311  err/sqrtK=2.2e-16
+ 0    96    96    96    423  err/sqrtK=3.6e-16
+ 0   128   128   128    550  err/sqrtK=3.1e-16
+ 0   192   192   192    640  err/sqrtK=3.2e-16
+ 0   256   256   256    795  err/sqrtK=2.8e-16
+ 0   384   384   384    909  err/sqrtK=3.6e-16
+# load after: { 2.75 2.62 2.41 } other benchmarks seen: 0

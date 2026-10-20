@@ -1,57 +1,57 @@
-# 2026-10-01 21:32:38 load before: { 1.93 2.02 2.20 } VECLIB_MAXIMUM_THREADS=1
+# 2026-10-20 01:54:43 load before: { 2.92 3.80 3.31 } VECLIB_MAXIMUM_THREADS=1
 # row f32 mtgemm
-    4       135 ns     0.9 GFLOPS
-    8       139 ns     7.4 GFLOPS
-   12       143 ns    24.2 GFLOPS
+    4       138 ns     0.9 GFLOPS
+    8       147 ns     7.0 GFLOPS
+   12       154 ns    22.4 GFLOPS
    14       152 ns    36.0 GFLOPS
    15       154 ns    43.7 GFLOPS
-   16       152 ns    54.0 GFLOPS
-   17       198 ns    49.6 GFLOPS
-   18       202 ns    57.6 GFLOPS
-   20       201 ns    79.5 GFLOPS
-   24       209 ns   132.3 GFLOPS
-   28       241 ns   182.3 GFLOPS
-   32       183 ns   358.2 GFLOPS
-   36       302 ns   309.0 GFLOPS
-   40       318 ns   402.8 GFLOPS
-   44       375 ns   454.3 GFLOPS
-   48       401 ns   551.6 GFLOPS
+   16       152 ns    53.8 GFLOPS
+   17       201 ns    49.0 GFLOPS
+   18       202 ns    57.8 GFLOPS
+   20       202 ns    79.3 GFLOPS
+   24       214 ns   129.5 GFLOPS
+   28       244 ns   179.8 GFLOPS
+   32       179 ns   366.1 GFLOPS
+   36       307 ns   303.7 GFLOPS
+   40       328 ns   390.1 GFLOPS
+   44       380 ns   448.2 GFLOPS
+   48       406 ns   544.5 GFLOPS
    52       724 ns   388.5 GFLOPS
-   56       781 ns   449.6 GFLOPS
+   56       786 ns   446.6 GFLOPS
    60       885 ns   487.9 GFLOPS
    64       432 ns  1212.9 GFLOPS
    68       891 ns   706.1 GFLOPS
-   72       912 ns   819.0 GFLOPS
-   76       969 ns   906.3 GFLOPS
-   80       974 ns  1051.5 GFLOPS
+   72       917 ns   814.4 GFLOPS
+   76       974 ns   901.5 GFLOPS
+   80       969 ns  1057.0 GFLOPS
    84      1557 ns   761.2 GFLOPS
-   88      1708 ns   797.9 GFLOPS
-   92      1734 ns   897.9 GFLOPS
+   88      1714 ns   795.4 GFLOPS
+   92      1740 ns   895.3 GFLOPS
    96      1198 ns  1477.2 GFLOPS
   100      1995 ns  1002.6 GFLOPS
   104      2031 ns  1107.6 GFLOPS
   108      2198 ns  1146.3 GFLOPS
-  112      2182 ns  1287.5 GFLOPS
-  116      3130 ns   997.3 GFLOPS
-  120      3198 ns  1080.7 GFLOPS
-  124      3365 ns  1133.3 GFLOPS
-  128      2516 ns  1667.3 GFLOPS
-  132      3666 ns  1254.8 GFLOPS
+  112      2182 ns  1287.6 GFLOPS
+  116      3135 ns   995.7 GFLOPS
+  120      3203 ns  1078.9 GFLOPS
+  124      3375 ns  1129.9 GFLOPS
+  128      2510 ns  1670.7 GFLOPS
+  132      3708 ns  1240.5 GFLOPS
   136      3750 ns  1341.6 GFLOPS
-  140      3875 ns  1416.3 GFLOPS
-  144      3792 ns  1574.9 GFLOPS
+  140      3916 ns  1401.4 GFLOPS
+  144      3833 ns  1558.0 GFLOPS
   148      5375 ns  1206.2 GFLOPS
   152      5416 ns  1296.8 GFLOPS
   156      5583 ns  1360.0 GFLOPS
   160      4708 ns  1740.0 GFLOPS
   164      6458 ns  1366.0 GFLOPS
-  168      6541 ns  1449.8 GFLOPS
+  168      6542 ns  1449.6 GFLOPS
   172      6833 ns  1489.4 GFLOPS
   176      6750 ns  1615.3 GFLOPS
-  180      8625 ns  1352.3 GFLOPS
-  184      8833 ns  1410.5 GFLOPS
+  180      8666 ns  1345.9 GFLOPS
+  184      8875 ns  1403.8 GFLOPS
   188      9166 ns  1449.9 GFLOPS
-  192      7875 ns  1797.6 GFLOPS
+  192      7834 ns  1807.0 GFLOPS
   224     12333 ns  1822.7 GFLOPS
-  256     18542 ns  1809.6 GFLOPS
-# load after: { 1.80 1.98 2.18 } other benchmarks seen: 0
+  256     18458 ns  1817.9 GFLOPS
+# load after: { 2.82 3.71 3.29 } other benchmarks seen: 0

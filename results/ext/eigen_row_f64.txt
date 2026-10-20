@@ -1,0 +1,33 @@
+# 2026-10-20 01:21:54 load before: { 2.72 2.70 2.37 } VECLIB_MAXIMUM_THREADS=1
+# all row eigen f64 beta=0 threads=1 sme_units=2
+ 0   512   512   512    456  err/sqrtK=0.0e+00
+ 0  1000  1000  1000    458  err/sqrtK=3.6e-15
+ 0  1024  1024  1024    451  err/sqrtK=0.0e+00
+ 0  2048  2048  2048    447  err/sqrtK=7.2e-15
+ 0  3000  3000  3000    462  err/sqrtK=8.6e-15
+ 0  4096  4096  4096    456  err/sqrtK=1.0e-14
+ 1    64  2112  7168    361  err/sqrtK=9.1e-15
+ 2    64 24576  1536    313  err/sqrtK=4.4e-15
+ 3    64 32768   512    312  err/sqrtK=0.0e+00
+ 4    64  7168 16384    321  err/sqrtK=1.4e-14
+ 5    64  4096  7168    310  err/sqrtK=1.0e-14
+ 6    64  7168  2048    321  err/sqrtK=6.9e-15
+ 7   128  2112  7168    410  err/sqrtK=1.2e-14
+ 8   128 24576  1536    373  err/sqrtK=4.7e-15
+ 9   128 32768   512    367  err/sqrtK=0.0e+00
+10   128  7168 16384    381  err/sqrtK=2.1e-14
+11   128  4096  7168    374  err/sqrtK=1.2e-14
+12   128  7168  2048    379  err/sqrtK=5.3e-15
+13  4096  2112  7168    456  err/sqrtK=1.5e-14
+14  4096 24576  1536    452  err/sqrtK=5.6e-15
+15  4096 32768   512    442  err/sqrtK=0.0e+00
+16  4096  7168 16384    458  err/sqrtK=2.1e-14
+17  4096  4096  7168    456  err/sqrtK=1.3e-14
+18  4096  7168  2048    457  err/sqrtK=6.6e-15
+19  4096   256  4096    423  err/sqrtK=8.9e-15
+20 11008   256  4096    424  err/sqrtK=9.9e-15
+21  4096   256 11008    425  err/sqrtK=1.4e-14
+22  5120   256  5120    423  err/sqrtK=9.7e-15
+23 13824   256  5120    424  err/sqrtK=1.1e-14
+24  5120   256 13824    425  err/sqrtK=1.5e-14
+# load after: { 2.54 2.64 2.37 } other benchmarks seen: 0

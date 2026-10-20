@@ -1,18 +1,18 @@
-# 2026-10-01 21:52:03 load before: { 2.33 2.38 2.32 } VECLIB_MAXIMUM_THREADS=1
+# 2026-10-20 01:29:00 load before: { 2.90 2.55 2.40 } VECLIB_MAXIMUM_THREADS=1
 # thin row eigen-mt f32 beta=0 threads=12 sme_units=2
- 0     1  4096  4096     63  err/sqrtK=2.5e-06
- 0     4  4096  4096    148  err/sqrtK=3.7e-06
- 0     8  4096  4096    290  err/sqrtK=3.0e-06
- 0    16  4096  4096    636  err/sqrtK=3.0e-06
- 0    32  4096  4096   1027  err/sqrtK=3.3e-06
- 0    64  4096  4096   1638  err/sqrtK=3.6e-06
- 0  4096     1  4096     33  err/sqrtK=8.0e-07
- 0  4096     4  4096    160  err/sqrtK=3.1e-06
- 0  4096     8  4096    329  err/sqrtK=4.1e-06
- 0  4096    16  4096    671  err/sqrtK=3.9e-06
- 0  4096    32  4096   1149  err/sqrtK=3.7e-06
- 0  4096    64  4096   1738  err/sqrtK=3.8e-06
- 0     8     8  4096    146  err/sqrtK=1.3e-06
- 0    16    16  4096    422  err/sqrtK=1.7e-06
- 0    32    32  4096    653  err/sqrtK=1.6e-06
-# load after: { 2.71 2.46 2.35 } other benchmarks seen: 0
+ 0     1  4096  4096     64  err/sqrtK=2.5e-06
+ 0     4  4096  4096    147  err/sqrtK=3.7e-06
+ 0     8  4096  4096    295  err/sqrtK=3.0e-06
+ 0    16  4096  4096    639  err/sqrtK=3.0e-06
+ 0    32  4096  4096   1040  err/sqrtK=3.3e-06
+ 0    64  4096  4096   1647  err/sqrtK=3.6e-06
+ 0  4096     1  4096     34  err/sqrtK=8.0e-07
+ 0  4096     4  4096    166  err/sqrtK=3.1e-06
+ 0  4096     8  4096    340  err/sqrtK=4.1e-06
+ 0  4096    16  4096    709  err/sqrtK=3.9e-06
+ 0  4096    32  4096   1178  err/sqrtK=3.7e-06
+ 0  4096    64  4096   1763  err/sqrtK=3.8e-06
+ 0     8     8  4096    139  err/sqrtK=1.3e-06
+ 0    16    16  4096    416  err/sqrtK=1.7e-06
+ 0    32    32  4096    646  err/sqrtK=1.6e-06
+# load after: { 2.99 2.57 2.41 } other benchmarks seen: 0

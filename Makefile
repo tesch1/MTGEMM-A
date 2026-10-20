@@ -65,7 +65,7 @@ $(BUILD)/bench_eigen_mt: $(EIGEN_BENCH) $(EIGEN_INC)/Eigen/Core | $(BUILD)
 
 bench_eigen: $(BUILD)/bench_eigen $(BUILD)/bench_eigen_mt
 
-# OpenBLAS develop with its SME kernels (TARGET=VORTEXM4); fetched and built by third_party/build.sh.
+# OpenBLAS develop with its SME2 kernels (TARGET=VORTEXM4); fetched and built by third_party/build.sh.
 OB := $(TP)/openblas
 $(OB)/lib/libopenblas.a:
 	./third_party/build.sh
@@ -73,58 +73,36 @@ $(OB)/lib/libopenblas.a:
 $(BUILD)/bench_openblas: bench/bench_openblas.cpp bench/shapes.h $(LIB) $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB)/include $< $(LIB) $(OB)/lib/libopenblas.a -o $@
 
-# The same benchmark on OpenBLAS with the SME2 port of this design (pull request #6074, see third_party/build.sh).
-OB2 := $(TP)/openblas-sme2
-$(OB2)/lib/libopenblas.a:
-	./third_party/build.sh
-
-$(BUILD)/bench_openblas_sme2: bench/bench_openblas.cpp bench/shapes.h $(LIB) $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB2)/include $< $(LIB) $(OB2)/lib/libopenblas.a -o $@
-
 $(BUILD)/test_openblas_gemm: bench/test_openblas_gemm.c $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
 
-$(BUILD)/test_openblas_sme2_gemm: bench/test_openblas_gemm.c $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 
 # SYMM, SYRK, SYR2K, TRMM, TRSM: benchmark (OpenBLAS develop, the port, Accelerate) and checks.
 $(BUILD)/bench_openblas_l3: bench/bench_openblas_l3.c $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
-$(BUILD)/bench_openblas_sme2_l3: bench/bench_openblas_l3.c $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 $(BUILD)/bench_accel_l3: bench/bench_openblas_l3.c | $(BUILD)
 	$(CC) -O2 -DUSE_ACCEL $< $(ACCEL) -o $@
 $(BUILD)/bench_openblas_l3v: bench/bench_openblas_l3v.c $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
-$(BUILD)/bench_openblas_sme2_l3v: bench/bench_openblas_l3v.c $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 $(BUILD)/bench_accel_l3v: bench/bench_openblas_l3v.c | $(BUILD)
 	$(CC) -O2 -DUSE_ACCEL $< $(ACCEL) -o $@
 $(BUILD)/test_openblas_l3: bench/test_openblas_l3.c $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CC) -O2 -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
-$(BUILD)/test_openblas_sme2_l3: bench/test_openblas_l3.c $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CC) -O2 -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 
 # Small GEMMs per call: OpenBLAS develop, the port, MTGEMM-A.
 $(BUILD)/bench_small_ob: bench/bench_small.cpp $(OB)/lib/libopenblas.a | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB)/include $< $(OB)/lib/libopenblas.a -o $@
-$(BUILD)/bench_small_obs2: bench/bench_small.cpp $(OB2)/lib/libopenblas.a | $(BUILD)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OB2)/include $< $(OB2)/lib/libopenblas.a -o $@
 $(BUILD)/bench_small_mt: bench/bench_small.cpp $(LIB) | $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DUSE_MT $< $(LIB) -o $@
 
-bench_openblas: $(BUILD)/bench_openblas $(BUILD)/bench_openblas_sme2 $(BUILD)/test_openblas_gemm $(BUILD)/test_openblas_sme2_gemm \
-                $(BUILD)/bench_openblas_l3 $(BUILD)/bench_openblas_sme2_l3 $(BUILD)/bench_accel_l3 \
-                $(BUILD)/test_openblas_l3 $(BUILD)/test_openblas_sme2_l3 \
-                $(BUILD)/bench_openblas_l3v $(BUILD)/bench_openblas_sme2_l3v $(BUILD)/bench_accel_l3v \
-                $(BUILD)/bench_small_ob $(BUILD)/bench_small_obs2 $(BUILD)/bench_small_mt
+bench_openblas: $(BUILD)/bench_openblas $(BUILD)/test_openblas_gemm $(BUILD)/bench_openblas_l3 $(BUILD)/bench_accel_l3 \
+                $(BUILD)/test_openblas_l3 $(BUILD)/bench_openblas_l3v $(BUILD)/bench_accel_l3v \
+                $(BUILD)/bench_small_ob $(BUILD)/bench_small_mt
 
 test_openblas: bench_openblas
 	./$(BUILD)/test_openblas_gemm
-	./$(BUILD)/test_openblas_sme2_gemm
 	./$(BUILD)/test_openblas_l3
-	./$(BUILD)/test_openblas_sme2_l3
-	for b in bench_openblas bench_openblas_sme2; do for o in row col; do for set in all small thin; do \
+	for b in bench_openblas; do for o in row col; do for set in all small thin; do \
 	  ./$(BUILD)/$$b $$set $$o check || exit 1; ./$(BUILD)/$$b $$set $$o f64 check || exit 1; done; done; done
 
 test_ext: $(BUILD)/bench_ext

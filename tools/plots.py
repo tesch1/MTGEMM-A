@@ -14,9 +14,7 @@ root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 # Eigen is labelled with the first four hex digits of the commit third_party/build.sh pins.
 _pins = open(os.path.join(root, 'third_party', 'build.sh')).read()
 EIGEN = r'Eigen$^{\mathrm{%s}}$' % __import__('re').search(r'\nEIGEN_REV=(\w{4})', _pins).group(1)
-# OpenBLAS charts: develop at the pinned commit, and the port (pull request #6074, pinned in third_party/build.sh).
-OB_DEV = 'OpenBLAS develop'
-OB_PORT = 'OpenBLAS + port'
+OB = 'OpenBLAS'  # develop at the commit third_party/build.sh pins
 REF = 'Accelerate (reference)'  # drawn as a dashed line in muted ink, not a categorical series
 RES = os.path.join(root, 'results')
 OUT = os.path.join(root, 'docs')
@@ -26,14 +24,14 @@ THEMES = {
     '': dict(surface='#fcfcfb', ink='#0b0b0b', ink2='#52514e', muted='#898781', grid='#e1e0d9', axis='#c3c2b7',
              mid='#f0efec', blue='#184f95', red='#b23232',
              series={'Accelerate': '#2a78d6', 'MTGEMM-A': '#eb6834', EIGEN: '#1baf7a', 'LIBXSMM': '#eda100',
-                     'KleidiAI': '#eda100', OB_DEV: '#4a3aa7', OB_PORT: '#1baf7a'}),
+                     'KleidiAI': '#eda100', OB: '#4a3aa7'}),
     '-dark': dict(surface='#1a1a19', ink='#ffffff', ink2='#c3c2b7', muted='#898781', grid='#2c2c2a', axis='#383835',
                   mid='#383835', blue='#3987e5', red='#e66767',
                   series={'Accelerate': '#3987e5', 'MTGEMM-A': '#d95926', EIGEN: '#199e70', 'LIBXSMM': '#c98500',
-                          'KleidiAI': '#c98500', OB_DEV: '#9085e9', OB_PORT: '#199e70'}),
+                          'KleidiAI': '#c98500', OB: '#9085e9'}),
 }
 MARKERS = {'Accelerate': 'o', 'MTGEMM-A': 's', EIGEN: '^', 'LIBXSMM': 'D', 'KleidiAI': 'D',
-           OB_DEV: 'P', OB_PORT: 'X', REF: 'o'}
+           OB: 'P', REF: 'o'}
 
 def load(name):
     d = {}
@@ -209,21 +207,6 @@ def grid_chart(t, suffix, name, lib, label, orders, folder, what):
     fig.savefig(os.path.join(OUT, '%s%s.svg' % (name, suffix)), bbox_inches='tight')
     plt.close(fig)
 
-def openblas_chart(t, suffix, fname, spec, what):
-    """spec: {order: [(label, [result files])]}; the first entry is the Accelerate reference."""
-    fig, axs = plt.subplots(2, 2, figsize=(11, 7.6), sharey='row')
-    for col, order in ((0, 'col'), (1, 'row')):
-        s = [(label, sq(merged(*files))) for label, files in spec[order]]
-        ticks = [4, 16, 64, 256, 1024, 4096]
-        lines(axs[0][col], t, s, 'M = N = K', ticks, max(2000, 500 * math.ceil(max(max(v.values()) for _, v in s) / 500)))
-        axs[0][col].set_title('Square sizes, %s, %s' % (what, 'column-major C += AB' if order == 'col' else 'row-major C = AB'))
-        axs[0][col].legend(loc='upper left', frameon=False, fontsize=9, labelcolor=t['ink2'])
-        ratios(axs[1][col], t, s, 'M = N = K', ticks)
-        axs[1][col].set_title('Speedup over Accelerate (log scale)')
-    fig.tight_layout(w_pad=6, h_pad=2)
-    fig.savefig(os.path.join(OUT, '%s%s.svg' % (fname, suffix)))
-    plt.close(fig)
-
 def have(*names):
     return all(os.path.exists(os.path.join(RES, n + '.txt')) for n in names)
 
@@ -236,29 +219,26 @@ if __name__ == '__main__':
         E = 'ext/'
         squares_chart(t, suffix, 'squares', {
             'col': [('Accelerate', [E + 'accel_col', E + 'accel_small_col']), ('MTGEMM-A', [E + 'mt_col', E + 'mt_small_col']),
-                    (EIGEN, [E + 'eigen_col', E + 'eigen_small_col']), ('LIBXSMM', [E + 'libxsmm_col', E + 'libxsmm_small_col'])],
+                    (EIGEN, [E + 'eigen_col', E + 'eigen_small_col']), (OB, [E + 'openblas_col', E + 'openblas_small_col']),
+                    ('LIBXSMM', [E + 'libxsmm_col', E + 'libxsmm_small_col'])],
             'row': [('Accelerate', [E + 'accel_row', E + 'accel_small_row']), ('MTGEMM-A', [E + 'mt_row', E + 'mt_small_row']),
-                    (EIGEN, [E + 'eigen_row', E + 'eigen_small_row']), ('KleidiAI', [E + 'kleidiai_row', E + 'kleidiai_small_row'])]}, one)
+                    (EIGEN, [E + 'eigen_row', E + 'eigen_small_row']), (OB, [E + 'openblas_row', E + 'openblas_small_row']),
+                    ('KleidiAI', [E + 'kleidiai_row', E + 'kleidiai_small_row'])]}, one)
         thin_chart(t, suffix, 'thin', [('Accelerate', E + 'accel_thin_col'), ('MTGEMM-A', E + 'mt_thin_col'),
-                                       (EIGEN, E + 'eigen_thin_col'), ('LIBXSMM', E + 'libxsmm_thin_col')], one)
+                                       (EIGEN, E + 'eigen_thin_col'), (OB, E + 'openblas_thin_col'),
+                                       ('LIBXSMM', E + 'libxsmm_thin_col')], one)
         grid_chart(t, suffix, 'grid_mtgemm', 'mt', 'MTGEMM-A', ('col', 'row'), 'ext', one)
         grid_chart(t, suffix, 'grid_eigen', 'eigen', EIGEN, ('col', 'row'), 'ext', one)
+        grid_chart(t, suffix, 'grid_openblas', 'openblas', OB, ('col', 'row'), 'ext', one)
         G = 'regular/'
         if have(G + 'eigen_grid4096_row'):
             spec = {o: [('Accelerate', [G + 'accel_all_' + o, G + 'accel_small_' + o]), ('MTGEMM-A', [G + 'mt_all_' + o, G + 'mt_small_' + o]),
-                        (EIGEN, [G + 'eigen_all_' + o, G + 'eigen_small_' + o])]
+                        (EIGEN, [G + 'eigen_all_' + o, G + 'eigen_small_' + o]), (OB, [G + 'openblas_all_' + o, G + 'openblas_small_' + o])]
                     for o in ('col', 'row')}
             squares_chart(t, suffix, 'squares_regular', spec, reg)
             thin_chart(t, suffix, 'thin_regular', [('Accelerate', G + 'accel_thin_col'), ('MTGEMM-A', G + 'mt_thin_col'),
-                                                   (EIGEN, G + 'eigen_thin_col')], reg)
+                                                   (EIGEN, G + 'eigen_thin_col'), (OB, G + 'openblas_thin_col')], reg)
             grid_chart(t, suffix, 'grid_mtgemm_regular', 'mt', 'MTGEMM-A', ('col', 'row'), 'regular', reg)
             grid_chart(t, suffix, 'grid_eigen_regular', 'eigen', EIGEN, ('col', 'row'), 'regular', reg)
-        O = 'openblas/'
-        if have(O + 'obs2_all_row', O + 'accel_all_row'):
-            for fname, sfx, what in (('squares_openblas', ('', '', '', ''), one), ('squares_openblas_regular', ('_t0', '_mt', '_mt', '_t0'), reg)):
-                spec = {o: [(REF, [O + 'accel_all_' + o + sfx[0], O + 'accel_small_' + o + sfx[0]]),
-                            (OB_DEV, [O + 'ob_all_' + o + sfx[1], O + 'ob_small_' + o + sfx[1]]),
-                            (OB_PORT, [O + 'obs2_all_' + o + sfx[2], O + 'obs2_small_' + o + sfx[2]]),
-                            ('MTGEMM-A', [O + 'mt_all_' + o + sfx[3], O + 'mt_small_' + o + sfx[3]])] for o in ('col', 'row')}
-                openblas_chart(t, suffix, fname, spec, what)
+            grid_chart(t, suffix, 'grid_openblas_regular', 'openblas', OB, ('col', 'row'), 'regular', reg)
     print('wrote', sorted(os.listdir(OUT)))

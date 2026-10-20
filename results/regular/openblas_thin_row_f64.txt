@@ -1,0 +1,18 @@
+# 2026-10-20 01:31:30 load before: { 2.94 2.63 2.45 } VECLIB_MAXIMUM_THREADS=1
+# thin row openblas f64 beta=0 core=VORTEXM4 threads=12 config=OpenBLAS 0.3.34.dev NO_LAPACK NO_LAPACKE NO_AFFINITY VORTEXM4 MAX_THREADS=12
+ 0     1  4096  4096     24  err/sqrtK=0.0e+00
+ 0     4  4096  4096     96  err/sqrtK=0.0e+00
+ 0     8  4096  4096    191  err/sqrtK=0.0e+00
+ 0    16  4096  4096    367  err/sqrtK=0.0e+00
+ 0    32  4096  4096    582  err/sqrtK=0.0e+00
+ 0    64  4096  4096    725  err/sqrtK=0.0e+00
+ 0  4096     1  4096     31  err/sqrtK=0.0e+00
+ 0  4096     4  4096    126  err/sqrtK=0.0e+00
+ 0  4096     8  4096    253  err/sqrtK=0.0e+00
+ 0  4096    16  4096    270  err/sqrtK=0.0e+00
+ 0  4096    32  4096    541  err/sqrtK=0.0e+00
+ 0  4096    64  4096    681  err/sqrtK=0.0e+00
+ 0     8     8  4096     95  err/sqrtK=0.0e+00
+ 0    16    16  4096    189  err/sqrtK=0.0e+00
+ 0    32    32  4096    382  err/sqrtK=0.0e+00
+# load after: { 2.68 2.58 2.44 } other benchmarks seen: 0

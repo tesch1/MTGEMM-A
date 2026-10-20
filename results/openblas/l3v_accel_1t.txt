@@ -1,90 +1,90 @@
-# 2026-10-01 21:44:45 load before: { 2.21 2.60 2.37 } VECLIB_MAXIMUM_THREADS=1
-f32 symm  side=L uplo=U                1581
-f32 symm  side=L uplo=L                1592
-f32 symm  side=R uplo=U                1510
-f32 symm  side=R uplo=L                1532
-f32 syrk  uplo=U trans=N               1735
-f32 syr2k uplo=U trans=N               1343
+# 2026-10-20 02:01:21 load before: { 2.82 2.96 3.04 } VECLIB_MAXIMUM_THREADS=1
+f32 symm  side=L uplo=U                1556
+f32 symm  side=L uplo=L                1578
+f32 symm  side=R uplo=U                1502
+f32 symm  side=R uplo=L                1519
+f32 syrk  uplo=U trans=N               1714
+f32 syr2k uplo=U trans=N               1587
 f32 syrk  uplo=U trans=T               1515
-f32 syr2k uplo=U trans=T               1447
-f32 syrk  uplo=L trans=N               1789
-f32 syr2k uplo=L trans=N               1388
-f32 syrk  uplo=L trans=T               1565
-f32 syr2k uplo=L trans=T               1497
-f32 trmm  side=L uplo=U trans=N diag=N   1552
-f32 trmm  side=L uplo=U trans=N diag=U   1559
-f32 trmm  side=L uplo=U trans=T diag=N   1533
-f32 trmm  side=L uplo=U trans=T diag=U   1525
-f32 trmm  side=L uplo=L trans=N diag=N   1560
-f32 trmm  side=L uplo=L trans=N diag=U   1558
-f32 trmm  side=L uplo=L trans=T diag=N   1543
-f32 trmm  side=L uplo=L trans=T diag=U   1548
-f32 trmm  side=R uplo=U trans=N diag=N   1514
-f32 trmm  side=R uplo=U trans=N diag=U   1513
-f32 trmm  side=R uplo=U trans=T diag=N   1547
-f32 trmm  side=R uplo=U trans=T diag=U   1546
-f32 trmm  side=R uplo=L trans=N diag=N   1535
-f32 trmm  side=R uplo=L trans=N diag=U   1531
-f32 trmm  side=R uplo=L trans=T diag=N   1541
-f32 trmm  side=R uplo=L trans=T diag=U   1543
-f32 trsm  side=L uplo=U trans=N diag=N    793
-f32 trsm  side=L uplo=U trans=N diag=U    881
-f32 trsm  side=L uplo=U trans=T diag=N    797
-f32 trsm  side=L uplo=U trans=T diag=U    874
-f32 trsm  side=L uplo=L trans=N diag=N    797
+f32 syr2k uplo=U trans=T               1478
+f32 syrk  uplo=L trans=N               1769
+f32 syr2k uplo=L trans=N               1604
+f32 syrk  uplo=L trans=T               1564
+f32 syr2k uplo=L trans=T               1532
+f32 trmm  side=L uplo=U trans=N diag=N   1559
+f32 trmm  side=L uplo=U trans=N diag=U   1560
+f32 trmm  side=L uplo=U trans=T diag=N   1550
+f32 trmm  side=L uplo=U trans=T diag=U   1549
+f32 trmm  side=L uplo=L trans=N diag=N   1562
+f32 trmm  side=L uplo=L trans=N diag=U   1562
+f32 trmm  side=L uplo=L trans=T diag=N   1548
+f32 trmm  side=L uplo=L trans=T diag=U   1547
+f32 trmm  side=R uplo=U trans=N diag=N   1536
+f32 trmm  side=R uplo=U trans=N diag=U   1540
+f32 trmm  side=R uplo=U trans=T diag=N   1552
+f32 trmm  side=R uplo=U trans=T diag=U   1550
+f32 trmm  side=R uplo=L trans=N diag=N   1539
+f32 trmm  side=R uplo=L trans=N diag=U   1536
+f32 trmm  side=R uplo=L trans=T diag=N   1552
+f32 trmm  side=R uplo=L trans=T diag=U   1553
+f32 trsm  side=L uplo=U trans=N diag=N    797
+f32 trsm  side=L uplo=U trans=N diag=U    875
+f32 trsm  side=L uplo=U trans=T diag=N    800
+f32 trsm  side=L uplo=U trans=T diag=U    881
+f32 trsm  side=L uplo=L trans=N diag=N    799
 f32 trsm  side=L uplo=L trans=N diag=U    877
-f32 trsm  side=L uplo=L trans=T diag=N    794
-f32 trsm  side=L uplo=L trans=T diag=U    876
-f32 trsm  side=R uplo=U trans=N diag=N    859
-f32 trsm  side=R uplo=U trans=N diag=U    945
-f32 trsm  side=R uplo=U trans=T diag=N    844
-f32 trsm  side=R uplo=U trans=T diag=U    933
-f32 trsm  side=R uplo=L trans=N diag=N    845
-f32 trsm  side=R uplo=L trans=N diag=U    935
-f32 trsm  side=R uplo=L trans=T diag=N    860
-f32 trsm  side=R uplo=L trans=T diag=U    947
-f64 symm  side=L uplo=U                 404
-f64 symm  side=L uplo=L                 413
-f64 symm  side=R uplo=U                 393
-f64 symm  side=R uplo=L                 393
-f64 syrk  uplo=U trans=N                411
-f64 syr2k uplo=U trans=N                391
-f64 syrk  uplo=U trans=T                430
-f64 syr2k uplo=U trans=T                414
-f64 syrk  uplo=L trans=N                420
-f64 syr2k uplo=L trans=N                404
+f32 trsm  side=L uplo=L trans=T diag=N    798
+f32 trsm  side=L uplo=L trans=T diag=U    877
+f32 trsm  side=R uplo=U trans=N diag=N    861
+f32 trsm  side=R uplo=U trans=N diag=U    949
+f32 trsm  side=R uplo=U trans=T diag=N    841
+f32 trsm  side=R uplo=U trans=T diag=U    936
+f32 trsm  side=R uplo=L trans=N diag=N    844
+f32 trsm  side=R uplo=L trans=N diag=U    937
+f32 trsm  side=R uplo=L trans=T diag=N    856
+f32 trsm  side=R uplo=L trans=T diag=U    946
+f64 symm  side=L uplo=U                 408
+f64 symm  side=L uplo=L                 414
+f64 symm  side=R uplo=U                 390
+f64 symm  side=R uplo=L                 391
+f64 syrk  uplo=U trans=N                410
+f64 syr2k uplo=U trans=N                392
+f64 syrk  uplo=U trans=T                431
+f64 syr2k uplo=U trans=T                416
+f64 syrk  uplo=L trans=N                417
+f64 syr2k uplo=L trans=N                402
 f64 syrk  uplo=L trans=T                440
 f64 syr2k uplo=L trans=T                431
 f64 trmm  side=L uplo=U trans=N diag=N    441
 f64 trmm  side=L uplo=U trans=N diag=U    441
-f64 trmm  side=L uplo=U trans=T diag=N    437
-f64 trmm  side=L uplo=U trans=T diag=U    432
+f64 trmm  side=L uplo=U trans=T diag=N    449
+f64 trmm  side=L uplo=U trans=T diag=U    446
 f64 trmm  side=L uplo=L trans=N diag=N    442
-f64 trmm  side=L uplo=L trans=N diag=U    440
-f64 trmm  side=L uplo=L trans=T diag=N    447
-f64 trmm  side=L uplo=L trans=T diag=U    447
-f64 trmm  side=R uplo=U trans=N diag=N    408
+f64 trmm  side=L uplo=L trans=N diag=U    441
+f64 trmm  side=L uplo=L trans=T diag=N    449
+f64 trmm  side=L uplo=L trans=T diag=U    448
+f64 trmm  side=R uplo=U trans=N diag=N    406
 f64 trmm  side=R uplo=U trans=N diag=U    406
-f64 trmm  side=R uplo=U trans=T diag=N    386
-f64 trmm  side=R uplo=U trans=T diag=U    386
-f64 trmm  side=R uplo=L trans=N diag=N    388
-f64 trmm  side=R uplo=L trans=N diag=U    385
-f64 trmm  side=R uplo=L trans=T diag=N    387
-f64 trmm  side=R uplo=L trans=T diag=U    384
+f64 trmm  side=R uplo=U trans=T diag=N    405
+f64 trmm  side=R uplo=U trans=T diag=U    405
+f64 trmm  side=R uplo=L trans=N diag=N    410
+f64 trmm  side=R uplo=L trans=N diag=U    411
+f64 trmm  side=R uplo=L trans=T diag=N    400
+f64 trmm  side=R uplo=L trans=T diag=U    401
 f64 trsm  side=L uplo=U trans=N diag=N    266
-f64 trsm  side=L uplo=U trans=N diag=U    277
-f64 trsm  side=L uplo=U trans=T diag=N    274
-f64 trsm  side=L uplo=U trans=T diag=U    293
-f64 trsm  side=L uplo=L trans=N diag=N    268
+f64 trsm  side=L uplo=U trans=N diag=U    286
+f64 trsm  side=L uplo=U trans=T diag=N    275
+f64 trsm  side=L uplo=U trans=T diag=U    294
+f64 trsm  side=L uplo=L trans=N diag=N    272
 f64 trsm  side=L uplo=L trans=N diag=U    287
-f64 trsm  side=L uplo=L trans=T diag=N    271
-f64 trsm  side=L uplo=L trans=T diag=U    291
-f64 trsm  side=R uplo=U trans=N diag=N    245
-f64 trsm  side=R uplo=U trans=N diag=U    259
-f64 trsm  side=R uplo=U trans=T diag=N    239
+f64 trsm  side=L uplo=L trans=T diag=N    274
+f64 trsm  side=L uplo=L trans=T diag=U    293
+f64 trsm  side=R uplo=U trans=N diag=N    246
+f64 trsm  side=R uplo=U trans=N diag=U    258
+f64 trsm  side=R uplo=U trans=T diag=N    240
 f64 trsm  side=R uplo=U trans=T diag=U    254
-f64 trsm  side=R uplo=L trans=N diag=N    243
-f64 trsm  side=R uplo=L trans=N diag=U    257
-f64 trsm  side=R uplo=L trans=T diag=N    243
-f64 trsm  side=R uplo=L trans=T diag=U    256
-# load after: { 2.07 2.54 2.35 } other benchmarks seen: 0
+f64 trsm  side=R uplo=L trans=N diag=N    242
+f64 trsm  side=R uplo=L trans=N diag=U    258
+f64 trsm  side=R uplo=L trans=T diag=N    245
+f64 trsm  side=R uplo=L trans=T diag=U    257
+# load after: { 2.90 2.98 3.05 } other benchmarks seen: 0

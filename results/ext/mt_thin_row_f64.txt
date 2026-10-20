@@ -1,0 +1,18 @@
+# 2026-10-20 01:31:55 load before: { 2.88 2.63 2.45 } VECLIB_MAXIMUM_THREADS=1
+# thin row mt f64 beta=0 online=1 x4=1 heap=1 model=1 shape=0 cdirect=2 pack4=1 pf=7 threads=1 backend=sme
+ 0     1  4096  4096     15  err/sqrtK=0.0e+00
+ 0     4  4096  4096     61  err/sqrtK=0.0e+00
+ 0     8  4096  4096    121  err/sqrtK=0.0e+00
+ 0    16  4096  4096    204  err/sqrtK=0.0e+00
+ 0    32  4096  4096    305  err/sqrtK=0.0e+00
+ 0    64  4096  4096    369  err/sqrtK=0.0e+00
+ 0  4096     1  4096     10  err/sqrtK=1.3e-15
+ 0  4096     4  4096     40  err/sqrtK=0.0e+00
+ 0  4096     8  4096     80  err/sqrtK=0.0e+00
+ 0  4096    16  4096    100  err/sqrtK=0.0e+00
+ 0  4096    32  4096    281  err/sqrtK=0.0e+00
+ 0  4096    64  4096    343  err/sqrtK=0.0e+00
+ 0     8     8  4096     95  err/sqrtK=0.0e+00
+ 0    16    16  4096    192  err/sqrtK=0.0e+00
+ 0    32    32  4096    386  err/sqrtK=0.0e+00
+# load after: { 2.73 2.60 2.44 } other benchmarks seen: 0
